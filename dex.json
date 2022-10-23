@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Uniswap",
+    "address": "0x",
+    "network": "4"
+  },
+  {
+    "name": "Susiswap",
+    "address": "0x",
+    "network": "4"
+  },
+  {
+    "name": "Pankcakeswap",
+    "address": "0x",
+    "network": "2"
+  }
+]
