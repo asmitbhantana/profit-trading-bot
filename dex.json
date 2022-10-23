@@ -13,5 +13,10 @@
     "name": "Pankcakeswap",
     "address": "0x",
     "network": "2"
+  },
+  {
+    "name": "Quikswap",
+    "address": "0x",
+    "network": "2"
   }
 ]
