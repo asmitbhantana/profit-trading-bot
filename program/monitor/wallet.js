@@ -1,4 +1,4 @@
-const { getEthersProvider } = require("./utils");
+const { getEthersProvider } = require("../utils/utils");
 
 OPTIONS = {
   headers: {
