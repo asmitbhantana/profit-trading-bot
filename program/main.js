@@ -1,6 +1,6 @@
 const { getWalletERC20List } = require("./monitor/wallet");
 const { Transaction, Token, TokenBundle } = require("./database/model");
-
+const { calculateBudget } = require("./budget/budget");
 //connect to database
 require("./database/connection");
 
@@ -41,4 +41,4 @@ const scanWallet = async () => {
   // console.log(updatedToken);
 };
 
-scanWallet();
+// scanWallet();

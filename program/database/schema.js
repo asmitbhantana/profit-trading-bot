@@ -20,7 +20,16 @@ const TransactionSchema = new Schema({
   transactionType: String,
 });
 
+const ConfigurationSchema = new Schema({
+  maximumWeth: String,
+  minimumWeth: String,
+  amountPercentage: String,
+  tokens: [String],
+  wallets: [String],
+});
+
 module.exports = {
   TokenSchema: TokenSchema,
   TransactionSchema: TransactionSchema,
+  ConfigurationSchema: ConfigurationSchema,
 };
