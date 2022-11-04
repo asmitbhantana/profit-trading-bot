@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node --watch program/main.js"
+    "start": "node program/main.js"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +15,7 @@
     "ethers": "^5.7.2",
     "mongodb": "^4.11.0",
     "mongoose": "^6.7.0",
+    "node-cron": "^3.0.2",
     "web3": "^1.8.0"
   }
 }
