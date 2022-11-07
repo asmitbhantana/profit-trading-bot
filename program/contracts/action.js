@@ -1,7 +1,7 @@
-require('dotenv').config();
-const { ethers, BigNumber } = require('ethers');
+const { getRouterContract } = require("./contract");
 
+const performBuyOperation = async () => {};
 
-const SEED_PHRASE = process.env.OWNER_WALLET_SEED_PHRASE;
+const performSellOperation = async () => {};
 
-
+const performTokenApproval = async () => {};
