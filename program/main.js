@@ -1,7 +1,6 @@
-const { getWalletERC20List } = require("./wallet");
+const { startWalletMonitor } = require('./monitor/monitor');
 
-const runServer = () => {
-  getWalletERC20List("0xd8da6bf26964af9d7eed9e03e53415d37aa96045");
-};
+//connect to the database
+require('./database/connection');
 
-runServer();
+startWalletMonitor();
