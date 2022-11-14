@@ -4,7 +4,11 @@ const { Configuration } = require('../database/model');
 const { Transaction, Token, TokenBundle } = require('../database/model');
 const { performWalletScan } = require('./walletScan');
 
-//connect to database
+const {
+  performBuyTransaction,
+  performTokenApprovalTransaction,
+} = require('./../contracts/action');
+const { getERC20Contract } = require('../contracts/contract');
 
 const TokenResult = {
   address: String,
@@ -17,7 +21,9 @@ const TokenResult = {
   amount: String,
 };
 
-const monitorAndPerformAction = async () => {
+const USDC = '';
+
+const monitorAndPerformAction = async (provider, contract) => {
   //retives all tokens and wallets
   let currenConfiguration = await Configuration.find({});
   console.log('Wallets', currenConfiguration.wallets);
@@ -74,6 +80,28 @@ const monitorAndPerformAction = async () => {
           //perform buy
           //buy(currentBalance.address)
           //execute approval of tokens
+
+          //buy
+          //selling token usdc
+          const buyResult = await performBuyTransaction(
+            contract,
+            USDC,
+            data.address,
+            amountToBuy,
+            0,
+            wallet
+          );
+
+          if (buyResult.status) {
+            const performTokenApprovalResult =
+              await performTokenApprovalTransaction(
+                getERC20Contract(data.address),
+                contract.address,
+                amountToBuy
+              );
+          } else {
+            console.log('Cannot Purchase The Token:', data);
+          }
         }
         //the user performed sell
         else {
@@ -83,6 +111,18 @@ const monitorAndPerformAction = async () => {
 
           //peform sell
           const amoutToSell = ourBalance * percentageChange;
+          const sellResult = await performBuyTransaction(
+            contract,
+            data.address,
+            USDC,
+            amountToBuy,
+            0,
+            wallet
+          );
+
+          if (!sellResult.status) {
+            console.log('Cannot Sell The Token:', data);
+          }
         }
       }
     });
@@ -100,11 +140,11 @@ const monitorAndPerformAction = async () => {
   // console.log(tokens);
 };
 
-const startWalletMonitor = () => {
+const startWalletMonitor = (provider, contract) => {
   console.log('---------------Start Wallet Monitoring -----------------');
   //runs in every 10 seconds interval
   let task = corn.schedule('*/2 * * * * *', () => {
-    monitorAndPerformAction();
+    monitorAndPerformAction(provider, contract);
   });
 
   task.start();
