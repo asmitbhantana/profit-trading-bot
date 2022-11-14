@@ -1,6 +1,7 @@
+require('dotenv').config();
 const corn = require('node-cron');
 const { Configuration } = require('../database/model');
-
+const { BigNumber } = require('ethers');
 const { Transaction, Token, TokenBundle } = require('../database/model');
 const { performWalletScan } = require('./walletScan');
 
@@ -9,6 +10,7 @@ const {
   performTokenApprovalTransaction,
 } = require('./../contracts/action');
 const { getERC20Contract } = require('../contracts/contract');
+const { createUpdateTokens } = require('../database/action');
 
 const TokenResult = {
   address: String,
@@ -25,48 +27,60 @@ const USDC = '';
 
 const monitorAndPerformAction = async (provider, contract) => {
   //retives all tokens and wallets
-  let currenConfiguration = await Configuration.find({});
-  console.log('Wallets', currenConfiguration.wallets);
+  let currenConfiguration = await Configuration.findOne({}).exec();
 
   //retive current owner address balance
-  let ourBalanceDatas = await TokenBundle.find({
-    _id: currenConfiguration.trackingWallet,
-  });
+  let ourBalanceDatas = await TokenBundle.findByWallet(
+    currenConfiguration.trackingWallet
+  ).exec();
+
+  ourBalanceDatas = ourBalanceDatas[0];
+
+  if (!ourBalanceDatas) {
+    //datas not available on the database hence
+    //first time so enter
+
+    const ourTokens = await performWalletScan(
+      currenConfiguration.trackingWallet,
+      currenConfiguration.tokens
+    );
+
+    ourBalanceDatas = new TokenBundle({
+      wallet: currenConfiguration.trackingWallet,
+      tokens: [ourTokens],
+    });
+  }
 
   //get all tokens to track for different wallets
   currenConfiguration.wallets.map(async (wallet) => {
-    //read previous data from database
-    const previousData = await TokenBundle.find({ _id: wallet });
-
     //retive data from quicknode api
     let currentWalletData = await performWalletScan(
       wallet,
       currenConfiguration.tokens
     );
-
     //tally changes
     currentWalletData.map(async (data) => {
-      const previousBalance = await previousData.find({
-        address: data.address,
-      });
+      const previousBalance = await TokenBundle.findOne({
+        wallet: wallet,
+        tokens: { address: data.address },
+      }).exec();
 
-      const ourBalance = await ourBalanceDatas.find({
-        address: data.address,
-      });
+      const ourBalance = await TokenBundle.findOne({
+        wallet: currenConfiguration.trackingWallet,
+        tokens: { address: data.address },
+      }).exec();
 
       //not the stable coins, weth etc
       if (
         !currenConfiguration.untrackedTokens.includes(
           currentWalletData.address,
           0
-        ) &&
-        previousBalance.amount != 0 &&
-        ourBalance.amount != 0
+        )
       ) {
         //TODO: check the previous data
-        const previousBalanceAmount = BigNumber.from(previousBalance.amount);
-        const currentBalanceAmount = BigNumber.from(currentBalance.amount);
-        const ourBalance = BigNumber.from(ourBalance.amount);
+        const previousBalanceAmount = previousBalance ? BigNumber.from(previousBalance.amount) : BigNumber.from(0);
+        const currentBalanceAmount = data ? BigNumber.from(data.amount): BigNumber.from(0);
+        const ourBalanceNow = ourBalance ? BigNumber.from(ourBalance.amount) : BigNumber.from(0);
 
         //action
         //the user performed buy
@@ -76,7 +90,7 @@ const monitorAndPerformAction = async (provider, contract) => {
             .div(previousBalanceAmount);
 
           //perform buy same
-          const amountToBuy = ourBalance * percentageChange;
+          const amountToBuy = ourBalanceNow * percentageChange;
           //perform buy
           //buy(currentBalance.address)
           //execute approval of tokens
@@ -92,12 +106,24 @@ const monitorAndPerformAction = async (provider, contract) => {
             wallet
           );
 
+          let nonce = await httpsProvider.getTransactionCount(address);
+          let feeData = await httpsProvider.getFeeData();
+          let param = {
+            type: 2,
+            nonce: nonce,
+            to: contract.address,
+            maxPriorityFeePe: feeData['maxPriorityFeePerGas'],
+            maxFeePerGas: feeData['maxFeePerGas'],
+            gasLimit: 100000, //TODO: make this variable
+            chainId: process.env.NETWORK_ID,
+          };
           if (buyResult.status) {
             const performTokenApprovalResult =
               await performTokenApprovalTransaction(
                 getERC20Contract(data.address),
                 contract.address,
-                amountToBuy
+                amountToBuy,
+                param
               );
           } else {
             console.log('Cannot Purchase The Token:', data);
@@ -110,14 +136,15 @@ const monitorAndPerformAction = async (provider, contract) => {
             .div(previousBalanceAmount);
 
           //peform sell
-          const amoutToSell = ourBalance * percentageChange;
+          const amoutToSell = ourBalanceNow * percentageChange;
           const sellResult = await performBuyTransaction(
             contract,
             data.address,
             USDC,
             amountToBuy,
             0,
-            wallet
+            wallet,
+            param
           );
 
           if (!sellResult.status) {
@@ -127,7 +154,10 @@ const monitorAndPerformAction = async (provider, contract) => {
       }
     });
     //update the database
-    await createUpdateTokens(wallet, currentWalletData);
+    await createUpdateTokens(wallet, {
+      wallet: wallet,
+      tokens: currentWalletData,
+    });
 
     //retive the data from
   });
@@ -143,7 +173,7 @@ const monitorAndPerformAction = async (provider, contract) => {
 const startWalletMonitor = (provider, contract) => {
   console.log('---------------Start Wallet Monitoring -----------------');
   //runs in every 10 seconds interval
-  let task = corn.schedule('*/2 * * * * *', () => {
+  let task = corn.schedule('*/12 * * * * *', () => {
     monitorAndPerformAction(provider, contract);
   });
 

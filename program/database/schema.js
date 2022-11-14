@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
  const { Schema } = mongoose;
 
 const TokenSchema = new Schema({
-  _id: String,
   address: String,
   name: String,
   decimal: Number,
@@ -35,13 +34,14 @@ const ConfigurationSchema = new Schema({
 });
 
 const TokenBundleSchema = Schema(
-  {
+  { 
+    wallet: String,
     tokens: [TokenSchema],
   },
   {
     statics: {
       findByWallet(wallet) {
-        return this.find({ _id: wallet });
+        return this.find({ wallet: wallet });
       },
     },
   }

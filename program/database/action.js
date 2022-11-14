@@ -23,35 +23,29 @@ Configurations:
 
 const { Configuration, TokenBundle } = require('./model');
 
-const createUpdateConfig = async function (type, config) {
-  const updatedConfig = await Configuration.findOneAndUpdate(
-    {
-      setting_type: type,
-    },
-    config,
-    {
-      new: true,
-      upsert: true,
-    }
-  );
+const createUpdateConfig = async function (config) {
+  const updatedConfig = await Configuration.findOneAndUpdate({}, config, {
+    new: true,
+    upsert: true,
+  });
 
   return updatedConfig;
 };
 
 const createUpdateTokens = async function (wallet, updatedTokens) {
-  const updatedTokens = await TokenBundle.findOneAndUpdate(
+  const newUpdatedTokens = await TokenBundle.findOneAndUpdate(
     {
-      id: wallet,
+      wallet: wallet,
     },
     updatedTokens,
     {
-      new: true,
+      new: false,
       upsert: true,
     }
   );
 };
 
-modules.exports = {
+module.exports = {
   createUpdateTokens: createUpdateTokens,
-  createUpdateConfig: createUpdateConfig
-}
+  createUpdateConfig: createUpdateConfig,
+};
