@@ -48,7 +48,7 @@ const performBuyTransaction = async (
      */
   const buyTransaction = await contract.swapExactTokensForTokens(
     amountIn,
-    amountOutMin,
+    amountOutMin, //0
     [sellingToken, buyingToken],
     to,
     {
@@ -76,4 +76,8 @@ const performTokenApprovalTransaction = async (
   return approveTransactionResult;
 };
 
+module.exports = {
+  performBuyTransaction,
+  performTokenApprovalTransaction
+}
 

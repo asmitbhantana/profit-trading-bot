@@ -27,7 +27,7 @@ const createUpdateConfig = async function (config) {
   const updatedConfig = await Configuration.findOneAndUpdate({}, config, {
     new: true,
     upsert: true,
-  });
+  }).exec();
 
   return updatedConfig;
 };
@@ -42,7 +42,9 @@ const createUpdateTokens = async function (wallet, updatedTokens) {
       new: false,
       upsert: true,
     }
-  );
+  ).exec();
+
+  return newUpdatedTokens;
 };
 
 module.exports = {

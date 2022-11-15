@@ -14,7 +14,7 @@ const setConfig = async () => {
       '0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE',
     ],
     wallets: [
-      '0xa69319fCBDF2E8DD7A768b9ce97db952cd92433d',
+      '0x19dc7cfae2bff62b2483d91b3428726493b84912',
       '0x369Ec1589fa18735fB92cE11fE9cE2B9AD20769d',
     ],
     untrackedTokens: [
