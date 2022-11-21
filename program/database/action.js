@@ -32,10 +32,11 @@ const createUpdateConfig = async function (config) {
   return updatedConfig;
 };
 
-const createUpdateTokens = async function (wallet, updatedTokens) {
+const createUpdateTokens = async function (wallet, token, updatedTokens) {
   const newUpdatedTokens = await TokenBundle.findOneAndUpdate(
     {
       wallet: wallet,
+      address: token,
     },
     updatedTokens,
     {

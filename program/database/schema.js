@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
- const { Schema } = mongoose;
+const { Schema } = mongoose;
 
 const TokenSchema = new Schema({
   address: String,
@@ -33,10 +33,17 @@ const ConfigurationSchema = new Schema({
   untrackedTokens: [String],
 });
 
-const TokenBundleSchema = Schema(
-  { 
+const TokenBundleSchema = new Schema(
+  {
     wallet: String,
-    tokens: [TokenSchema],
+    address: String,
+    name: String,
+    decimal: Number,
+    symbol: String,
+    logoURI: String,
+    chain: String,
+    network: String,
+    amount: String,
   },
   {
     statics: {

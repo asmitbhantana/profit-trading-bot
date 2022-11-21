@@ -1,3 +1,4 @@
+const { BigNumber } = require('ethers');
 const { getRouterContract } = require('./contract');
 
 /*
@@ -15,7 +16,7 @@ const { getRouterContract } = require('./contract');
  * Example
  * selling shiba inu means buying weth and
  * buying shiba inu means selling weth
- * 
+ *
  * maxPriorityFeePerGas: feeData["maxPriorityFeePerGas"], // Recommended maxPriorityFeePerGas
  * maxFeePerGas: feeData["maxFeePerGa
  */
@@ -38,6 +39,7 @@ const performBuyTransaction = async (
 
   params
 ) => {
+  const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 100000000);
   //Perform Swap Exact Tokens for Tokens
   /**
         uint amountIn,
@@ -51,6 +53,7 @@ const performBuyTransaction = async (
     amountOutMin, //0
     [sellingToken, buyingToken],
     to,
+    timeRN,
     {
       ...params,
     }
@@ -60,7 +63,7 @@ const performBuyTransaction = async (
 };
 
 const performTokenApprovalTransaction = async (
-  contract, 
+  contract,
   spender,
   value,
 
@@ -78,6 +81,5 @@ const performTokenApprovalTransaction = async (
 
 module.exports = {
   performBuyTransaction,
-  performTokenApprovalTransaction
-}
-
+  performTokenApprovalTransaction,
+};

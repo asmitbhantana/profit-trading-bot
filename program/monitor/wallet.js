@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { getEthersProvider } = require('../utils/utils');
 
 OPTIONS = {
@@ -7,12 +8,13 @@ OPTIONS = {
 };
 
 const getWalletERC20List = async (user_wallet, tokens) => {
-  const ethersProvider = getEthersProvider();
+  const ethersProvider = getEthersProvider(process.env.QUICKNODE_API_MAINNET);
   ethersProvider.connection.headers = OPTIONS.headers;
   const walletTokens = await ethersProvider.send('qn_getWalletTokenBalance', {
     wallet: user_wallet,
     contracts: tokens,
   });
+
   return walletTokens;
 };
 

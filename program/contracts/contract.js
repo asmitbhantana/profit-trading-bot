@@ -6,17 +6,8 @@
 */
 require('dotenv').config();
 const { ethers, BigNumber, Contract } = require('ethers');
-const { getEthersProvider } = require('../utils/utils');
 const { susiswapABI, susiswapAddress } = require('../contracts/const');
 const { erc20Abi } = require('./const');
-
-const SEED_PHRASE = process.env.OWNER_WALLET_SEED_PHRASE;
-const URL = process.env.QUICKNODE_API_MAINNET;
-// const URL = process.env.QUICKNODE_API_GOERLI;
-
-const provider = getEthersProvider(URL);
-
-const signer = ethers.Wallet.fromMnemonic(SEED_PHRASE).connect(provider);
 
 /*
 - Task
@@ -26,15 +17,19 @@ const signer = ethers.Wallet.fromMnemonic(SEED_PHRASE).connect(provider);
 
 let routerContract = null;
 
-const getRouterContract = (routerAddres) => {
+SEED_PHRASE = process.env.OWNER_WALLET_SEED_PHRASE;
+
+const getRouterContract = (provider, routerAddres) => {
   if (!routerContract) {
+    const signer = ethers.Wallet.fromMnemonic(SEED_PHRASE).connect(provider);
     routerContract = new ethers.Contract(routerAddres, susiswapABI, signer);
   }
 
   return routerContract;
 };
 
-const getERC20Contract = (tokenAddress) => {
+const getERC20Contract = (provider, tokenAddress) => {
+  const signer = ethers.Wallet.fromMnemonic(SEED_PHRASE).connect(provider);
   return new ethers.Contract(tokenAddress, erc20Abi, signer);
 };
 
