@@ -11,6 +11,10 @@ const {
 } = require('./../contracts/action');
 const { getERC20Contract } = require('../contracts/contract');
 const { createUpdateTokens } = require('../database/action');
+const {
+  performBuySaleTransaction,
+  performApprovalTransaction,
+} = require('./performTxn');
 
 const TokenResult = {
   address: String,
@@ -58,6 +62,8 @@ const monitorAndPerformAction = async (provider, contract) => {
       ourBalanceDatas.push(ourBalanceData);
     });
   }
+
+  //TODO: initialize the
 
   //get all tokens to track for different wallets
   currenConfiguration.wallets.map(async (wallet) => {
@@ -136,7 +142,6 @@ const monitorAndPerformAction = async (provider, contract) => {
           console.log('Amount To Buy', amountToBuy.toString());
 
           //perform buy
-          //buy(currentBalance.address)
           //execute approval of tokens
           console.log(
             '-----> Buying Token ',
@@ -144,25 +149,26 @@ const monitorAndPerformAction = async (provider, contract) => {
             'in',
             amountToBuy.toString() + '<----------'
           );
+
           //buy
           //selling token usdc
-          // const buyResult = await performBuyTransaction(
+          // const buyResult = await performBuySaleTransaction(
+          //   provider,
           //   contract,
           //   USDC,
           //   data.address,
           //   amountToBuy,
-          //   0,
           //   wallet
           // );
 
           // if (buyResult.status) {
-          //   const performTokenApprovalResult =
-          //     await performTokenApprovalTransaction(
-          //       getERC20Contract(data.address),
-          //       contract.address,
-          //       amountToBuy,
-          //       param
-          //     );
+          //   const performTokenApprovalResult = await performApprovalTransaction(
+          //     provider,
+          //     data.address,
+          //     contract.address,
+          //     amountToBuy,
+          //     wallet
+          //   );
           // } else {
           //   console.log(
           //     'Cannot Buy The Token:',
@@ -170,66 +176,64 @@ const monitorAndPerformAction = async (provider, contract) => {
           //     'in',
           //     amountToBuy.toString()
           //   );
-          // }
         }
+      }
 
-        //the user performed sell
-        else {
-          if (
-            previousBalanceAmount.toString() == currentBalanceAmount.toString()
-          )
-            return;
-          console.log(
-            'In Sell',
-            previousBalanceAmount.toString(),
-            '>',
-            currentBalanceAmount.toString()
-          );
+      //the user performed sell
+      else {
+        if (previousBalanceAmount.toString() == currentBalanceAmount.toString())
+          return;
+        console.log(
+          'In Sell',
+          previousBalanceAmount.toString(),
+          '>',
+          currentBalanceAmount.toString()
+        );
 
-          let percentageChange = 100;
-          if (!previousBalanceAmount.isZero()) {
-            percentageChange = previousBalanceAmount
-              .sub(currentBalanceAmount)
-              .div(previousBalanceAmount);
-            percentageChange == 0
-              ? (percentageChange = BigNumber.from(100))
-              : BigNumber.from(percentageChange);
-          }
-          console.log('Percentage change', percentageChange.toString());
-
-          //peform sell
-          let amountToSell = ourBalanceNow.mul(percentageChange);
-
-          if (ourBalanceNow.isZero()) {
-            amountToSell = currentBalanceAmount;
-          }
-          console.log('Amount To Sell', amountToSell.toString());
-
-          console.log(
-            '----> Selling Token' +
-              data.symbol +
-              'in' +
-              amountToSell.toString() +
-              '<------'
-          );
-          // const sellResult = await performBuyTransaction(
-          //   contract,
-          //   data.address,
-          //   USDC,
-          //   amountToSell,
-          //   0,
-          //   wallet,
-          //   param
-          // );
-
-          // if (!sellResult.status) {
-          //   console.log(
-          //     'Cannot Sell The Token:',
-          //     data.address,
-          //     amoutToSell.toString()
-          //   );
-          // }
+        let percentageChange = 100;
+        if (!previousBalanceAmount.isZero()) {
+          percentageChange = previousBalanceAmount
+            .sub(currentBalanceAmount)
+            .div(previousBalanceAmount);
+          percentageChange == 0
+            ? (percentageChange = BigNumber.from(100))
+            : BigNumber.from(percentageChange);
         }
+        console.log('Percentage change', percentageChange.toString());
+
+        //peform sell
+        let amountToSell = ourBalanceNow.mul(percentageChange);
+
+        if (ourBalanceNow.isZero()) {
+          amountToSell = currentBalanceAmount;
+        }
+        console.log('Amount To Sell', amountToSell.toString());
+
+        console.log(
+          '----> Selling Token' +
+            data.symbol +
+            'in' +
+            amountToSell.toString() +
+            '<------'
+        );
+
+        //   const sellResult = await performBuySaleTransaction(
+        //     provider,
+        //     contract,
+        //     data.address,
+        //     USDC,
+        //     amountToSell,
+        //     wallet
+        //   );
+
+        //   if (!sellResult.status) {
+        //     console.log(
+        //       'Cannot Sell The Token:',
+        //       data.address,
+        //       amoutToSell.toString()
+        //     );
+        //   }
+        // }
 
         //update track wallet database
         await createUpdateTokens(wallet, data.address, {

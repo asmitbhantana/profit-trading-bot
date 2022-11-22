@@ -12,7 +12,7 @@ const getWalletERC20List = async (user_wallet, tokens) => {
   ethersProvider.connection.headers = OPTIONS.headers;
   const walletTokens = await ethersProvider.send('qn_getWalletTokenBalance', {
     wallet: user_wallet,
-    contracts: tokens,
+    // contracts: tokens,
   });
 
   return walletTokens;
