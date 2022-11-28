@@ -21,7 +21,8 @@ Configurations:
   update all the config
  */
 
-const { Configuration, TokenBundle } = require('./model');
+const { Configuration, TokenBundle, Router } = require("./model");
+const { RouterSchema } = require("./schema");
 
 const createUpdateConfig = async function (config) {
   const updatedConfig = await Configuration.findOneAndUpdate({}, config, {
@@ -30,6 +31,13 @@ const createUpdateConfig = async function (config) {
   }).exec();
 
   return updatedConfig;
+};
+
+const addRouter = async function (router) {
+  const newRouter = new Router(router);
+  newRouter.save();
+
+  return newRouter;
 };
 
 const createUpdateTokens = async function (wallet, token, updatedTokens) {
@@ -48,7 +56,14 @@ const createUpdateTokens = async function (wallet, token, updatedTokens) {
   return newUpdatedTokens;
 };
 
+const isTrackingwallet = async (wallet) => {
+  const config = await Configuration.findOne({}).exec();
+  return config.wallets.include(wallet, 0);
+};
+
 module.exports = {
-  createUpdateTokens: createUpdateTokens,
-  createUpdateConfig: createUpdateConfig,
+  createUpdateTokens,
+  createUpdateConfig,
+  isTrackingwallet,
+  addRouter,
 };

@@ -1,16 +1,15 @@
-require('dotenv').config();
-const { getEthersProvider } = require('../utils/utils');
+require("dotenv").config();
+const { getEthersProvider } = require("../utils/utils");
 
 OPTIONS = {
   headers: {
-    'x-qn-api-version': '1',
+    "x-qn-api-version": "1",
   },
 };
 
-const getWalletERC20List = async (user_wallet, tokens) => {
-  const ethersProvider = getEthersProvider(process.env.QUICKNODE_API_MAINNET);
+const getWalletERC20List = async (provider, user_wallet, tokens) => {
   ethersProvider.connection.headers = OPTIONS.headers;
-  const walletTokens = await ethersProvider.send('qn_getWalletTokenBalance', {
+  const walletTokens = await ethersProvider.send("qn_getWalletTokenBalance", {
     wallet: user_wallet,
     // contracts: tokens,
   });

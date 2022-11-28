@@ -1,9 +1,9 @@
-const { BigNumber } = require('ethers');
+const { BigNumber } = require("ethers");
 const {
   performBuyTransaction,
   performTokenApprovalTransaction,
-} = require('../contracts/action');
-const { getERC20Contract } = require('../contracts/contract');
+} = require("../contracts/action");
+const { getERC20Contract } = require("../contracts/contract");
 
 const performBuySaleTransaction = async (
   provider,
@@ -14,13 +14,11 @@ const performBuySaleTransaction = async (
   wallet
 ) => {
   //prepare data
-  let nonce = await provider.getTransactionCount(wallet);
   let feeData = await provider.getFeeData();
 
   let param = {
     type: 2,
-    nonce: nonce,
-    maxFeePerGas: feeData['maxFeePerGas'],
+    maxFeePerGas: feeData["maxFeePerGas"],
     gasLimit: 165123, //TODO: make this variable
   };
 
@@ -51,13 +49,11 @@ const performApprovalTransaction = async (
   wallet
 ) => {
   const tokenContract = getERC20Contract(provider, tokenAddress);
-  const nonce = await provider.getTransactionCount(wallet);
   let feeData = await provider.getFeeData();
 
   let param = {
     type: 2,
-    nonce: nonce,
-    maxFeePerGas: feeData['maxFeePerGas'],
+    maxFeePerGas: feeData["maxFeePerGas"],
     gasLimit: 46568, //TODO: make this variable
   };
 
