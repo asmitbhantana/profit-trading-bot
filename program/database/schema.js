@@ -8,8 +8,7 @@ const TokenSchema = new Schema({
   symbol: String,
   logoURI: String,
   chain: String,
-  network: String,
-  amount: String,
+  balance: String,
 });
 
 const TransactionSchema = new Schema({
@@ -58,14 +57,14 @@ const RouterSchema = new Schema(
 const TokenBundleSchema = new Schema(
   {
     wallet: String,
-    address: String,
+    token_address: String,
     name: String,
     decimal: Number,
     symbol: String,
     logoURI: String,
     chain: String,
     network: String,
-    amount: String,
+    balance: String,
   },
   {
     statics: {

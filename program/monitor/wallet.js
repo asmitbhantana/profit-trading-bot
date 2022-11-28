@@ -1,20 +1,12 @@
-require("dotenv").config();
-const { getEthersProvider } = require("../utils/utils");
+const Moralis = require("moralis").default;
 
-OPTIONS = {
-  headers: {
-    "x-qn-api-version": "1",
-  },
-};
-
-const getWalletERC20List = async (provider, user_wallet, tokens) => {
-  ethersProvider.connection.headers = OPTIONS.headers;
-  const walletTokens = await ethersProvider.send("qn_getWalletTokenBalance", {
-    wallet: user_wallet,
-    // contracts: tokens,
+const getWalletERC20List = async (chains, user_wallet) => {
+  const response = await Moralis.EvmApi.token.getWalletTokenBalances({
+    address: user_wallet,
+    chain: chains,
   });
 
-  return walletTokens;
+  return response.data;
 };
 
 module.exports = {

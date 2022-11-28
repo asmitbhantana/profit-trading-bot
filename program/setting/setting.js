@@ -9,7 +9,7 @@ const setConfig = async () => {
     maximumWeth: "0.001",
     minimumWeth: "0.0001",
     amountPercentage: "200",
-    ourWallet: "0xa69319fCBDF2E8DD7A768b9ce97db952cd92433d",
+    ourWallet: "0xD114dDe767a972Eb3665840b14F78FaEE3943E80",
     tokens: [
       "0xcf0c122c6b73ff809c693db761e7baebe62b6a2e",
       "0x4d224452801ACEd8B2F0aebE155379bb5D594381",
@@ -17,7 +17,7 @@ const setConfig = async () => {
       "0xB702124910c880e6E52a1F403d66645155017a4D",
       "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",
     ],
-    wallets: ["0x19dc7cfae2bff62b2483d91b3428726493b84912"],
+    wallets: ["0xf8D8bA1F5f592C53eAe8F8d750a6b0F09ca31Cee"],
     untrackedTokens: [
       "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
       "0xdAC17F958D2ee523a2206206994597C13D831ec7",

@@ -44,7 +44,7 @@ const createUpdateTokens = async function (wallet, token, updatedTokens) {
   const newUpdatedTokens = await TokenBundle.findOneAndUpdate(
     {
       wallet: wallet,
-      address: token,
+      token_address: token,
     },
     updatedTokens,
     {
