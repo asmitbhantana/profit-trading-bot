@@ -1,5 +1,7 @@
 const express = require("express");
+const { performBuyTransaction } = require("../contracts/action");
 const { isTrackingwallet } = require("../database/action");
+const { performBuySaleTransaction } = require("../monitor/performTxn");
 
 //connect to the database
 require("../database/connection");
@@ -20,32 +22,17 @@ app.post("/*", (req, res) => {
     return;
   }
   const contractCall = txnData.contractCall;
-  // if (
-  //   contractCall.contractAddress != "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"
-  // ) {
-  //   let routerAddress = contractCall.contractAddress;
-  //   let methodName = contractCall.methodName;
-  //   let params = contractCall.params;
 
-  //   //TODO: check router address
-  //   switch (methodName) {
-  //     //may be buy or sell
-  //     case "swapExactTokensForTokens":
-  //     case "swapExactTokensForTokensSupportingFeeOnTransferTokens":
-  //     case "swapExactTokenForExactTokens":
-  //     case "swapTokensForExactTokens":
+  const currentRouter = contractCall.address;
+  if (
+    contractCall.contractAddress != "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"
+  ) {
+    let routerAddress = contractCall.contractAddress;
+    let methodName = contractCall.methodName;
+    let params = contractCall.params;
 
-  //     //buy
-  //     case "swapExactEthForTokens":
-  //     case "swapExactETHForTokensSupportingFeeOnTransferTokens":
-  //     case "swapETHForExactTokens":
-
-  //     //sell
-  //     case "swapExactTokensForETH":
-  //     case "swapExactTokensForETHSupportingFeeOnTransferTokens":
-  //     case "swapTokensForExactETH":
-  //   }
-  // }
+    performTransaction();
+  }
   console.log("-------End Request------");
   res.json({ done: "done" });
 });
