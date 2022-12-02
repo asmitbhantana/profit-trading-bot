@@ -1,8 +1,14 @@
+const { getERC20Contract } = require("../contracts/contract");
 const {
   updateTokenBalance,
   createUpdateTokens,
 } = require("../database/action");
-const { performApprovalTransaction } = require("../monitor/performTxn");
+const { Router, TokenBundle } = require("../database/model");
+const {
+  performApprovalTransaction,
+  performBuySaleTransaction,
+} = require("../monitor/performTxn");
+const { getEthersProvider } = require("../utils/utils");
 
 //swap for weth
 const performTransaction = async (methodName, currentRouterAddress, params) => {
@@ -15,7 +21,7 @@ const performTransaction = async (methodName, currentRouterAddress, params) => {
   const provider = getEthersProvider(API_URL);
 
   //Uniswap Router Contract
-  const routerContract = getRouterContract(provider, currentRouterAddress);
+  const routerContract = getERC20Contract(provider, currentRouterAddress);
   //retrives the router info
   let currentRouter = await Router.findOne({
     routerContract: currentRouterAddress,
@@ -28,11 +34,14 @@ const performTransaction = async (methodName, currentRouterAddress, params) => {
     case "swapExactTokensForTokensSupportingFeeOnTransferTokens":
     case "swapExactTokenForExactTokens":
     case "swapTokensForExactTokens":
-
+      console.log(methodName, " Method called");
+      break;
     //buy
     case "swapExactEthForTokens":
     case "swapExactETHForTokensSupportingFeeOnTransferTokens":
     case "swapETHForExactTokens":
+      console.log(methodName, "called => Buying Token");
+
       //our current balance of the wallet from DB
       const ourBalance = await TokenBundle.findOne({
         wallet: currenConfiguration.ourWallet,
@@ -101,6 +110,8 @@ const performTransaction = async (methodName, currentRouterAddress, params) => {
     case "swapExactTokensForETH":
     case "swapExactTokensForETHSupportingFeeOnTransferTokens":
     case "swapTokensForExactETH":
+      console.log(methodName, "called => Selling Token");
+
       //our current balance of the wallet from DB
       const ourBalance1 = await TokenBundle.findOne({
         wallet: currenConfiguration.ourWallet,
@@ -156,3 +167,7 @@ const performTransaction = async (methodName, currentRouterAddress, params) => {
   }
 };
 //swap to weth
+
+module.exports = {
+  performTransaction,
+};
