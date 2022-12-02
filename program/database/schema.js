@@ -1,16 +1,6 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const TokenSchema = new Schema({
-  address: String,
-  name: String,
-  decimal: Number,
-  symbol: String,
-  logoURI: String,
-  chain: String,
-  balance: String,
-});
-
 const TransactionSchema = new Schema({
   hash: String,
   success: Boolean,
@@ -32,51 +22,29 @@ const ConfigurationSchema = new Schema({
   untrackedTokens: [String],
 });
 
-const RouterSchema = new Schema(
-  {
-    routerContract: String,
-    routerName: String,
-    wethAddress: String,
-    factoryAddress: String,
-    network: String,
-    chainName: String,
-    rpc: String,
-  },
-  {
-    statics: {
-      findByNetwork(network) {
-        return this.find({ network: network });
-      },
-      findByRouterContract(router) {
-        return this.find({ routerContract: router });
-      },
-    },
-  }
-);
+const RouterSchema = new Schema({
+  routerContract: String,
+  routerName: String,
+  wethAddress: String,
+  factoryAddress: String,
+  network: String,
+  chainName: String,
+  rpc: String,
+});
 
-const TokenBundleSchema = new Schema(
-  {
-    wallet: String,
-    token_address: String,
-    name: String,
-    decimal: Number,
-    symbol: String,
-    logoURI: String,
-    chain: String,
-    network: String,
-    balance: String,
-  },
-  {
-    statics: {
-      findByWallet(wallet) {
-        return this.find({ wallet: wallet });
-      },
-    },
-  }
-);
+const TokenBundleSchema = new Schema({
+  wallet: String,
+  token_address: String,
+  name: String,
+  decimal: Number,
+  symbol: String,
+  logoURI: String,
+  chain: String,
+  network: String,
+  balance: String,
+});
 
 module.exports = {
-  TokenSchema,
   TransactionSchema,
   ConfigurationSchema,
   TokenBundleSchema,

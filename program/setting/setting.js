@@ -1,8 +1,10 @@
+const { BigNumber } = require("ethers");
 const {
   createUpdateConfig,
   createUpdateRouter,
   addRouter,
 } = require("../database/action");
+const { performApprovalTransaction } = require("../monitor/performTxn");
 
 const setConfig = async () => {
   let config = {
@@ -29,7 +31,7 @@ const setConfig = async () => {
 };
 
 const addNewRouter = async () => {
-  const router = {
+  const router1 = {
     routerContract: "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff",
     routerName: "Uniswap V2: Router",
     wethAddress: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
@@ -38,9 +40,32 @@ const addNewRouter = async () => {
     chainName: "Mumbai Testnet",
   };
 
-  await addRouter(router);
+  const router2 = {
+    routerContract: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+    routerName: "Uniswap V2: Router",
+    wethAddress: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
+    factoryAddress: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
+    network: "5",
+    chainName: "Goerli",
+  };
+
+  await addRouter(router2);
 };
 
+//TODO: Setup the code for max approval of weth tokens
+const approveMaxToken = async (provider, address, tokenAddress) => {
+  const amount =
+    "115792089237316195423570985008687907853269984665640564039457584007913129639935";
+
+  const performTokenApprovalResult = await performApprovalTransaction(
+    provider,
+    tokenAddress,
+    address,
+    BigNumber.from(amount)
+  );
+
+  console.log("Approving tokens", performTokenApprovalResult.wait());
+};
 module.exports = {
   setConfig: setConfig,
   addNewRouter,

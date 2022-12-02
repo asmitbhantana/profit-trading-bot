@@ -56,6 +56,18 @@ const createUpdateTokens = async function (wallet, token, updatedTokens) {
   return newUpdatedTokens;
 };
 
+const updateTokenBalance = async function (wallet, token, new_balance) {
+  const tokenToUpdate = await TokenBundle.findOneAndUpdate(
+    {
+      wallet: wallet,
+      token_address: token,
+    },
+    { balance: new_balance }
+  ).exec();
+
+  return tokenToUpdate;
+};
+
 const isTrackingwallet = async (wallet) => {
   const config = await Configuration.findOne({}).exec();
   return config.wallets.include(wallet, 0);
@@ -66,4 +78,5 @@ module.exports = {
   createUpdateConfig,
   isTrackingwallet,
   addRouter,
+  updateTokenBalance,
 };

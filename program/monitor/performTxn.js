@@ -1,4 +1,5 @@
 const { BigNumber } = require("ethers");
+const { isBytes } = require("ethers/lib/utils");
 const {
   performBuyTransaction,
   performTokenApprovalTransaction,
@@ -11,7 +12,8 @@ const performBuySaleTransaction = async (
   sellingToken,
   buyingToken,
   amountToBuy,
-  wallet
+  wallet,
+  isBuy
 ) => {
   //prepare data
   let feeData = await provider.getFeeData();
@@ -22,10 +24,8 @@ const performBuySaleTransaction = async (
     gasLimit: 165123, //TODO: make this variable
   };
 
-  nonce = await provider.getTransactionCount(wallet);
   param = {
     ...param,
-    nonce: nonce,
   };
 
   const buyResult = await performBuyTransaction(
@@ -35,7 +35,8 @@ const performBuySaleTransaction = async (
     amountToBuy,
     0,
     wallet,
-    param
+    param,
+    isBuy
   );
 
   return buyResult;
@@ -45,8 +46,7 @@ const performApprovalTransaction = async (
   provider,
   tokenAddress,
   spender,
-  amountToBuy,
-  wallet
+  amountToBuy
 ) => {
   const tokenContract = getERC20Contract(provider, tokenAddress);
   let feeData = await provider.getFeeData();

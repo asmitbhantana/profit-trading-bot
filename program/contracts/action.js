@@ -1,5 +1,5 @@
-const { BigNumber } = require('ethers');
-const { getRouterContract } = require('./contract');
+const { BigNumber } = require("ethers");
+const { getRouterContract } = require("./contract");
 
 /*
  * A => Buying Token
@@ -37,29 +37,62 @@ const performBuyTransaction = async (
   amountOutMin,
   to,
 
-  params
+  params,
+  isBuy
 ) => {
-  const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 100000000);
-  //Perform Swap Exact Tokens for Tokens
-  /**
+  try {
+    const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 100000000);
+    //Perform Swap Exact Tokens for Tokens
+    /**
         uint amountIn,
         uint amountOutMin,
         address[] calldata path, => [Selling Token, BuyingToken]
         address to,
         uint deadline
      */
-  const buyTransaction = await contract.swapExactTokensForTokens(
-    amountIn,
-    amountOutMin, //0
-    [sellingToken, buyingToken],
-    to,
-    timeRN,
-    {
-      ...params,
+    if (isBuy) {
+      const getAmountsIn = await contract.getAmountsIn(amountIn, [
+        sellingToken,
+        buyingToken,
+      ]);
+      console.log("getAmountsIn is", getAmountsIn);
+      amountIn = BigNumber.from(getAmountsIn[0]);
+      amountOutMin = BigNumber.from(getAmountsIn[1]);
+
+      const buyTransaction = await contract.swapTokensForExactTokens(
+        amountIn,
+        amountOutMin,
+        [sellingToken, buyingToken],
+        to,
+        timeRN,
+        {
+          ...params,
+        }
+      );
+      console.log("Preparing Transactions");
+      let buyTransactionResult = await buyTransaction.wait();
+      console.log("Transactions Result", buyTransactionResult);
+      return { ...buyTransactionResult, amount: amountIn };
+    } else {
+      const sellTransaction = await contract.swapExactTokensForTokens(
+        amountIn,
+        0, //TODO:: perform frontrun
+        [sellingToken, buyingToken],
+        to,
+        timeRN,
+        {
+          ...params,
+        }
+      );
+      console.log("Preparing Transactions");
+      let sellTransactionResult = await sellTransaction.wait();
+      console.log("Transactions Result", sellTransactionResult);
+      return { ...sellTransactionResult, amount: amountIn };
     }
-  );
-  let buyTranscationResult = await buyTransaction.wait();
-  return buyTranscationResult;
+  } catch (err) {
+    console.log("Error occured", err);
+    return { status: false };
+  }
 };
 
 const performTokenApprovalTransaction = async (
@@ -72,11 +105,21 @@ const performTokenApprovalTransaction = async (
   /**
    *
    */
-  const approveTransaction = await contract.approve(spender, value, {
-    ...params,
-  });
-  let approveTransactionResult = await approveTransaction.wait();
-  return approveTransactionResult;
+
+  try {
+    const allowance = await contract.allowance(contract.signer, spender);
+    if (allowance > 0) {
+      console.log("Token Already Approved");
+      return { status: true };
+    }
+    const approveTransaction = await contract.approve(spender, value, {
+      ...params,
+    });
+    let approveTransactionResult = await approveTransaction.wait();
+    return approveTransactionResult;
+  } catch (err) {
+    return { status: false };
+  }
 };
 
 module.exports = {
