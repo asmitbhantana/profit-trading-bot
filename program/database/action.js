@@ -69,8 +69,8 @@ const updateTokenBalance = async function (wallet, token, new_balance) {
 };
 
 const isTrackingwallet = async (wallet) => {
-  const config = await Configuration.findOne({}).exec();
-  return config.wallets.include(wallet, 0);
+  let currenConfiguration = await Configuration.findOne({}).exec();
+  return Array.from(currenConfiguration.wallets).includes(wallet, 0);
 };
 
 module.exports = {

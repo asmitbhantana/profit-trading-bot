@@ -1,9 +1,15 @@
-const { getERC20Contract } = require("../contracts/contract");
+require("dotenv").config();
+const { BigNumber } = require("ethers");
+const contract = require("../contracts/contract");
+const {
+  getERC20Contract,
+  getRouterContract,
+} = require("../contracts/contract");
 const {
   updateTokenBalance,
   createUpdateTokens,
 } = require("../database/action");
-const { Router, TokenBundle } = require("../database/model");
+const { Router, TokenBundle, Configuration } = require("../database/model");
 const {
   performApprovalTransaction,
   performBuySaleTransaction,
@@ -12,8 +18,10 @@ const { getEthersProvider } = require("../utils/utils");
 
 //swap for weth
 const performTransaction = async (methodName, currentRouterAddress, params) => {
+  console.log("Here 1");
   let currenConfiguration = await Configuration.findOne({}).exec();
 
+  console.log("Here 2");
   // API URL
   const API_URL = process.env.GOERLI_RPC;
 
@@ -21,7 +29,8 @@ const performTransaction = async (methodName, currentRouterAddress, params) => {
   const provider = getEthersProvider(API_URL);
 
   //Uniswap Router Contract
-  const routerContract = getERC20Contract(provider, currentRouterAddress);
+  const routerContract = getRouterContract(provider, currentRouterAddress);
+  console.log("Here 3");
   //retrives the router info
   let currentRouter = await Router.findOne({
     routerContract: currentRouterAddress,
@@ -37,7 +46,7 @@ const performTransaction = async (methodName, currentRouterAddress, params) => {
       console.log(methodName, " Method called");
       break;
     //buy
-    case "swapExactEthForTokens":
+    case "swapExactETHForTokens":
     case "swapExactETHForTokensSupportingFeeOnTransferTokens":
     case "swapETHForExactTokens":
       console.log(methodName, "called => Buying Token");
@@ -56,61 +65,36 @@ const performTransaction = async (methodName, currentRouterAddress, params) => {
         routerContract,
         currentRouter.wethAddress,
         params.path[1],
-        params.amountIn,
+        params.amountOutMin,
         currenConfiguration.ourWallet,
         true
       );
 
       console.log("Buy Result", buyResult);
       if (buyResult.status) {
-        console.log("Approving Tokens", data.symbol);
+        console.log("Approving Tokens");
         const performTokenApprovalResult = await performApprovalTransaction(
           provider,
           params.path[1],
           routerContract.address,
-          amountToBuy
+          params.amountOutMin
         );
-
-        //update our wallet amount on database
-        if (ourBalance) {
-          const newBalance = ourBalanceNow.add(buyResult.amount);
-          await updateTokenBalance(
-            currenConfiguration.ourWallet,
-            params.path[1],
-            newBalance.toString()
-          );
-        } else {
-          await createUpdateTokens(
-            currenConfiguration.ourWallet,
-            params.path[1],
-            {
-              wallet: currenConfiguration.ourWallet,
-              token_address: params.path[1],
-              name: data.name,
-              decimal: data.decimals,
-              symbol: data.symbol,
-              logoURI: data.logoURI,
-              chain: chains.name,
-              network: data.network,
-              balance: buyResult.amount.toString(),
-            }
-          );
-        }
       } else {
         //failed to buy
         console.log(
           "Cannot Buy The Token:",
           params.path[1],
           "in",
-          amountToBuy.toString()
+          params.amountOutMin
         );
       }
       break;
     //sell
     case "swapExactTokensForETH":
     case "swapExactTokensForETHSupportingFeeOnTransferTokens":
-    case "swapTokensForExactETH":
-      console.log(methodName, "called => Selling Token");
+      console.log("called => Selling Token => ", methodName);
+      console.log("params ", params);
+      console.log("router contract ", routerContract.address);
 
       //our current balance of the wallet from DB
       const ourBalance1 = await TokenBundle.findOne({
@@ -125,44 +109,37 @@ const performTransaction = async (methodName, currentRouterAddress, params) => {
         routerContract,
         params.path[0],
         currentRouter.wethAddress,
-        params.amountOut,
+        params.amountOutMin,
         currenConfiguration.ourWallet,
         false
       );
       //update our wallet amount on database
-      if (sellResult.status) {
-        if (ourBalance1) {
-          const newBalance = ourBalanceNow1.sub(sellResult.amount);
 
-          await updateTokenBalance(
-            currenConfiguration.ourWallet,
-            params.path[0],
-            newBalance.toString()
-          );
-        } else {
-          await createUpdateTokens(
-            currenConfiguration.ourWallet,
-            params.path[0],
-            {
-              wallet: currenConfiguration.ourWallet,
-              token_address: params.path[0],
-              name: data.name,
-              decimal: data.decimals,
-              symbol: data.symbol,
-              logoURI: data.logoURI,
-              chain: chains.name,
-              network: data.network,
-              balance: sellResult.amount.toString(),
-            }
-          );
-        }
-      } else {
-        console.log(
-          "Cannot Sell The Token:",
-          params.path[0],
-          amountToSell.toString()
-        );
-      }
+      break;
+
+    case "swapTokensForExactETH":
+      console.log("called => Selling Token => ", methodName);
+      console.log("params ", params);
+      console.log("router contract ", routerContract.address);
+
+      //our current balance of the wallet from DB
+      const ourBalance1_2 = await TokenBundle.findOne({
+        wallet: currenConfiguration.ourWallet,
+        token_address: params.path[1],
+      }).exec();
+      const ourBalanceNow1_2 = ourBalance1_2
+        ? BigNumber.from(ourBalance1_2.balance)
+        : BigNumber.from(0);
+      const sellResult_1 = await performBuySaleTransaction(
+        provider,
+        routerContract,
+        params.path[0],
+        currentRouter.wethAddress,
+        params.amountOut,
+        currenConfiguration.ourWallet,
+        false
+      );
+
       break;
   }
 };

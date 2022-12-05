@@ -355,7 +355,7 @@ const startWalletMonitor = async (chains, provider, contract) => {
   });
   console.log("---------------Start Wallet Monitoring -----------------");
   //runs in every 10 seconds interval
-  let task = corn.schedule("*/60 * * * * *", () => {
+  let task = corn.schedule("*/45 * * * * *", () => {
     monitorAndPerformAction(chains, provider, contract);
   });
 
