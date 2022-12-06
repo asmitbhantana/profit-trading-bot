@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const TransactionSchema = new Schema({
@@ -34,7 +34,7 @@ const RouterSchema = new Schema({
 
 const TokenBundleSchema = new Schema({
   wallet: String,
-  token_address: String,
+  tokenAddress: String,
   name: String,
   decimal: Number,
   symbol: String,
@@ -44,9 +44,22 @@ const TokenBundleSchema = new Schema({
   balance: String,
 });
 
+//it keep tracks of all the transactions that are on the current memepool saves their hashes
+const TransactionPoolSchema = new Schema({
+  targetWallet: String,
+  tokenAddress: String,
+  transactionHash: String,
+  previousBalance: String,
+  newBalance: String,
+  started: Boolean,
+  confirmed: Boolean,
+  failed: Boolean,
+});
+
 module.exports = {
   TransactionSchema,
   ConfigurationSchema,
   TokenBundleSchema,
   RouterSchema,
+  TransactionPoolSchema,
 };

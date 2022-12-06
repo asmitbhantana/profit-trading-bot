@@ -21,8 +21,13 @@ Configurations:
   update all the config
  */
 
-const { Configuration, TokenBundle, Router } = require("./model");
-const { RouterSchema } = require("./schema");
+const {
+  Configuration,
+  TokenBundle,
+  Router,
+  TransactionPool,
+} = require('./model');
+const { RouterSchema } = require('./schema');
 
 const createUpdateConfig = async function (config) {
   const updatedConfig = await Configuration.findOneAndUpdate({}, config, {
@@ -44,7 +49,7 @@ const createUpdateTokens = async function (wallet, token, updatedTokens) {
   const newUpdatedTokens = await TokenBundle.findOneAndUpdate(
     {
       wallet: wallet,
-      token_address: token,
+      tokenAddress: token,
     },
     updatedTokens,
     {
@@ -60,7 +65,7 @@ const updateTokenBalance = async function (wallet, token, new_balance) {
   const tokenToUpdate = await TokenBundle.findOneAndUpdate(
     {
       wallet: wallet,
-      token_address: token,
+      tokenAddress: token,
     },
     { balance: new_balance }
   ).exec();
@@ -73,10 +78,71 @@ const isTrackingwallet = async (wallet) => {
   return Array.from(currenConfiguration.wallets).includes(wallet, 0);
 };
 
+const isInPoolTransaction = async (
+  targetWallet,
+  tokenAddress,
+  previousBalance,
+  newBalance
+) => {
+  let currentPendingTransaction = await TransactionPool.findOne({
+    targetWallet: targetWallet,
+    tokenAddress: tokenAddress,
+    previousBalance: previousBalance,
+    newBalance: newBalance,
+  }).exec();
+  return currentPendingTransaction ? currentPendingTransaction.started : false;
+};
+
+const addPoolTransaction = async (
+  transactionHash,
+  targetWallet,
+  tokenAddress,
+  previousBalance,
+  newBalance
+) => {
+  const txn = new TransactionPool({
+    targetWallet: targetWallet,
+    tokenAddress: tokenAddress,
+    transactionHash: transactionHash,
+    previousBalance: previousBalance,
+    newBalance: newBalance,
+    started: true,
+    confirmed: false,
+    failed: false,
+  });
+
+  txn.save();
+  return txn;
+};
+
+const updateConfirmation = async (
+  targetWallet,
+  tokenAddress,
+  previousBalance,
+  newBalance,
+
+  failed
+) => {
+  let updatedPendingTransaction = TransactionPool.findOneAndUpdate(
+    {
+      targetWallet: targetWallet,
+      tokenAddress: tokenAddress,
+      previousBalance: previousBalance,
+      newBalance: newBalance,
+    },
+    { confirmed: true, failed: failed }
+  ).exec();
+
+  return updatedPendingTransaction;
+};
+
 module.exports = {
   createUpdateTokens,
   createUpdateConfig,
   isTrackingwallet,
   addRouter,
   updateTokenBalance,
+  isInPoolTransaction,
+  addPoolTransaction,
+  updateConfirmation,
 };

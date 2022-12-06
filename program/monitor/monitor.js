@@ -1,23 +1,25 @@
-require("dotenv").config();
-const corn = require("node-cron");
-const { Configuration, Router } = require("../database/model");
-const { BigNumber } = require("ethers");
-const { Transaction, Token, TokenBundle } = require("../database/model");
-const { performWalletScan } = require("./walletScan");
+require('dotenv').config();
+const corn = require('node-cron');
+const { Configuration, Router, TransactionPool } = require('../database/model');
+const { BigNumber } = require('ethers');
+const { Transaction, Token, TokenBundle } = require('../database/model');
+const { performWalletScan } = require('./walletScan');
 
 const {
   performBuyTransaction,
   performTokenApprovalTransaction,
-} = require("./../contracts/action");
-const { getERC20Contract } = require("../contracts/contract");
+} = require('./../contracts/action');
+const { getERC20Contract } = require('../contracts/contract');
 const {
   createUpdateTokens,
   updateTokenBalance,
-} = require("../database/action");
+  isConfirmedTransaction,
+  isInPoolTransaction,
+} = require('../database/action');
 const {
   performBuySaleTransaction,
   performApprovalTransaction,
-} = require("./performTxn");
+} = require('./performTxn');
 
 const monitorAndPerformAction = async (chains, provider, contract) => {
   //retives all tokens and wallets
@@ -45,7 +47,7 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
         let ourBalanceData = new TokenBundle({
           wallet: currenConfiguration.ourWallet,
 
-          token_address: element.token_address,
+          tokenAddress: element.tokenAddress,
           name: element.name,
           decimal: element.decimals,
           symbol: element.symbol,
@@ -61,7 +63,7 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
 
   //get all tokens to track for different wallets
   currenConfiguration.wallets.map(async (wallet) => {
-    //retive data from quicknode api
+    //retive data from moralis api
     let currentWalletData = await performWalletScan(chains, wallet);
 
     //tally changes
@@ -70,7 +72,7 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
         //previous balance of the wallet
         const previousBalance = await TokenBundle.findOne({
           wallet: wallet,
-          token_address: data.token_address,
+          tokenAddress: data.tokenAddress,
         }).exec();
 
         //no previous balance hence add this to the database
@@ -81,10 +83,10 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
 
           await Promise.all(
             updatedTokenBalance.map(async (token) => {
-              await createUpdateTokens(wallet, token.token_address, {
+              await createUpdateTokens(wallet, token.tokenAddress, {
                 wallet: wallet,
 
-                token_address: token.token_address,
+                tokenAddress: token.tokenAddress,
                 name: token.name,
                 decimal: token.decimal,
                 symbol: token.symbol,
@@ -99,39 +101,36 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
         //our current balance of the wallet from DB
         const ourBalance = await TokenBundle.findOne({
           wallet: currenConfiguration.ourWallet,
-          token_address: data.token_address,
+          tokenAddress: data.tokenAddress,
         }).exec();
 
         //not the stable coins, weth etc.
         if (
-          !currenConfiguration.untrackedTokens.includes(
-            data.token_address,
-            0
-          ) &&
+          !currenConfiguration.untrackedTokens.includes(data.tokenAddress, 0) &&
           currentRouter.wethAddress.toLowerCase() !=
-            data.token_address.toLowerCase()
+            data.tokenAddress.toLowerCase()
         ) {
           ourBalance
             ? console.log(
-                "-----------\nOur Balance    :",
+                '-----------\nOur Balance    :',
                 ourBalance.symbol,
                 ourBalance.balance
               )
-            : console.log("-----------\nOur Balance:    XXX 0");
+            : console.log('-----------\nOur Balance:    XXX 0');
 
           //Print
           //Data from database
           console.log(
-            "Prev Balance   :",
+            'Prev Balance   :',
             previousBalance.symbol,
             previousBalance.balance
           );
           //Data from the current wallet
           console.log(
-            "Current Balance:",
+            'Current Balance:',
             data.symbol,
             data.balance,
-            "\n ----------"
+            '\n ----------'
           );
 
           const previousBalanceAmount = previousBalance
@@ -164,25 +163,25 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
                 .sub(previousBalanceAmount)
                 .mul(BigNumber.from(100))
                 .div(previousBalanceAmount);
-              amountToBuy = ourBalanceNow.mul(percentageChange);
+              amountToBuy = ourBalanceNow.mul(percentageChange).div(100);
             }
-            console.log("Buy Percentage change", percentageChange.toString());
+            console.log('Buy Percentage change', percentageChange.toString());
 
             if (amountToBuy.isZero()) return;
             //perform buy same
 
-            //perform the bying of same amount if our balance is 0
+            //perform the bying of change amount if our balance is 0
             if (ourBalanceNow.isZero()) {
-              amountToBuy = currentBalanceAmount;
+              amountToBuy = currentBalanceAmount.sub(previousBalanceAmount);
             }
 
             //perform buy
             //execute approval of tokens
             console.log(
-              "-----> Buying Token ",
+              '-----> Buying Token ',
               data.symbol,
-              "in",
-              amountToBuy.toString() + "<----------"
+              'in',
+              amountToBuy.toString() + '<----------'
             );
 
             //buy
@@ -191,18 +190,25 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
               provider,
               contract,
               currentRouter.wethAddress,
-              data.token_address,
+              data.tokenAddress,
               amountToBuy,
               currenConfiguration.ourWallet,
-              true
+              true,
+
+              {
+                targetWallet: wallet,
+                tokenAddress: data.tokenAddress,
+                previousBalance: previousBalanceAmount.toString(),
+                newBalance: currentBalanceAmount.toString(),
+              }
             );
-            console.log("Buy Result", buyResult);
+            console.log('Buy Result', buyResult);
             if (buyResult.status) {
-              console.log("Approving Tokens", data.symbol);
+              console.log('Approving Tokens', data.symbol);
               const performTokenApprovalResult =
                 await performApprovalTransaction(
                   provider,
-                  data.token_address,
+                  data.tokenAddress,
                   contract.address,
                   amountToBuy
                 );
@@ -212,16 +218,16 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
                 const newBalance = ourBalanceNow.add(buyResult.amount);
                 await updateTokenBalance(
                   currenConfiguration.ourWallet,
-                  data.token_address,
+                  data.tokenAddress,
                   newBalance.toString()
                 );
               } else {
                 await createUpdateTokens(
                   currenConfiguration.ourWallet,
-                  data.token_address,
+                  data.tokenAddress,
                   {
                     wallet: currenConfiguration.ourWallet,
-                    token_address: data.token_address,
+                    tokenAddress: data.tokenAddress,
                     name: data.name,
                     decimal: data.decimals,
                     symbol: data.symbol,
@@ -235,9 +241,9 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
             } else {
               //failed to buy
               console.log(
-                "Cannot Buy The Token:",
-                data.token_address,
-                "in",
+                'Cannot Buy The Token:',
+                data.tokenAddress,
+                'in',
                 amountToBuy.toString()
               );
             }
@@ -262,30 +268,31 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
                 ? (percentageChange = BigNumber.from(100))
                 : BigNumber.from(percentageChange);
 
-              amountToSell = ourBalanceNow.mul(percentageChange);
+              amountToSell = ourBalanceNow.mul(percentageChange).div(100);
             }
-            console.log("Sell Percentage change", percentageChange.toString());
+            console.log('Sell Percentage change', percentageChange.toString());
 
             if (ourBalance == null) return;
 
             //perform sell
 
             if (ourBalanceNow.isZero()) return;
-            else if (amountToSell.gt(ourBalanceNow))
-              amountToSell = ourBalanceNow;
+
+            //sell all our tokens if the percentage change amountis greater than our balance
+            if (amountToSell.gt(ourBalanceNow)) amountToSell = ourBalanceNow;
 
             console.log(
-              "----> Selling Token " +
+              '----> Selling Token ' +
                 data.symbol +
-                " in " +
+                ' in ' +
                 amountToSell.toString() +
-                "<------"
+                '<------'
             );
 
             const sellResult = await performBuySaleTransaction(
               provider,
               contract,
-              data.token_address,
+              data.tokenAddress,
               currentRouter.wethAddress,
               amountToSell,
               currenConfiguration.ourWallet,
@@ -299,16 +306,16 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
 
                 await updateTokenBalance(
                   currenConfiguration.ourWallet,
-                  data.token_address,
+                  data.tokenAddress,
                   newBalance.toString()
                 );
               } else {
                 await createUpdateTokens(
                   currenConfiguration.ourWallet,
-                  data.token_address,
+                  data.tokenAddress,
                   {
                     wallet: currenConfiguration.ourWallet,
-                    token_address: data.token_address,
+                    tokenAddress: data.tokenAddress,
                     name: data.name,
                     decimal: data.decimals,
                     symbol: data.symbol,
@@ -321,18 +328,18 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
               }
             } else {
               console.log(
-                "Cannot Sell The Token:",
-                data.token_address,
+                'Cannot Sell The Token:',
+                data.tokenAddress,
                 amountToSell.toString()
               );
             }
           }
 
           //update track wallet database
-          await createUpdateTokens(wallet, data.token_address, {
+          await createUpdateTokens(wallet, data.tokenAddress, {
             wallet: wallet,
 
-            token_address: data.token_address,
+            tokenAddress: data.tokenAddress,
             name: data.name,
             decimal: data.decimals,
             symbol: data.symbol,
@@ -348,14 +355,14 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
 };
 
 const startWalletMonitor = async (chains, provider, contract) => {
-  const Moralis = require("moralis").default;
+  const Moralis = require('moralis').default;
   const MORALIS_API = process.env.MORALIS_API;
   await Moralis.start({
     apiKey: MORALIS_API,
   });
-  console.log("---------------Start Wallet Monitoring -----------------");
+  console.log('---------------Start Wallet Monitoring -----------------');
   //runs in every 10 seconds interval
-  let task = corn.schedule("*/45 * * * * *", () => {
+  let task = corn.schedule('*/45 * * * * *', () => {
     monitorAndPerformAction(chains, provider, contract);
   });
 

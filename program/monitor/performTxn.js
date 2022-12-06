@@ -1,10 +1,15 @@
-const { BigNumber } = require("ethers");
-const { isBytes } = require("ethers/lib/utils");
+const { BigNumber } = require('ethers');
+const { isBytes } = require('ethers/lib/utils');
 const {
   performBuyTransaction,
   performTokenApprovalTransaction,
-} = require("../contracts/action");
-const { getERC20Contract } = require("../contracts/contract");
+} = require('../contracts/action');
+const { getERC20Contract } = require('../contracts/contract');
+const {
+  isInPoolTransaction,
+  addPoolTransaction,
+  updateConfirmation,
+} = require('../database/action');
 
 const performBuySaleTransaction = async (
   provider,
@@ -20,7 +25,7 @@ const performBuySaleTransaction = async (
 
   let param = {
     type: 2,
-    maxFeePerGas: feeData["maxFeePerGas"],
+    maxFeePerGas: feeData['maxFeePerGas'],
     gasLimit: 165123, //TODO: make this variable
   };
 
@@ -28,7 +33,7 @@ const performBuySaleTransaction = async (
     ...param,
   };
 
-  const buyResult = await performBuyTransaction(
+  const buyResultData = await performBuyTransaction(
     contract,
     sellingToken,
     buyingToken,
@@ -36,10 +41,58 @@ const performBuySaleTransaction = async (
     0,
     wallet,
     param,
-    isBuy
+    isBuy,
+
+    //optional params
+    {
+      targetWallet,
+      tokenAddress,
+      previousBalance,
+      newBalance,
+    }
   );
 
-  return buyResult;
+  let { buyResult, amountIn } = buyResultData;
+
+  //check pool if the transaction is already on pool
+  const isInPool = await isInPoolTransaction(
+    targetWallet,
+    tokenAddress,
+    previousBalance,
+    newBalance
+  );
+
+  if (isInPool) return;
+  else {
+    const newTx = await addPoolTransaction(
+      buyResult.txHash,
+      targetWallet,
+      tokenAddress,
+      previousBalance,
+      newBalance
+    );
+  }
+  let buyTransactionResult = await buyResult.wait();
+  console.log('Transactions Result', buyTransactionResult);
+
+  if (buyTransactionResult.status) {
+    updateConfirmation(
+      targetWallet,
+      tokenAddress,
+      previousBalance,
+      newBalance,
+      false
+    );
+  } else {
+    updateConfirmation(
+      targetWallet,
+      tokenAddress,
+      previousBalance,
+      newBalance,
+      true
+    );
+  }
+  return { ...buyTransactionResult, amount: amountIn };
 };
 
 const performApprovalTransaction = async (
@@ -53,7 +106,7 @@ const performApprovalTransaction = async (
 
   let param = {
     type: 2,
-    maxFeePerGas: feeData["maxFeePerGas"],
+    maxFeePerGas: feeData['maxFeePerGas'],
     gasLimit: 46568, //TODO: make this variable
   };
 
