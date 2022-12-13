@@ -3,19 +3,20 @@ const {
   ConfigurationSchema,
   TokenBundleSchema,
   RouterSchema,
-} = require('./schema');
-const mongoose = require('mongoose');
+  TransactionPoolSchema,
+} = require("./schema");
+const mongoose = require("mongoose");
 
-const Transaction = mongoose.model('Transaction', TransactionSchema);
+const Transaction = mongoose.model("Transaction", TransactionSchema);
 
-const TokenBundle = mongoose.model('TokenBundle', TokenBundleSchema);
+const TokenBundle = mongoose.model("TokenBundle", TokenBundleSchema);
 
-const Configuration = mongoose.model('Configuration', ConfigurationSchema);
+const Configuration = mongoose.model("Configuration", ConfigurationSchema);
 
-const Router = mongoose.model('Router', RouterSchema);
+const Router = mongoose.model("Router", RouterSchema);
 
 const TransactionPool = mongoose.model(
-  'TransactionPool',
+  "TransactionPool",
   TransactionPoolSchema
 );
 

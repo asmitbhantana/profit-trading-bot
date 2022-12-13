@@ -1,7 +1,4 @@
-const { BigNumber } = require('ethers');
-const { performBuySaleTransaction } = require('../monitor/performTxn');
-const { getRouterContract } = require('./contract');
-
+const { BigNumber } = require("ethers");
 /*
  * A => Buying Token
  * B => Selling Token
@@ -56,13 +53,12 @@ const performBuyTransaction = async (
         sellingToken,
         buyingToken,
       ]);
-      console.log('getAmountsIn is', getAmountsIn);
       amountIn = BigNumber.from(getAmountsIn[0]);
       amountOutMin = BigNumber.from(getAmountsIn[1]);
 
       const buyTransaction = await contract.swapTokensForExactTokens(
-        amountIn,
         amountOutMin,
+        amountIn,
         [sellingToken, buyingToken],
         to,
         timeRN,
@@ -71,7 +67,7 @@ const performBuyTransaction = async (
         }
       );
 
-      return { buyTransaction, amountIn };
+      return [buyTransaction, amountIn];
     } else {
       const sellTransaction = await contract.swapExactTokensForTokens(
         amountIn,
@@ -84,11 +80,11 @@ const performBuyTransaction = async (
         }
       );
 
-      return { sellTransaction, amountIn };
+      return [sellTransaction, amountIn];
     }
   } catch (err) {
-    console.log('Error occured', err);
-    return { status: false };
+    console.log("Error occured", err);
+    return [{ status: false }, 0];
   }
 };
 
@@ -106,7 +102,7 @@ const performTokenApprovalTransaction = async (
   try {
     const allowance = await contract.allowance(contract.signer, spender);
     if (allowance > 0) {
-      console.log('Token Already Approved');
+      console.log("Token Already Approved");
       return { status: true };
     }
     const approveTransaction = await contract.approve(spender, value, {
