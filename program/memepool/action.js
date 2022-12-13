@@ -2,7 +2,6 @@ const express = require("express");
 const { performBuyTransaction } = require("../contracts/action");
 const { isTrackingwallet } = require("../database/action");
 const { Router } = require("../database/model");
-const { performBuySaleTransaction } = require("../monitor/performTxn");
 const { performTransaction } = require("./performTxn");
 
 //connect to the database

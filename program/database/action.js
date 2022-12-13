@@ -26,8 +26,9 @@ const {
   TokenBundle,
   Router,
   TransactionPool,
-} = require('./model');
-const { RouterSchema } = require('./schema');
+  Token,
+} = require("./model");
+const { RouterSchema } = require("./schema");
 
 const createUpdateConfig = async function (config) {
   const updatedConfig = await Configuration.findOneAndUpdate({}, config, {
@@ -59,6 +60,25 @@ const createUpdateTokens = async function (wallet, token, updatedTokens) {
   ).exec();
 
   return newUpdatedTokens;
+};
+
+const createUpdateSlippageFee = async (
+  tokenAddress,
+  slippagePercentage,
+  feePercentage
+) => {
+  const newUpdatedSlippage = await Token.findOneAndUpdate(
+    {
+      tokenAddress: tokenAddress,
+    },
+    {
+      slippagePercentage,
+      feePercentage,
+    },
+    { new: false, upsert: true }
+  ).exec();
+
+  return newUpdatedSlippage;
 };
 
 const updateTokenBalance = async function (wallet, token, new_balance) {
@@ -139,10 +159,12 @@ const updateConfirmation = async (
 module.exports = {
   createUpdateTokens,
   createUpdateConfig,
+  createUpdateSlippageFee,
   isTrackingwallet,
   addRouter,
   updateTokenBalance,
   isInPoolTransaction,
   addPoolTransaction,
   updateConfirmation,
+  updateTokenBalance,
 };

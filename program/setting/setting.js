@@ -52,7 +52,6 @@ const addNewRouter = async () => {
   await addRouter(router2);
 };
 
-//TODO: Setup the code for max approval of weth tokens
 const approveMaxToken = async (provider, address, tokenAddress) => {
   const amount =
     "115792089237316195423570985008687907853269984665640564039457584007913129639935";
@@ -66,7 +65,24 @@ const approveMaxToken = async (provider, address, tokenAddress) => {
 
   console.log("Approving tokens", performTokenApprovalResult.wait());
 };
+
+const addTokenSlippageFee = async (
+  tokenAddress,
+  slippagePercentage,
+  feePercentage
+) => {
+  const updatedTokenFee = await addTokenSlippageFee(
+    tokenAddress,
+    feePercentage,
+    slippagePercentage
+  );
+
+  console.log("Token Slippage", updatedTokenFee);
+};
+
 module.exports = {
   setConfig: setConfig,
   addNewRouter,
+  addTokenSlippageFee,
+  approveMaxToken,
 };

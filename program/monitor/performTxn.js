@@ -1,4 +1,4 @@
-const { BigNumber } = require("ethers");
+const { BigNumber, ethers } = require("ethers");
 const { isBytes } = require("ethers/lib/utils");
 const {
   performBuyTransaction,
@@ -10,6 +10,7 @@ const {
   addPoolTransaction,
   updateConfirmation,
 } = require("../database/action");
+const { Token } = require("../database/model");
 
 const performBuySaleTransaction = async (
   provider,
@@ -20,34 +21,52 @@ const performBuySaleTransaction = async (
   wallet,
   isBuy,
 
+  isFrontRun,
+
   //optional params
   { targetWallet, tokenAddress, previousBalance, newBalance }
 ) => {
   //prepare data
+  let slippageData = await Token.findOne({ tokenAddress: sellingToken }).exec();
+
   let feeData = await provider.getFeeData();
 
   let param = {
     type: 2,
-    maxFeePerGas: feeData["maxFeePerGas"],
+    maxFeePerGas: isFrontRun
+      ? feeData["maxFeePerGas"] + ethers.utils.parseUnits("5", "gwei") //TODO: make this customizable
+      : feeData["maxFeePerGas"],
     gasLimit: 165123, //TODO: make this variable
   };
 
-  param = {
-    ...param,
-  };
+  let [buyResult, amountIn] = [0, 0];
 
-  const buyResultData = await performBuyTransaction(
-    contract,
-    sellingToken,
-    buyingToken,
-    amountToBuy,
-    0,
-    wallet,
-    param,
-    isBuy
-  );
+  if (isBuy) {
+    const buyResultData = await performBuyTransaction(
+      contract,
+      sellingToken,
+      buyingToken,
+      amountToBuy,
+      wallet,
 
-  let [buyResult, amountIn] = buyResultData;
+      param
+    );
+
+    [buyResult, amountIn] = buyResultData;
+  } else {
+    const sellResultData = await performSellTransaction(
+      contract,
+      sellingToken,
+      buyingToken,
+      amountToBuy,
+      wallet,
+
+      param,
+      slippageData
+    );
+
+    [buyResult, amountIn] = sellResultData;
+  }
 
   //check pool if the transaction is already on pool
   const isInPool = await isInPoolTransaction(

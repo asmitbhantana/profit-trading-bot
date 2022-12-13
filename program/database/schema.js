@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const TransactionSchema = new Schema({
@@ -56,10 +56,18 @@ const TransactionPoolSchema = new Schema({
   failed: Boolean,
 });
 
+const TokenSchema = new Schema({
+  tokenAddress: String,
+  sellingFeePercentage: String, //100 = 10
+  slippagePercentage: String, //101 = 10.1
+  buyingFeePercentage: String, //102 = 10.2
+});
+
 module.exports = {
   TransactionSchema,
   ConfigurationSchema,
   TokenBundleSchema,
   RouterSchema,
   TransactionPoolSchema,
+  TokenSchema,
 };

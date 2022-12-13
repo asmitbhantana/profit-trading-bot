@@ -4,6 +4,7 @@ const {
   TokenBundleSchema,
   RouterSchema,
   TransactionPoolSchema,
+  TokenSchema,
 } = require("./schema");
 const mongoose = require("mongoose");
 
@@ -20,10 +21,13 @@ const TransactionPool = mongoose.model(
   TransactionPoolSchema
 );
 
+const Token = mongoose.model("Token", TokenSchema);
+
 module.exports = {
   Transaction,
   TokenBundle,
   Configuration,
   Router,
   TransactionPool,
+  Token,
 };

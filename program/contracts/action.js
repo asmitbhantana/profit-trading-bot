@@ -1,45 +1,20 @@
 const { BigNumber } = require("ethers");
-/*
- * A => Buying Token
- * B => Selling Token
- */
+const { calculateBudget } = require("../budget/budget");
 
-/**
- * Token Address A, buying token Address
- * Token Address B, selling token for buying A
- *
- */
-
-/*
- * Example
- * selling shiba inu means buying weth and
- * buying shiba inu means selling weth
- *
- * maxPriorityFeePerGas: feeData["maxPriorityFeePerGas"], // Recommended maxPriorityFeePerGas
- * maxFeePerGas: feeData["maxFeePerGa
- */
-
-/**
- * 
-    value: ethers.utils.parseEther("1"),
-    type: 2,
-    maxFeePerGas: ethers.utils.parseUnits("30", "gwei"),
-    maxPriorityFeePerGas: ethers.utils.parseUnits("3", "gwei"),
-    gasLimit: 35_000,
- */
-const performBuyTransaction = async (
+//it performs the selling of our tokens
+const performSellTransaction = async (
   contract,
   sellingToken,
   buyingToken,
-  amountIn,
-  amountOutMin,
+  amountOut,
   to,
 
   params,
-  isBuy
+  slippageData
 ) => {
+  const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 100000000);
+
   try {
-    const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 100000000);
     //Perform Swap Exact Tokens for Tokens
     /**
         uint amountIn,
@@ -48,42 +23,97 @@ const performBuyTransaction = async (
         address to,
         uint deadline
      */
-    if (isBuy) {
-      const getAmountsIn = await contract.getAmountsIn(amountIn, [
-        sellingToken,
-        buyingToken,
-      ]);
-      amountIn = BigNumber.from(getAmountsIn[0]);
-      amountOutMin = BigNumber.from(getAmountsIn[1]);
 
-      const buyTransaction = await contract.swapTokensForExactTokens(
-        amountOutMin,
-        amountIn,
-        [sellingToken, buyingToken],
-        to,
-        timeRN,
-        {
-          ...params,
-        }
-      );
+    let amountIn = BigNumber.from("0");
+    let slippagePercentage = BigNumber.from(slippageData.slippagePercentage);
+    let feePercentage = BigNumber.from(slippageData.sellingFeePercentage);
 
-      return [buyTransaction, amountIn];
-    } else {
-      const sellTransaction = await contract.swapExactTokensForTokens(
-        amountIn,
-        0, //TODO:: perform frontrun
-        [sellingToken, buyingToken],
-        to,
-        timeRN,
-        {
-          ...params,
-        }
-      );
+    let amountAfterSlippage = amountOut
+      .sub(amountOut.mul(slippagePercentage).div(1000))
+      .sub(amountOut.mul(feePercentage).div(1000));
 
-      return [sellTransaction, amountIn];
-    }
+    const getAmountsOut = await contract.getAmountsOut(amountAfterSlippage, [
+      buyingToken,
+      sellingToken,
+    ]);
+
+    amountOut = getAmountsOut[0]; //total token amount
+    amountIn = getAmountsOut[1]; //total weth amount
+
+    const sellTransaction = await contract.swapExactTokensForTokens(
+      amountOut,
+      amountIn,
+      [sellingToken, buyingToken],
+      to,
+      timeRN,
+      {
+        ...params,
+      }
+    );
+
+    return [sellTransaction, amountOut];
   } catch (err) {
-    console.log("Error occured", err);
+    console.log("Error occurred on selling", err);
+    return [{ status: false }, 0];
+  }
+};
+
+const performBuyTransaction = async (
+  contract,
+  sellingToken,
+  buyingToken,
+  amountIn,
+  to,
+
+  params
+) => {
+  //swap tokens for exact tokens
+  //we need to swap token for exact number of other tokens
+  //amount out is fix
+
+  const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 100000000);
+
+  try {
+    let amountOutMin = BigNumber.from("0");
+    let slippagePercentage = BigNumber.from(slippageData.slippagePercentage);
+    let feePercentage = BigNumber.from(slippageData.buyingFeePercentage);
+    const amountInWithSlippage = amountIn
+      .sub(amountOut.mul(slippagePercentage).div(1000))
+      .add(amountOut.mul(feePercentage).div(1000));
+
+    const getAmountsIn = await contract.getAmountsIn(amountInWithSlippage, [
+      sellingToken,
+      buyingToken,
+    ]);
+    amountOutMin = BigNumber.from(getAmountsIn[0]); //amount of weth
+    amountIn = BigNumber.from(getAmountsIn[1]); //exact amount of token
+
+    //perform budget tracking here since we are buying here !
+    const calculatedAmountOut = calculateBudget(amountOutMin);
+    //we have different amount of weth to spent
+    if (calculatedAmountOut.toString() != amountOutMin.toString()) {
+      const getAmountsIn2 = await contract.getAmountsOut(calculatedAmountOut, [
+        buyingToken,
+        sellingToken,
+      ]);
+      amountIn = BigNumber.from(getAmountsIn2[0]); //exact amount of token
+      amountOutMin = BigNumber.from(getAmountsIn2[1]); //weth
+    }
+
+    //calculate with slippage
+    const buyTransaction = await contract.swapTokensForExactTokens(
+      amountOutMin,
+      amountIn,
+      [sellingToken, buyingToken],
+      to,
+      timeRN,
+      {
+        ...params,
+      }
+    );
+    return [buyTransaction, amountOutMin];
+  } catch (err) {
+    console.log("Error occurred on buying!", err);
     return [{ status: false }, 0];
   }
 };
@@ -114,8 +144,8 @@ const performTokenApprovalTransaction = async (
     return { status: false };
   }
 };
-
 module.exports = {
   performBuyTransaction,
   performTokenApprovalTransaction,
+  performSellTransaction,
 };

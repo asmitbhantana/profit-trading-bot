@@ -189,6 +189,8 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
               currenConfiguration.ourWallet,
               true,
 
+              false,
+
               {
                 targetWallet: wallet,
                 tokenAddress: data.token_address,
@@ -294,6 +296,7 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
               currentRouter.wethAddress,
               amountToSell,
               currenConfiguration.ourWallet,
+              false,
               false,
 
               {

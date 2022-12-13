@@ -9,10 +9,7 @@ const { getEthersProvider } = require("./utils/utils");
 const { getRouterContract } = require("./contracts/contract");
 const { susiswapAddress } = require("./contracts/const");
 const { setConfig, addRouter, addNewRouter } = require("./setting/setting");
-const {
-  performBuySaleTransaction,
-  performApprovalTransaction,
-} = require("./monitor/performTxn");
+
 const { BigNumber } = require("ethers");
 
 //Set Configuration
