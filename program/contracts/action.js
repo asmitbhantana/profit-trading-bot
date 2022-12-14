@@ -25,12 +25,13 @@ const performSellTransaction = async (
      */
 
     let amountIn = BigNumber.from("0");
+    let roundingAmount = BigNumber.from("1000");
     let slippagePercentage = BigNumber.from(slippageData.slippagePercentage);
     let feePercentage = BigNumber.from(slippageData.sellingFeePercentage);
 
     let amountAfterSlippage = amountOut
-      .sub(amountOut.mul(slippagePercentage).div(1000))
-      .sub(amountOut.mul(feePercentage).div(1000));
+      .sub(amountOut.mul(slippagePercentage).div(roundingAmount))
+      .sub(amountOut.mul(feePercentage).div(roundingAmount));
 
     const getAmountsOut = await contract.getAmountsOut(amountAfterSlippage, [
       buyingToken,
@@ -65,7 +66,8 @@ const performBuyTransaction = async (
   amountIn,
   to,
 
-  params
+  params,
+  slippageData
 ) => {
   //swap tokens for exact tokens
   //we need to swap token for exact number of other tokens
@@ -75,11 +77,13 @@ const performBuyTransaction = async (
 
   try {
     let amountOutMin = BigNumber.from("0");
+    let roundingAmount = BigNumber.from("1000");
+
     let slippagePercentage = BigNumber.from(slippageData.slippagePercentage);
     let feePercentage = BigNumber.from(slippageData.buyingFeePercentage);
     const amountInWithSlippage = amountIn
-      .sub(amountOut.mul(slippagePercentage).div(1000))
-      .add(amountOut.mul(feePercentage).div(1000));
+      .sub(amountOut.mul(slippagePercentage).div(roundingAmount))
+      .add(amountOut.mul(feePercentage).div(roundingAmount));
 
     const getAmountsIn = await contract.getAmountsIn(amountInWithSlippage, [
       sellingToken,

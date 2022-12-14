@@ -28,23 +28,33 @@ const performTransaction = async (methodName, currentRouterAddress, params) => {
 
   //Uniswap Router Contract
   const routerContract = getRouterContract(provider, currentRouterAddress);
+
   //retrives the router info
   let currentRouter = await Router.findOne({
     routerContract: currentRouterAddress,
   }).exec();
 
+  let wethAddress = currentRouter.wethAddress;
+
+  //retrive the token info
+
   //TODO: check router address
   switch (methodName) {
     //may be buy or sell
     case "swapExactTokensForTokens":
+      break;
     case "swapExactTokensForTokensSupportingFeeOnTransferTokens":
+      break;
     case "swapExactTokenForExactTokens":
+      break;
     case "swapTokensForExactTokens":
       console.log(methodName, " Method called");
       break;
     //buy
     case "swapExactETHForTokens":
+      break;
     case "swapExactETHForTokensSupportingFeeOnTransferTokens":
+      break;
     case "swapETHForExactTokens":
       console.log(methodName, "called => Buying Token");
 
@@ -88,6 +98,7 @@ const performTransaction = async (methodName, currentRouterAddress, params) => {
       break;
     //sell
     case "swapExactTokensForETH":
+      break;
     case "swapExactTokensForETHSupportingFeeOnTransferTokens":
       console.log("called => Selling Token => ", methodName);
       console.log("params ", params);

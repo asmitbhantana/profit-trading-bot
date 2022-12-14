@@ -33,11 +33,15 @@ const performBuySaleTransaction = async (
 
   let param = {
     type: 2,
-    maxFeePerGas: isFrontRun
-      ? feeData["maxFeePerGas"] + ethers.utils.parseUnits("5", "gwei") //TODO: make this customizable
-      : feeData["maxFeePerGas"],
+    maxFeePerGas: feeData["maxFeePerGas"],
+    maxPriorityFeePerGas: isFrontRun
+      ? ethers.utils.parseUnits("5", "gwei")
+      : ethers.utils.parseUnits("2", "gwei"), //TODO: make this customizable
     gasLimit: 165123, //TODO: make this variable
   };
+
+  //fee used = gasLimit * fee per gas = gwei
+  //our limit <= fee used  => perform transaction
 
   let [buyResult, amountIn] = [0, 0];
 
@@ -49,7 +53,8 @@ const performBuySaleTransaction = async (
       amountToBuy,
       wallet,
 
-      param
+      param,
+      slippageData
     );
 
     [buyResult, amountIn] = buyResultData;
