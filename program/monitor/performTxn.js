@@ -22,12 +22,14 @@ const performBuySaleTransaction = async (
   isBuy,
 
   isFrontRun,
+  maxGasLimit,
+  maxPriorityFee,
 
   //optional params
   { targetWallet, tokenAddress, previousBalance, newBalance }
 ) => {
   //prepare data
-  let slippageData = await Token.findOne({ tokenAddress: sellingToken }).exec();
+  let slippageData = await Token.findOne({}).exec();
 
   let feeData = await provider.getFeeData();
 
@@ -35,13 +37,10 @@ const performBuySaleTransaction = async (
     type: 2,
     maxFeePerGas: feeData["maxFeePerGas"],
     maxPriorityFeePerGas: isFrontRun
-      ? ethers.utils.parseUnits("5", "gwei")
-      : ethers.utils.parseUnits("2", "gwei"), //TODO: make this customizable
-    gasLimit: 165123, //TODO: make this variable
+      ? maxPriorityFee
+      : ethers.utils.parseUnits("2", "gwei"),
+    gasLimit: maxGasLimit,
   };
-
-  //fee used = gasLimit * fee per gas = gwei
-  //our limit <= fee used  => perform transaction
 
   let [buyResult, amountIn] = [0, 0];
 
@@ -126,7 +125,7 @@ const performApprovalTransaction = async (
   let param = {
     type: 2,
     maxFeePerGas: feeData["maxFeePerGas"],
-    gasLimit: 46568, //TODO: make this variable
+    gasLimit: maxPriorityFee,
   };
 
   const tokenApprovalResult = await performTokenApprovalTransaction(

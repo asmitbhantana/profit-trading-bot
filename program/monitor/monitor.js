@@ -188,8 +188,9 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
               amountToBuy,
               currenConfiguration.ourWallet,
               true,
-
               false,
+              currenConfiguration.maxGasLimit,
+              currenConfiguration.maxPriorityFee,
 
               {
                 targetWallet: wallet,
@@ -298,6 +299,8 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
               currenConfiguration.ourWallet,
               false,
               false,
+              currenConfiguration.maxGasLimit,
+              currenConfiguration.maxPriorityFee,
 
               {
                 targetWallet: wallet,

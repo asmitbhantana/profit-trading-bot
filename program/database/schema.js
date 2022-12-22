@@ -20,6 +20,8 @@ const ConfigurationSchema = new Schema({
   tokens: [String],
   wallets: [String],
   untrackedTokens: [String],
+  maxGasLimit: String,
+  maxPriorityFee: String,
 });
 
 const RouterSchema = new Schema({
@@ -57,7 +59,6 @@ const TransactionPoolSchema = new Schema({
 });
 
 const TokenSchema = new Schema({
-  tokenAddress: String,
   sellingFeePercentage: String, //100 = 10
   slippagePercentage: String, //101 = 10.1
   buyingFeePercentage: String, //102 = 10.2

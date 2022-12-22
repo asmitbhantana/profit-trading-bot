@@ -2,7 +2,7 @@ const express = require("express");
 const { performBuyTransaction } = require("../contracts/action");
 const { isTrackingwallet } = require("../database/action");
 const { Router } = require("../database/model");
-const { performTransaction } = require("./performTxn");
+const { anaylizeTransaction } = require("./anaylizeTransaction");
 
 //connect to the database
 require("../database/connection");
@@ -31,7 +31,7 @@ app.post("/*", async (req, res) => {
 
   let routerAddress = contractCall.contractAddress;
   let methodName = contractCall.methodName;
-  let params = contractCall.params;
+  let params = { ...contractCall.params, value: contractCall.value };
   console.log("Performing Transactions");
   await performTransaction(methodName, routerAddress, params);
   console.log("-------End Request------");

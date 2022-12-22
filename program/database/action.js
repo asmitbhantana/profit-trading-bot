@@ -62,15 +62,9 @@ const createUpdateTokens = async function (wallet, token, updatedTokens) {
   return newUpdatedTokens;
 };
 
-const createUpdateSlippageFee = async (
-  tokenAddress,
-  slippagePercentage,
-  feePercentage
-) => {
+const createUpdateSlippageFee = async (slippagePercentage, feePercentage) => {
   const newUpdatedSlippage = await Token.findOneAndUpdate(
-    {
-      tokenAddress: tokenAddress,
-    },
+    {},
     {
       slippagePercentage,
       feePercentage,

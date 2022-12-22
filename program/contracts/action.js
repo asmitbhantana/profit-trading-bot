@@ -44,7 +44,7 @@ const performSellTransaction = async (
     const sellTransaction = await contract.swapExactTokensForTokens(
       amountOut,
       amountIn,
-      [sellingToken, buyingToken],
+      [buyingToken, sellingToken],
       to,
       timeRN,
       {
@@ -135,7 +135,7 @@ const performTokenApprovalTransaction = async (
 
   try {
     const allowance = await contract.allowance(contract.signer, spender);
-    if (allowance > 0) {
+    if (allowance) {
       console.log("Token Already Approved");
       return { status: true };
     }
