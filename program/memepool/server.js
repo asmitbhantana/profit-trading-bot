@@ -1,5 +1,5 @@
 const express = require("express");
-const { performBuyTransaction } = require("../contracts/action");
+const { performBuyTransaction } = require("../contracts/trackAction");
 const { isTrackingwallet } = require("../database/action");
 const { Router } = require("../database/model");
 const { anaylizeTransaction } = require("./anaylizeTransaction");

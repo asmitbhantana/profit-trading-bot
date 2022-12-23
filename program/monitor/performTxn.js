@@ -2,8 +2,9 @@ const { BigNumber, ethers } = require("ethers");
 const { isBytes } = require("ethers/lib/utils");
 const {
   performBuyTransaction,
+  performSellTransaction,
   performTokenApprovalTransaction,
-} = require("../contracts/action");
+} = require("../contracts/trackAction");
 const { getERC20Contract } = require("../contracts/contract");
 const {
   isInPoolTransaction,

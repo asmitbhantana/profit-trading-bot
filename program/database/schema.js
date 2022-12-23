@@ -64,6 +64,20 @@ const TokenSchema = new Schema({
   buyingFeePercentage: String, //102 = 10.2
 });
 
+const TransactionsDoneSchema = new Schema({
+  txnHash: String,
+  ourTxnHash: String,
+  network: String,
+  from: String,
+  to: String,
+  value: String,
+  originalGasLimit: String,
+  gasLimit: String,
+  methodName: String,
+  params: String,
+  createdAt: { type: Date, default: Date.now },
+});
+
 module.exports = {
   TransactionSchema,
   ConfigurationSchema,
@@ -71,4 +85,5 @@ module.exports = {
   RouterSchema,
   TransactionPoolSchema,
   TokenSchema,
+  TransactionsDoneSchema,
 };
