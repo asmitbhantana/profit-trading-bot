@@ -7,7 +7,7 @@ const { BigNumber } = require("ethers");
 const { updateTokenBalance } = require("../database/action");
 const { TransactionDone, TokenBundle } = require("../database/model");
 
-const performSaleTransaction = async (
+const performBuySaleTransaction = async (
   provider,
   contract,
   sellingToken,
@@ -36,7 +36,7 @@ const performSaleTransaction = async (
     from: metadata.from,
     to: metadata.to,
     value: metadata.value,
-    originalGasLimit: metadata.value,
+    originalGasLimit: metadata.gasLimit,
     gasLimit: maxGasLimit,
     methodName: metadata.methodName,
     params: arguments,
@@ -93,3 +93,8 @@ const performSaleTransaction = async (
     );
   }
 };
+
+
+module.exports = {
+  performBuySaleTransaction
+}

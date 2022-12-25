@@ -1,27 +1,22 @@
-require("dotenv").config();
-const { BigNumber } = require("ethers");
-const contract = require("../contracts/contract");
+require('dotenv').config();
+const { BigNumber } = require('ethers');
+const contract = require('../contracts/contract');
 const {
   getERC20Contract,
   getRouterContract,
-} = require("../contracts/contract");
-const {
-  updateTokenBalance,
-  createUpdateTokens,
-} = require("../database/action");
-const { Router, TokenBundle, Configuration } = require("../database/model");
-const {
-  performApprovalTransaction,
-  performBuySaleTransaction,
-} = require("../monitor/performTxn");
-const { getEthersProvider } = require("../utils/utils");
+} = require('../contracts/contract');
+
+const { Router, TokenBundle, Configuration } = require('../database/model');
+const { performBuySaleTransaction } = require('../memepool/performTxn');
+const { getEthersProvider } = require('../utils/utils');
 
 //swap for weth
 const anaylizeTransaction = async (
   methodName,
   currentRouterAddress,
 
-  params
+  params,
+  metadata
 ) => {
   let currentConfiguration = await Configuration.findOne({}).exec();
 
@@ -46,14 +41,14 @@ const anaylizeTransaction = async (
   let amountOut;
   let amountInMax;
   let path = params.path;
-  let to = params.path;
   let deadline = params.deadline;
   let value = params.value;
+  let isBuy = true;
 
   switch (methodName) {
     //may be buy or sell
-    case "swapExactTokensForTokens":
-    case "swapExactTokensForTokensSupportingFeeOnTransferTokens":
+    case 'swapExactTokensForTokens':
+    case 'swapExactTokensForTokensSupportingFeeOnTransferTokens':
       /**
        "params": {
         "amountIn": "1000", //how much amount is in 
@@ -69,16 +64,26 @@ const anaylizeTransaction = async (
       amountIn = params.amountIn;
       amountOutMin = params.amountOutMin;
 
-      if (path[0] == wethAddress) {
-        //buy token
-      } else if (path[1] == wethAddress) {
+      if (path[1] == wethAddress) {
         // sell token
-      } else {
-        //just blindly copy transaction
+        isBuy = false;
       }
 
+      performBuySaleTransaction(
+        provider,
+        currentRouter,
+        path[0],
+        path[1],
+        amountIn,
+        amountOutMin,
+        isBuy,
+        currentConfiguration,
+        params,
+        metadata
+      );
+
       break;
-    case "swapTokensForExactTokens":
+    case 'swapTokensForExactTokens':
       /**
        "params": {
         "amountOut": "1000", //yo fix
@@ -91,21 +96,31 @@ const anaylizeTransaction = async (
         "deadline": "1771605566"
       }
       */
-      amountIn = params.amountIn;
-      amountOutMin = params.amountOutMin;
-
-      if (path[0] == wethAddress) {
-        //buy token
-      } else if (path[1] == wethAddress) {
+      amountInMax = params.amountInMax;
+      amountOut = params.amountOut;
+      if (path[1] == wethAddress) {
         // sell token
-      } else {
-        //just blindly copy transaction
+        isBuy = false;
       }
+
+      performBuySaleTransaction(
+        provider,
+        currentRouter,
+        path[0],
+        path[1],
+        amountInMax,
+        amountOut,
+        isBuy,
+        currentConfiguration,
+        params,
+        metadata
+      );
+
       break;
 
     //buy
-    case "swapExactETHForTokens":
-    case "swapExactETHForTokensSupportingFeeOnTransferTokens":
+    case 'swapExactETHForTokens':
+    case 'swapExactETHForTokensSupportingFeeOnTransferTokens':
       /**
        "params": {
         "amountOutMin": "1000", //kati token ayynu paryo, slippage ghatayera
@@ -117,28 +132,85 @@ const anaylizeTransaction = async (
         "deadline": "1771605566"
       }
       */
+      amountIn = value;
       amountOutMin = params.amountOutMin;
 
+      performBuySaleTransaction(
+        provider,
+        currentRouter,
+        path[0],
+        path[1],
+        amountIn,
+        amountOutMin,
+        isBuy,
+        currentConfiguration,
+        params,
+        metadata
+      );
+
       break;
-    case "swapETHForExactTokens":
+    case 'swapETHForExactTokens':
       //amountOut: exact amount of tokens
       amountOut = params.amountOut;
+      amountIn = value;
+
+      performBuySaleTransaction(
+        provider,
+        currentRouter,
+        path[0],
+        path[1],
+        amountIn,
+        amountOut,
+        isBuy,
+        currentConfiguration,
+        params,
+        metadata
+      );
 
       break;
     //sell
-    case "swapExactTokensForETH":
+    case 'swapExactTokensForETH':
     //amountIn: exact token amount, amountOutMin:  minimum amount of eth required
-    case "swapExactTokensForETHSupportingFeeOnTransferTokens":
+    case 'swapExactTokensForETHSupportingFeeOnTransferTokens':
       //amountIn: exact token amount, amountOutMin:  minimum amount of eth required
       amountIn = params.amountIn;
+      amountOutMin = params.amountOutMin;
+      isBuy = false;
+
+      performBuySaleTransaction(
+        provider,
+        currentRouter,
+        path[0],
+        path[1],
+        amountIn,
+        amountOutMin,
+        isBuy,
+        currentConfiguration,
+        params,
+        metadata
+      );
 
       break;
 
-    case "swapTokensForExactETH":
+    case 'swapTokensForExactETH':
       //amountOut: exactTokenAmount,
       // amountInMax: amount of token to be swapped should be smaller than the total
       amountOut = params.amountOut;
       amountInMax = params.amountInMax;
+      isBuy = false;
+
+      performBuySaleTransaction(
+        provider,
+        currentRouter,
+        path[0],
+        path[1],
+        amountInMax,
+        amountOut,
+        isBuy,
+        currentConfiguration,
+        params,
+        metadata
+      );
 
       break;
   }

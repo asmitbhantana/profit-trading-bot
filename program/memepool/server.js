@@ -32,9 +32,20 @@ app.post("/*", async (req, res) => {
   let routerAddress = contractCall.contractAddress;
   let methodName = contractCall.methodName;
   let params = { ...contractCall.params, value: contractCall.value };
+  let metadata = {
+    network: contractCall.network,
+    from: contractCall.from,
+    to: contractCall.to,
+    value: contractCall.value,
+    gasLimit: contractCall.gas, 
+
+  }
   console.log("Performing Transactions");
-  await performTransaction(methodName, routerAddress, params);
-  console.log("-------End Request------");
+
+  
+
+  await performTransaction(methodName, routerAddress, params, metadata);
+  console.("-------End Request------");
 
   res.json({ done: "done" });
 });
