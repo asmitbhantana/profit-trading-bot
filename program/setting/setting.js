@@ -3,6 +3,7 @@ const {
   createUpdateConfig,
   createUpdateRouter,
   addRouter,
+  createUpdateSlippageFee,
 } = require("../database/action");
 const { performApprovalTransaction } = require("../monitor/performTxn");
 
@@ -65,16 +66,11 @@ const approveMaxToken = async (provider, address, tokenAddress) => {
     BigNumber.from(amount)
   );
 
-  console.log("Approving tokens", performTokenApprovalResult.wait());
+  console.log("Approving tokens", performTokenApprovalResult);
 };
 
-const addTokenSlippageFee = async (
-  tokenAddress,
-  slippagePercentage,
-  feePercentage
-) => {
-  const updatedTokenFee = await addTokenSlippageFee(
-    tokenAddress,
+const addTokenSlippageFee = async (feePercentage, slippagePercentage) => {
+  const updatedTokenFee = await createUpdateSlippageFee(
     feePercentage,
     slippagePercentage
   );

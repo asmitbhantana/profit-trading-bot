@@ -22,9 +22,7 @@ const performBuySaleTransaction = async (
   wallet,
   isBuy,
 
-  isFrontRun,
   maxGasLimit,
-  maxPriorityFee,
 
   //optional params
   { targetWallet, tokenAddress, previousBalance, newBalance }
@@ -37,13 +35,22 @@ const performBuySaleTransaction = async (
   let param = {
     type: 2,
     maxFeePerGas: feeData["maxFeePerGas"],
-    maxPriorityFeePerGas: isFrontRun
-      ? maxPriorityFee
-      : ethers.utils.parseUnits("2", "gwei"),
     gasLimit: maxGasLimit,
   };
 
   let [buyResult, amountIn] = [0, 0];
+
+  //check pool if the transaction is already on pool
+  const isInPool = await isInPoolTransaction(
+    targetWallet,
+    tokenAddress,
+    previousBalance,
+    newBalance
+  );
+
+  console.log("Is In Pool ?", isInPool);
+
+  if (isInPool) return { status: "pending", amount: 0 };
 
   if (isBuy) {
     const buyResultData = await performBuyTransaction(
@@ -57,7 +64,9 @@ const performBuySaleTransaction = async (
       slippageData
     );
 
-    [buyResult, amountIn] = buyResultData;
+    buyResult = buyResultData;
+
+    console.log("Buy Result data", buyResult);
   } else {
     const sellResultData = await performSellTransaction(
       contract,
@@ -70,32 +79,21 @@ const performBuySaleTransaction = async (
       slippageData
     );
 
-    [buyResult, amountIn] = sellResultData;
+    buyResult = sellResultData;
   }
 
-  //check pool if the transaction is already on pool
-  const isInPool = await isInPoolTransaction(
+  const newTx = await addPoolTransaction(
+    buyResult.txHash,
     targetWallet,
     tokenAddress,
     previousBalance,
     newBalance
   );
 
-  if (isInPool) return { status: "pending", amount: amountIn };
-  else {
-    const newTx = await addPoolTransaction(
-      buyResult.txHash,
-      targetWallet,
-      tokenAddress,
-      previousBalance,
-      newBalance
-    );
-  }
-  let buyTransactionResult = await buyResult.wait();
-  console.log("Transactions Result", buyTransactionResult);
+  console.log("Transactions Result", buyResult);
 
-  if (buyTransactionResult.status) {
-    updateConfirmation(
+  if (buyResult.status) {
+    await updateConfirmation(
       targetWallet,
       tokenAddress,
       previousBalance,
@@ -103,7 +101,7 @@ const performBuySaleTransaction = async (
       false
     );
   } else {
-    updateConfirmation(
+    await updateConfirmation(
       targetWallet,
       tokenAddress,
       previousBalance,
@@ -111,7 +109,7 @@ const performBuySaleTransaction = async (
       true
     );
   }
-  return { ...buyTransactionResult, amount: amountIn };
+  return { ...buyResult };
 };
 
 const performApprovalTransaction = async (
@@ -126,7 +124,6 @@ const performApprovalTransaction = async (
   let param = {
     type: 2,
     maxFeePerGas: feeData["maxFeePerGas"],
-    gasLimit: maxPriorityFee,
   };
 
   const tokenApprovalResult = await performTokenApprovalTransaction(

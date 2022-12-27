@@ -59,9 +59,8 @@ const TransactionPoolSchema = new Schema({
 });
 
 const TokenSchema = new Schema({
-  sellingFeePercentage: String, //100 = 10
+  feePercentage: String, //100 = 10
   slippagePercentage: String, //101 = 10.1
-  buyingFeePercentage: String, //102 = 10.2
 });
 
 const TransactionsDoneSchema = new Schema({

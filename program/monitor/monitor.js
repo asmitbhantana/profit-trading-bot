@@ -5,10 +5,6 @@ const { BigNumber } = require("ethers");
 const { Transaction, Token, TokenBundle } = require("../database/model");
 const { performWalletScan } = require("./walletScan");
 
-const {
-  performBuyTransaction,
-  performTokenApprovalTransaction,
-} = require("./../contracts/trackAction");
 const { getERC20Contract } = require("../contracts/contract");
 const {
   createUpdateTokens,
@@ -154,10 +150,7 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
 
           //action
           //the user performed buy
-          if (
-            previousBalanceAmount.lt(currentBalanceAmount) ||
-            ourBalance == null
-          ) {
+          if (previousBalanceAmount.lt(currentBalanceAmount)) {
             let percentageChange = BigNumber.from(100);
             let amountToBuy = currentBalanceAmount.sub(previousBalanceAmount);
 
@@ -169,11 +162,13 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
               amountToBuy = ourBalanceNow.mul(percentageChange).div(100);
             }
             console.log("Buy Percentage change", percentageChange.toString());
+            console.log("Amount To Buy", amountToBuy.toString());
+            console.log("Our Balance Now", ourBalanceNow.toString());
 
             if (amountToBuy.isZero()) return;
             //perform buy same
 
-            //perform the bying of change amount if our balance is 0
+            //perform the buying of change amount if our balance is 0
             if (ourBalanceNow.isZero()) {
               amountToBuy = currentBalanceAmount.sub(previousBalanceAmount);
             }
@@ -187,10 +182,8 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
               data.token_address,
               amountToBuy,
               currenConfiguration.ourWallet,
-              true,
               false,
               currenConfiguration.maxGasLimit,
-              currenConfiguration.maxPriorityFee,
 
               {
                 targetWallet: wallet,
@@ -199,7 +192,7 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
                 newBalance: currentBalanceAmount.toString(),
               }
             );
-            if (buyResult.start == "pending") return;
+            if (buyResult.status == "pending") return;
 
             //perform buy
             //execute approval of tokens
@@ -224,7 +217,7 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
 
               //update our wallet amount on database
               if (ourBalance) {
-                const newBalance = ourBalanceNow.add(buyResult.amount);
+                const newBalance = ourBalanceNow.add(amountToBuy);
                 await updateTokenBalance(
                   currenConfiguration.ourWallet,
                   data.token_address,
@@ -298,9 +291,7 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
               amountToSell,
               currenConfiguration.ourWallet,
               false,
-              false,
               currenConfiguration.maxGasLimit,
-              currenConfiguration.maxPriorityFee,
 
               {
                 targetWallet: wallet,
@@ -321,7 +312,7 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
             //update our wallet amount on database
             if (sellResult.status) {
               if (ourBalance) {
-                const newBalance = ourBalanceNow.sub(sellResult.amount);
+                const newBalance = ourBalanceNow.sub(amountToSell);
 
                 await updateTokenBalance(
                   currenConfiguration.ourWallet,
@@ -381,7 +372,7 @@ const startWalletMonitor = async (chains, provider, contract) => {
   });
   console.log("---------------Start Wallet Monitoring -----------------");
   //runs in every 10 seconds interval
-  let task = corn.schedule("*/45 * * * * *", () => {
+  let task = corn.schedule("*/10 * * * * *", () => {
     monitorAndPerformAction(chains, provider, contract);
   });
 

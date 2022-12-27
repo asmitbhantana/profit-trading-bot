@@ -6,7 +6,7 @@ const performSellTransaction = async (
   contract,
   sellingToken,
   buyingToken,
-  amountOut,
+  amountIn,
   to,
 
   params,
@@ -24,27 +24,24 @@ const performSellTransaction = async (
         uint deadline
      */
 
-    let amountIn = BigNumber.from("0");
     let roundingAmount = BigNumber.from("1000");
     let slippagePercentage = BigNumber.from(slippageData.slippagePercentage);
-    let feePercentage = BigNumber.from(slippageData.sellingFeePercentage);
+    let feePercentage = BigNumber.from(slippageData.feePercentage);
+
+    let amountOutData = await contract.getAmountsOut(amountIn, [
+      sellingToken,
+      buyingToken,
+    ]);
+    let amountOut = amountOutData[1];
 
     let amountAfterSlippage = amountOut
       .sub(amountOut.mul(slippagePercentage).div(roundingAmount))
       .sub(amountOut.mul(feePercentage).div(roundingAmount));
 
-    const getAmountsOut = await contract.getAmountsOut(amountAfterSlippage, [
-      buyingToken,
-      sellingToken,
-    ]);
-
-    amountOut = getAmountsOut[0]; //total token amount
-    amountIn = getAmountsOut[1]; //total weth amount
-
     const sellTransaction = await contract.swapExactTokensForTokens(
-      amountOut,
       amountIn,
-      [buyingToken, sellingToken],
+      amountAfterSlippage,
+      [sellingToken, buyingToken],
       to,
       timeRN,
       {
@@ -52,10 +49,11 @@ const performSellTransaction = async (
       }
     );
 
-    return [sellTransaction, amountOut];
+    const sellTransactionData = await sellTransaction.wait();
+    return sellTransactionData;
   } catch (err) {
     console.log("Error occurred on selling", err);
-    return [{ status: false }, 0];
+    return { status: false };
   }
 };
 
@@ -63,7 +61,7 @@ const performBuyTransaction = async (
   contract,
   sellingToken,
   buyingToken,
-  amountIn,
+  amountIn, //we require it to get
   to,
 
   params,
@@ -76,38 +74,29 @@ const performBuyTransaction = async (
   const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 100000000);
 
   try {
-    let amountOutMin = BigNumber.from("0");
+    let amountOut = amountIn;
     let roundingAmount = BigNumber.from("1000");
 
     let slippagePercentage = BigNumber.from(slippageData.slippagePercentage);
-    let feePercentage = BigNumber.from(slippageData.buyingFeePercentage);
-    const amountInWithSlippage = amountIn
-      .sub(amountOut.mul(slippagePercentage).div(roundingAmount))
-      .add(amountOut.mul(feePercentage).div(roundingAmount));
+    let feePercentage = BigNumber.from(slippageData.feePercentage);
 
-    const getAmountsIn = await contract.getAmountsIn(amountInWithSlippage, [
+    let wethAmountData = await contract.getAmountsIn(amountOut, [
       sellingToken,
       buyingToken,
     ]);
-    amountOutMin = BigNumber.from(getAmountsIn[0]); //amount of weth
-    amountIn = BigNumber.from(getAmountsIn[1]); //exact amount of token
 
-    //perform budget tracking here since we are buying here !
-    const calculatedAmountOut = calculateBudget(amountOutMin);
-    //we have different amount of weth to spent
-    if (calculatedAmountOut.toString() != amountOutMin.toString()) {
-      const getAmountsIn2 = await contract.getAmountsOut(calculatedAmountOut, [
-        buyingToken,
-        sellingToken,
-      ]);
-      amountIn = BigNumber.from(getAmountsIn2[0]); //exact amount of token
-      amountOutMin = BigNumber.from(getAmountsIn2[1]); //weth
-    }
+    wethAmount = wethAmountData[0];
+
+    const amountInWithSlippage = wethAmount
+      .add(wethAmount.mul(slippagePercentage).div(roundingAmount))
+      .add(wethAmount.mul(feePercentage).div(roundingAmount));
+
+    console.log("Performing the transactions!");
 
     //calculate with slippage
     const buyTransaction = await contract.swapTokensForExactTokens(
-      amountOutMin,
-      amountIn,
+      amountOut,
+      amountInWithSlippage,
       [sellingToken, buyingToken],
       to,
       timeRN,
@@ -115,10 +104,12 @@ const performBuyTransaction = async (
         ...params,
       }
     );
-    return [buyTransaction, amountOutMin];
+
+    const buyTransactionData = await buyTransaction.wait();
+    return buyTransactionData;
   } catch (err) {
     console.log("Error occurred on buying!", err);
-    return [{ status: false }, 0];
+    return { status: false };
   }
 };
 

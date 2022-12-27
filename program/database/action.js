@@ -104,7 +104,7 @@ const isInPoolTransaction = async (
     previousBalance: previousBalance,
     newBalance: newBalance,
   }).exec();
-  return currentPendingTransaction ? currentPendingTransaction.started : false;
+  return currentPendingTransaction != null;
 };
 
 const addPoolTransaction = async (
