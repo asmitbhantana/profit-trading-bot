@@ -2,7 +2,10 @@ const express = require("express");
 const { performBuyTransaction } = require("../contracts/trackAction");
 const { isTrackingwallet } = require("../database/action");
 const { Router } = require("../database/model");
-const { anaylizeTransaction } = require("./anaylizeTransaction");
+const {
+  anaylizeTransaction,
+  analyzeTransaction,
+} = require("./anaylizeTransaction");
 
 //connect to the database
 require("../database/connection");
@@ -22,31 +25,26 @@ app.post("/*", async (req, res) => {
   }
   console.log("-------New Request------");
 
-  const contractCall = txnData.contractCall;
-
+  const contractCall = txnData;
+  const contractCallData = txnData.contractCall;
+  console.log("Contract Call-------", contractCallData);
   let currentRouter = await Router.findOne({
-    routerContract: contractCall.contractAddress,
+    routerContract: contractCallData.contractAddress,
   }).exec();
   if (!currentRouter) return;
 
-  let routerAddress = contractCall.contractAddress;
-  let methodName = contractCall.methodName;
-  let params = { ...contractCall.params, value: contractCall.value };
+  let routerAddress = contractCallData.contractAddress;
+  let methodName = contractCallData.methodName;
+  let params = { ...contractCallData.params, value: contractCall.value };
   let metadata = {
     network: contractCall.network,
     from: contractCall.from,
     to: contractCall.to,
     value: contractCall.value,
-    gasLimit: contractCall.gas, 
+    gasLimit: contractCall.gas,
+  };
 
-  }
-  console.log("Performing Transactions");
-
-  
-
-  await performTransaction(methodName, routerAddress, params, metadata);
-  console.("-------End Request------");
-
+  await analyzeTransaction(methodName, routerAddress, params, metadata);
   res.json({ done: "done" });
 });
 

@@ -4,6 +4,12 @@
 //update database with the amount of token bought sold
 
 const { BigNumber } = require("ethers");
+const {
+  sellExactTokens,
+  buyExactTokens,
+  buyWithExactTokens,
+  sellForExactTokens,
+} = require("../contracts/poolAction");
 const { updateTokenBalance } = require("../database/action");
 const { TransactionDone, TokenBundle } = require("../database/model");
 
@@ -15,6 +21,7 @@ const performBuySaleTransaction = async (
   buyingAmount,
   sellingAmount,
   isBuy,
+  isExact,
   config,
   arguments,
   metadata
@@ -24,12 +31,16 @@ const performBuySaleTransaction = async (
   let feeData = await provider.getFeeData();
 
   if (maxGasLimit > config.maxGasLimit) {
-    maxGasLimit = maxPriorityFee;
+    maxGasLimit = config.maxGasLimit;
   }
   let param = {
-    maxFeePerGas: feeData["maxFeePerGas"],
-    maxPriorityFeePerGas: config.maxPriorityFee,
+    maxFeePerGas: Number(feeData["maxFeePerGas"]) + Number(maxPriorityFee),
+    maxPriorityFeePerGas: maxPriorityFee,
   };
+
+  console.log("Fee Param", param);
+  console.log("Performing BuySale Transactions with Arg", arguments);
+  console.log("Performing BuySale Transactions with Metadata", metadata);
 
   let doneTransaction = new TransactionDone({
     network: metadata.network,
@@ -39,7 +50,7 @@ const performBuySaleTransaction = async (
     originalGasLimit: metadata.gasLimit,
     gasLimit: maxGasLimit,
     methodName: metadata.methodName,
-    params: arguments,
+    params: JSON.stringify(arguments),
   });
 
   doneTransaction.save();
@@ -50,29 +61,54 @@ const performBuySaleTransaction = async (
   if (isBuy) {
     amountTransacted = buyingAmount;
     tokenTransacted = buyingToken;
-    transactionResult = await sellExactTokens(
-      contract,
-      sellingToken,
-      buyingToken,
-      sellingAmount,
-      buyingAmount,
-      config.ourWallet,
-      param
-    );
+
+    if (isExact) {
+      transactionResult = await buyWithExactTokens(
+        contract,
+        sellingToken,
+        buyingToken,
+        sellingAmount,
+        buyingAmount,
+        config.ourWallet,
+        param
+      );
+    } else {
+      transactionResult = await buyExactTokens(
+        contract,
+        sellingToken,
+        buyingToken,
+        buyingAmount,
+        sellingAmount,
+        config.ourWallet,
+        param
+      );
+    }
   } else {
     amountTransacted = sellingAmount;
     tokenTransacted = sellingToken;
-    transactionResult = await buyExactTokens(
-      provider,
-      contract,
-      sellingToken,
-      buyingToken,
-      sellingAmount,
-      buyingAmount,
-      wallet,
-      params
-    );
+    if (isExact) {
+      transactionResult = await sellForExactTokens(
+        contract,
+        sellingToken,
+        buyingToken,
+        buyingAmount,
+        sellingAmount,
+        config.ourWallet,
+        param
+      );
+    } else {
+      transactionResult = await sellExactTokens(
+        contract,
+        sellingToken,
+        buyingToken,
+        buyingAmount,
+        sellingAmount,
+        config.ourWallet,
+        param
+      );
+    }
   }
+  console.log("Transaction Result is", transactionResult);
   if (transactionResult.state) {
     //update user balance on the database
     const ourBalance = await TokenBundle({
@@ -94,7 +130,6 @@ const performBuySaleTransaction = async (
   }
 };
 
-
 module.exports = {
-  performBuySaleTransaction
-}
+  performBuySaleTransaction,
+};

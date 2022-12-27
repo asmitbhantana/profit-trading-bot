@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "walletWatch": "node program/main.js",
-    "memepoolWatch": "node program/memepool/action.js"
+    "memepoolWatch": "node program/memepool/server.js"
   },
   "keywords": [],
   "author": "",

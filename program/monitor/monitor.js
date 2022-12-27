@@ -8,7 +8,7 @@ const { performWalletScan } = require("./walletScan");
 const {
   performBuyTransaction,
   performTokenApprovalTransaction,
-} = require("./../contracts/action");
+} = require("./../contracts/trackAction");
 const { getERC20Contract } = require("../contracts/contract");
 const {
   createUpdateTokens,

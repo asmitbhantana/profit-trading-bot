@@ -1,17 +1,17 @@
-require('dotenv').config();
-const { BigNumber } = require('ethers');
-const contract = require('../contracts/contract');
+require("dotenv").config();
+const { BigNumber } = require("ethers");
+const contract = require("../contracts/contract");
 const {
   getERC20Contract,
   getRouterContract,
-} = require('../contracts/contract');
+} = require("../contracts/contract");
 
-const { Router, TokenBundle, Configuration } = require('../database/model');
-const { performBuySaleTransaction } = require('../memepool/performTxn');
-const { getEthersProvider } = require('../utils/utils');
+const { Router, TokenBundle, Configuration } = require("../database/model");
+const { performBuySaleTransaction } = require("../memepool/performTxn");
+const { getEthersProvider } = require("../utils/utils");
 
 //swap for weth
-const anaylizeTransaction = async (
+const analyzeTransaction = async (
   methodName,
   currentRouterAddress,
 
@@ -30,11 +30,13 @@ const anaylizeTransaction = async (
   const routerContract = getRouterContract(provider, currentRouterAddress);
 
   //retrives the router info
-  let currentRouter = await Router.findOne({
+  let currentRouterData = await Router.findOne({
     routerContract: currentRouterAddress,
   }).exec();
 
-  let wethAddress = currentRouter.wethAddress;
+  let wethAddress = currentRouterData.wethAddress;
+
+  let currentRouter = routerContract;
 
   let amountIn;
   let amountOutMin;
@@ -45,57 +47,49 @@ const anaylizeTransaction = async (
   let value = params.value;
   let isBuy = true;
 
+  console.log("Starting Of Method", methodName);
+
   switch (methodName) {
     //may be buy or sell
-    case 'swapExactTokensForTokens':
-    case 'swapExactTokensForTokensSupportingFeeOnTransferTokens':
-      /**
-       "params": {
-        "amountIn": "1000", //how much amount is in 
-        "amountOutMin": "1000", //how much should we get back, slippage ghatayunea
-        "path": [
-          "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-          "0x60450439A3d91958E9Dae0918FC4e0d59a77f896"
-        ],
-        "to": "0xf8D8bA1F5f592C53eAe8F8d750a6b0F09ca31Cee",
-        "deadline": "1771605566"
-      }
-      */
+    case "swapExactTokensForTokens":
+    case "swapExactTokensForTokensSupportingFeeOnTransferTokens":
       amountIn = params.amountIn;
       amountOutMin = params.amountOutMin;
 
       if (path[1] == wethAddress) {
         // sell token
         isBuy = false;
+        performBuySaleTransaction(
+          provider,
+          currentRouter,
+          path[0],
+          path[1],
+          amountIn,
+          amountOutMin,
+          isBuy,
+          false,
+          currentConfiguration,
+          params,
+          metadata
+        );
+      } else {
+        performBuySaleTransaction(
+          provider,
+          currentRouter,
+          path[0],
+          path[1],
+          amountIn,
+          amountOutMin,
+          isBuy,
+          true,
+          currentConfiguration,
+          params,
+          metadata
+        );
       }
-
-      performBuySaleTransaction(
-        provider,
-        currentRouter,
-        path[0],
-        path[1],
-        amountIn,
-        amountOutMin,
-        isBuy,
-        currentConfiguration,
-        params,
-        metadata
-      );
 
       break;
-    case 'swapTokensForExactTokens':
-      /**
-       "params": {
-        "amountOut": "1000", //yo fix
-        "amountInMax": "1000", //kati badayera dinea, + slippage
-        "path": [
-          "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-          "0x60450439A3d91958E9Dae0918FC4e0d59a77f896"
-        ],
-        "to": "0xf8D8bA1F5f592C53eAe8F8d750a6b0F09ca31Cee",
-        "deadline": "1771605566"
-      }
-      */
+    case "swapTokensForExactTokens":
       amountInMax = params.amountInMax;
       amountOut = params.amountOut;
       if (path[1] == wethAddress) {
@@ -111,6 +105,7 @@ const anaylizeTransaction = async (
         amountInMax,
         amountOut,
         isBuy,
+        false,
         currentConfiguration,
         params,
         metadata
@@ -119,19 +114,8 @@ const anaylizeTransaction = async (
       break;
 
     //buy
-    case 'swapExactETHForTokens':
-    case 'swapExactETHForTokensSupportingFeeOnTransferTokens':
-      /**
-       "params": {
-        "amountOutMin": "1000", //kati token ayynu paryo, slippage ghatayera
-        "path": [
-          "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-          "0x60450439A3d91958E9Dae0918FC4e0d59a77f896"
-        ],
-        "to": "0xf8D8bA1F5f592C53eAe8F8d750a6b0F09ca31Cee",
-        "deadline": "1771605566"
-      }
-      */
+    case "swapExactETHForTokens":
+    case "swapExactETHForTokensSupportingFeeOnTransferTokens":
       amountIn = value;
       amountOutMin = params.amountOutMin;
 
@@ -143,13 +127,14 @@ const anaylizeTransaction = async (
         amountIn,
         amountOutMin,
         isBuy,
+        true,
         currentConfiguration,
         params,
         metadata
       );
 
       break;
-    case 'swapETHForExactTokens':
+    case "swapETHForExactTokens":
       //amountOut: exact amount of tokens
       amountOut = params.amountOut;
       amountIn = value;
@@ -162,6 +147,7 @@ const anaylizeTransaction = async (
         amountIn,
         amountOut,
         isBuy,
+        false,
         currentConfiguration,
         params,
         metadata
@@ -169,9 +155,9 @@ const anaylizeTransaction = async (
 
       break;
     //sell
-    case 'swapExactTokensForETH':
+    case "swapExactTokensForETH":
     //amountIn: exact token amount, amountOutMin:  minimum amount of eth required
-    case 'swapExactTokensForETHSupportingFeeOnTransferTokens':
+    case "swapExactTokensForETHSupportingFeeOnTransferTokens":
       //amountIn: exact token amount, amountOutMin:  minimum amount of eth required
       amountIn = params.amountIn;
       amountOutMin = params.amountOutMin;
@@ -185,6 +171,7 @@ const anaylizeTransaction = async (
         amountIn,
         amountOutMin,
         isBuy,
+        false,
         currentConfiguration,
         params,
         metadata
@@ -192,7 +179,7 @@ const anaylizeTransaction = async (
 
       break;
 
-    case 'swapTokensForExactETH':
+    case "swapTokensForExactETH":
       //amountOut: exactTokenAmount,
       // amountInMax: amount of token to be swapped should be smaller than the total
       amountOut = params.amountOut;
@@ -207,6 +194,7 @@ const anaylizeTransaction = async (
         amountInMax,
         amountOut,
         isBuy,
+        true,
         currentConfiguration,
         params,
         metadata
@@ -217,5 +205,5 @@ const anaylizeTransaction = async (
 };
 
 module.exports = {
-  anaylizeTransaction,
+  analyzeTransaction,
 };
