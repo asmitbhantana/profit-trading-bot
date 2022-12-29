@@ -3,8 +3,8 @@ const { performBuyTransaction } = require("../contracts/trackAction");
 const { isTrackingwallet } = require("../database/action");
 const { Router } = require("../database/model");
 const {
-  anaylizeTransaction,
-  analyzeTransaction,
+  analyzeV2Transaction,
+  analyzeV3Transaction,
 } = require("./anaylizeTransaction");
 
 //connect to the database
@@ -43,9 +43,14 @@ app.post("/*", async (req, res) => {
     value: contractCall.value,
     gasLimit: contractCall.gas,
   };
-
-  await analyzeTransaction(methodName, routerAddress, params, metadata);
-  res.json({ done: "done" });
+  if (currentRouter.version == "2") {
+    let routerAddress = contractCallData.contractAddress;
+    let methodName = contractCallData.methodName;
+    let params = { ...contractCallData.params, value: contractCall.value };
+    await analyzeV2Transaction(methodName, routerAddress, params, metadata);
+  } else if (currentRouter.version == "3") {
+    await analyzeV3Transaction(methodName, routerAddress, params, metadata);
+  } else res.json({ done: "done" });
 });
 
 app.listen(port, () => {

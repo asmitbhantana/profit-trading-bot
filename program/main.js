@@ -21,7 +21,7 @@ const { BigNumber } = require("ethers");
 //Set Configuration
 // setConfig();
 // addNewRouter();
-addTokenSlippageFee("0", "0");
+// addTokenSlippageFee("0", "0");
 
 // API URL
 const API_URL = process.env.GOERLI_RPC;

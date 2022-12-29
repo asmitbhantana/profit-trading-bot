@@ -11,7 +11,7 @@ const { performBuySaleTransaction } = require("../memepool/performTxn");
 const { getEthersProvider } = require("../utils/utils");
 
 //swap for weth
-const analyzeTransaction = async (
+const analyzeV2Transaction = async (
   methodName,
   currentRouterAddress,
 
@@ -204,6 +204,15 @@ const analyzeTransaction = async (
   }
 };
 
+//swap for weth
+const analyzeV3Transaction = async (
+  methodName,
+  currentRouterAddress,
+
+  params,
+  metadata
+) => {};
 module.exports = {
-  analyzeTransaction,
+  analyzeV2Transaction,
+  analyzeV3Transaction,
 };
