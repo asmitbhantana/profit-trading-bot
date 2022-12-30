@@ -206,12 +206,18 @@ const analyzeV2Transaction = async (
 
 //swap for weth
 const analyzeV3Transaction = async (
-  methodName,
-  currentRouterAddress,
-
-  params,
+  subCalls,
+  routerAddress, 
   metadata
-) => {};
+) => {
+  //we will get params and every methods
+  //make sure we change the multicall from one method to another
+  //like creating the multicall such that that call the corresponding 
+  //
+  //from here we need to create the multicall and call them 
+  //call them using contract functions 
+
+};
 module.exports = {
   analyzeV2Transaction,
   analyzeV3Transaction,

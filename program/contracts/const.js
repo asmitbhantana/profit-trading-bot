@@ -1,6 +1,6 @@
-const susiswapAddress = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
-// const susiswapAddress = '0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45';
-const susiswapABI = [
+const uniswapV2Router = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
+// const uniswapV2Router = '0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45';
+const uniswapV2ABI = [
   {
     inputs: [
       { internalType: 'address', name: '_factory', type: 'address' },
@@ -581,7 +581,7 @@ const erc20Abi = [
 ];
 
 module.exports = {
-  susiswapABI: susiswapABI,
-  susiswapAddress: susiswapAddress,
+  uniswapV2ABI: uniswapV2ABI,
+  uniswapV2Router: uniswapV2Router,
   erc20Abi: erc20Abi,
 };

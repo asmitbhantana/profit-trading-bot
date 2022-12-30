@@ -6,7 +6,7 @@
 */
 require('dotenv').config();
 const { ethers, BigNumber, Contract } = require('ethers');
-const { susiswapABI, susiswapAddress } = require('../contracts/const');
+const { uniswapV2ABI, uniswapV2Router } = require('../contracts/const');
 const { erc20Abi } = require('./const');
 
 /*
@@ -22,7 +22,7 @@ SEED_PHRASE = process.env.OWNER_WALLET_SEED_PHRASE;
 const getRouterContract = (provider, routerAddres) => {
   if (!routerContract) {
     const signer = ethers.Wallet.fromMnemonic(SEED_PHRASE).connect(provider);
-    routerContract = new ethers.Contract(routerAddres, susiswapABI, signer);
+    routerContract = new ethers.Contract(routerAddres, uniswapV2ABI, signer);
   }
 
   return routerContract;
