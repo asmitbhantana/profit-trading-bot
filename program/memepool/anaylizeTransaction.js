@@ -205,18 +205,32 @@ const analyzeV2Transaction = async (
 };
 
 //swap for weth
-const analyzeV3Transaction = async (
-  subCalls,
-  routerAddress, 
-  metadata
-) => {
+const analyzeV3Transaction = async (subCalls, routerAddress, metadata) => {
   //we will get params and every methods
   //make sure we change the multicall from one method to another
-  //like creating the multicall such that that call the corresponding 
-  //
-  //from here we need to create the multicall and call them 
-  //call them using contract functions 
+  //like creating the multicall such that that call the corresponding
+  //from here we need to create the multicall and call them
+  //call them using contract functions
 
+  subCalls.forEach(async (call) => {
+    const callData = call.data;
+    const encodedDatas = [];
+
+    let amountOutMin = callData.params.amountOutMin;
+    let amountIn = callData.params.amountIn;
+    let amountOut = callData.params.amountOut;
+    let amountInMaximum = callData.params.amountInMax;
+    let path = [];
+    switch (callData.methodName) {
+      case "swapExactTokensForTokens":
+        path = callData.params.path;
+        break;
+      case "swapTokensForExactTokens":
+        path = callData.params.path;
+
+        break;
+    }
+  });
 };
 module.exports = {
   analyzeV2Transaction,
