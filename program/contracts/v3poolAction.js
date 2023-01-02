@@ -4,7 +4,6 @@ const createSellExactTokens = async (
   routerContract,
   path,
   recipient,
-  deadline,
   amountIn,
   amountOutMinimum
 ) => {
@@ -28,7 +27,6 @@ const createSellForExactTokens = async (
   routerContract,
   path,
   recipient,
-  deadline,
   amountOut,
   amountInMaximum
 ) => {
@@ -52,7 +50,6 @@ const createBuyExactTokens = async (
   routerContract,
   path,
   recipient,
-  deadline,
   amountOut,
   amountInMaximum
 ) => {
@@ -76,7 +73,6 @@ const createBuyWithExactTokens = async (
   routerContract,
   path,
   recipient,
-  deadline,
   amountIn,
   amountOutMinimum
 ) => {

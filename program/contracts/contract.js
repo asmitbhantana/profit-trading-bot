@@ -48,6 +48,7 @@ const getV3RouterContract = (provider, routerV3Address) => {
 };
 
 module.exports = {
-  getRouterContract: getRouterContract,
-  getERC20Contract: getERC20Contract,
+  getRouterContract,
+  getERC20Contract,
+  getV3RouterContract,
 };
