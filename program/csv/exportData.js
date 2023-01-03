@@ -1,8 +1,9 @@
 const inquirer = require('inquirer');
 const {
-  Transaction,
-  Configuration,
   TransactionDone,
+  Configuration,
+  TransactionPool,
+  Router,
 } = require('../database/model');
 const { createSpinner } = require('nanospinner');
 
@@ -13,15 +14,41 @@ const path = require('path');
 //connect to the database
 require('../database/connection');
 
-const dateTime = new Date().toISOString();
-const fields = ['field1', 'field2', 'field3'];
-const opts = { fields };
+let dateTime = new Date().toISOString();
+dateTime = dateTime.replaceAll(':', '-');
 
-const exportPoolTransaction = () => {};
+const exportPoolTransaction = async () => {
+  const poolTransactions = await TransactionDone.find({}).exec();
+  const poolTransactionPath = path.join(
+    __dirname,
+    '..',
+    '..',
+    'output',
+    `${dateTime}-meme-pool.csv`
+  );
+
+  const opts = {
+    fields: [
+      'txnHash',
+      'ourTxnHash',
+      'network',
+      'from',
+      'to',
+      'value',
+      'originalGasLimit',
+      'gasLimit',
+      'methodName',
+      'params',
+      'createAt',
+    ],
+  };
+  const parser = new Parser(opts);
+  fs.writeFileSync(poolTransactionPath, parser.parse(poolTransactions));
+  return poolTransactionPath;
+};
 
 const exportTrackTransaction = async () => {
-  const trackTransactions = await Transaction.find({}).exec();
-  console.log(trackTransactions);
+  const trackTransactions = await TransactionPool.find({}).exec();
   const trackTransactionPath = path.join(
     __dirname,
     '..',
@@ -30,6 +57,18 @@ const exportTrackTransaction = async () => {
     `${dateTime}-track-transaction.csv`
   );
 
+  const opts = {
+    fields: [
+      'targetWallet',
+      'tokenAddress',
+      'transactionHash',
+      'previousBalance',
+      'newBalance',
+      'started',
+      'confirmed',
+      'failed',
+    ],
+  };
   const parser = new Parser(opts);
   fs.writeFileSync(trackTransactionPath, parser.parse(trackTransactions));
   return trackTransactionPath;
@@ -42,14 +81,53 @@ const exportCurrentConfiguration = async () => {
     '..',
     '..',
     'output',
-    `${dateTime}-confugration`
+    `${dateTime}-configuration.csv`
   );
+
+  const opts = {
+    fields: [
+      'maximumWeth',
+      'minimumWeth',
+      'amountPercentage',
+      'ourWallet',
+      'tokens',
+      'wallets',
+      'untrackedTokens',
+      'maxGasLimit',
+      'maxPriorityFee',
+    ],
+  };
   const parser = new Parser(opts);
   fs.writeFileSync(configPath, parser.parse(configuration));
   return configPath;
 };
 
-const exportAllRouters = () => {};
+const exportAllRouters = async () => {
+  const routers = await Router.find({}).exec();
+  const routerPath = path.join(
+    __dirname,
+    '..',
+    '..',
+    'output',
+    `${dateTime}-router.csv`
+  );
+
+  const opts = {
+    fields: [
+      'routerContract',
+      'routerName',
+      'wethAddress',
+      'factoryAddress',
+      'network',
+      'chainName',
+      'rpc',
+      'version',
+    ],
+  };
+  const parser = new Parser(opts);
+  fs.writeFileSync(routerPath, parser.parse(routers));
+  return routerPath;
+};
 
 const multipleQuestion = async () => {
   const answers = await inquirer.prompt({
@@ -66,7 +144,6 @@ const multipleQuestion = async () => {
       'All Routers',
     ],
   });
-  // console.log("answer", answers);
   await handleAnswer(answers.question_1);
 };
 
@@ -91,10 +168,13 @@ const handleAnswer = async (answer) => {
         break;
       default:
         'Not Correct Exporting';
+        break;
     }
     spinner.success({ text: `✅ Exported to ${exportFileName}` });
+    process.exit(0);
   } catch (err) {
     spinner.error({ text: `❌ Could not export to ${exportFileName}` });
+    process.exit(0);
   }
 };
 
