@@ -18,6 +18,8 @@ const calculateBudget = (buying_size) => {
   return B;
 };
 
+const calculateAddressBuyProportions = ()
+
 module.exports = {
   calculateBudget: calculateBudget,
 };
