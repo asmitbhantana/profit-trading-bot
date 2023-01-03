@@ -18,7 +18,9 @@ const calculateBudget = (buying_size) => {
   return B;
 };
 
-const calculateAddressBuyProportions = ()
+const calculateAddressBuyProportions = (user, token_address) => {
+  
+}
 
 module.exports = {
   calculateBudget: calculateBudget,
