@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "walletWatch": "node program/main.js",
-    "memepoolWatch": "node program/memepool/server.js"
+    "memepoolWatch": "node program/memepool/server.js",
+    "exportData": "node program/csv/exportData.js"
   },
   "keywords": [],
   "author": "",
@@ -16,10 +17,12 @@
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
     "express": "^4.18.2",
-    "inquirer": "^9.1.4",
+    "inquirer": "^8.2.5",
+    "json2csv": "^5.0.7",
     "mongodb": "^4.11.0",
     "mongoose": "^6.7.0",
     "moralis": "^2.7.4",
+    "nanospinner": "^1.1.0",
     "node-cron": "^3.0.2",
     "web3": "^1.8.0"
   }
