@@ -12,5 +12,5 @@ const getEthersProvider = (API_URL) => {
 };
 
 module.exports = {
-  getEthersProvider: getEthersProvider,
+  getEthersProvider,
 };

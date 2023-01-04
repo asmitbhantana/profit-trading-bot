@@ -1,5 +1,6 @@
-const { BigNumber } = require("ethers");
+const { BigNumber, utils } = require("ethers");
 const { calculateBudget } = require("../budget/budget");
+const { Configuration } = require("../database/model");
 
 //it performs the selling of our tokens
 const performSellTransaction = async (
@@ -8,6 +9,7 @@ const performSellTransaction = async (
   buyingToken,
   amountIn,
   to,
+  isV3,
 
   params,
   slippageData
@@ -28,26 +30,42 @@ const performSellTransaction = async (
     let slippagePercentage = BigNumber.from(slippageData.slippagePercentage);
     let feePercentage = BigNumber.from(slippageData.feePercentage);
 
-    let amountOutData = await contract.getAmountsOut(amountIn, [
-      sellingToken,
-      buyingToken,
-    ]);
-    let amountOut = amountOutData[1];
+    let amountAfterSlippage = BigNumber.from(0);
 
-    let amountAfterSlippage = amountOut
-      .sub(amountOut.mul(slippagePercentage).div(roundingAmount))
-      .sub(amountOut.mul(feePercentage).div(roundingAmount));
+    //if is not v3
+    if (!isV3) {
+      let amountOutData = await contract.getAmountsOut(amountIn, [
+        sellingToken,
+        buyingToken,
+      ]);
+      let amountOut = amountOutData[1];
 
-    const sellTransaction = await contract.swapExactTokensForTokens(
-      amountIn,
-      amountAfterSlippage,
-      [sellingToken, buyingToken],
-      to,
-      timeRN,
-      {
-        ...params,
-      }
-    );
+      amountAfterSlippage = amountOut
+        .sub(amountOut.mul(slippagePercentage).div(roundingAmount))
+        .sub(amountOut.mul(feePercentage).div(roundingAmount));
+    }
+    let sellTransaction;
+    if (isV3)
+      sellTransaction = await contract.swapExactTokensForTokens(
+        amountIn,
+        amountAfterSlippage,
+        [sellingToken, buyingToken],
+        to,
+        {
+          ...params,
+        }
+      );
+    else
+      sellTransaction = await contract.swapExactTokensForTokens(
+        amountIn,
+        amountAfterSlippage,
+        [sellingToken, buyingToken],
+        to,
+        timeRN,
+        {
+          ...params,
+        }
+      );
 
     const sellTransactionData = await sellTransaction.wait();
     return sellTransactionData;
@@ -63,6 +81,7 @@ const performBuyTransaction = async (
   buyingToken,
   amountIn, //we require it to get
   to,
+  isV3,
 
   params,
   slippageData
@@ -80,30 +99,52 @@ const performBuyTransaction = async (
     let slippagePercentage = BigNumber.from(slippageData.slippagePercentage);
     let feePercentage = BigNumber.from(slippageData.feePercentage);
 
-    let wethAmountData = await contract.getAmountsIn(amountOut, [
-      sellingToken,
-      buyingToken,
-    ]);
+    //Get max weth from database
+    const config = await Configuration.findOne({}).exec();
+    let amountInWithSlippage = BigNumber.from(
+      utils.parseUnits(config.maximumWeth, "ether")
+    );
 
-    wethAmount = wethAmountData[0];
+    //calculate if v3
+    if (!isV3) {
+      let wethAmountData = await contract.getAmountsIn(amountOut, [
+        sellingToken,
+        buyingToken,
+      ]);
 
-    const amountInWithSlippage = wethAmount
-      .add(wethAmount.mul(slippagePercentage).div(roundingAmount))
-      .add(wethAmount.mul(feePercentage).div(roundingAmount));
+      wethAmount = wethAmountData[0];
+
+      amountInWithSlippage = wethAmount
+        .add(wethAmount.mul(slippagePercentage).div(roundingAmount))
+        .add(wethAmount.mul(feePercentage).div(roundingAmount));
+    }
 
     console.log("Performing the transactions!");
+    let buyTransaction;
+
+    if (isV3)
+      buyTransaction = await contract.swapTokensForExactTokens(
+        amountOut,
+        amountInWithSlippage,
+        [sellingToken, buyingToken],
+        to,
+        {
+          ...params,
+        }
+      );
+    else
+      buyTransaction = await contract.swapTokensForExactTokens(
+        amountOut,
+        amountInWithSlippage,
+        [sellingToken, buyingToken],
+        to,
+        timeRN,
+        {
+          ...params,
+        }
+      );
 
     //calculate with slippage
-    const buyTransaction = await contract.swapTokensForExactTokens(
-      amountOut,
-      amountInWithSlippage,
-      [sellingToken, buyingToken],
-      to,
-      timeRN,
-      {
-        ...params,
-      }
-    );
 
     const buyTransactionData = await buyTransaction.wait();
     return buyTransactionData;
@@ -125,8 +166,11 @@ const performTokenApprovalTransaction = async (
    */
 
   try {
-    const allowance = await contract.allowance(contract.signer, spender);
-    if (allowance) {
+    const allowance = await contract.allowance(
+      contract.signer.address,
+      spender
+    );
+    if (Number(allowance) > 0) {
       console.log("Token Already Approved");
       return { status: true };
     }
@@ -136,6 +180,7 @@ const performTokenApprovalTransaction = async (
     let approveTransactionResult = await approveTransaction.wait();
     return approveTransactionResult;
   } catch (err) {
+    console.log("Error", err);
     return { status: false };
   }
 };

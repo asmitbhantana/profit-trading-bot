@@ -21,6 +21,7 @@ const performBuySaleTransaction = async (
   amountToBuy,
   wallet,
   isBuy,
+  isV3,
 
   maxGasLimit,
 
@@ -52,6 +53,14 @@ const performBuySaleTransaction = async (
 
   if (isInPool) return { status: "pending", amount: 0 };
 
+  const newTx = await addPoolTransaction(
+    buyResult.txHash,
+    targetWallet,
+    tokenAddress,
+    previousBalance,
+    newBalance
+  );
+
   if (isBuy) {
     const buyResultData = await performBuyTransaction(
       contract,
@@ -59,6 +68,7 @@ const performBuySaleTransaction = async (
       buyingToken,
       amountToBuy,
       wallet,
+      isV3,
 
       param,
       slippageData
@@ -74,6 +84,7 @@ const performBuySaleTransaction = async (
       buyingToken,
       amountToBuy,
       wallet,
+      isV3,
 
       param,
       slippageData
@@ -81,14 +92,6 @@ const performBuySaleTransaction = async (
 
     buyResult = sellResultData;
   }
-
-  const newTx = await addPoolTransaction(
-    buyResult.txHash,
-    targetWallet,
-    tokenAddress,
-    previousBalance,
-    newBalance
-  );
 
   console.log("Transactions Result", buyResult);
 

@@ -1,8 +1,10 @@
 {
-  "routerContract": "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff",
-  "routerName": "Uniswap V2: Router",
+  "routerContract": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+  "routerName": "Uniswap V3: Router",
   "wethAddress": "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-  "factoryAddress": "0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32",
-  "network": "80001",
-  "chainName": "Mumbai Testnet"
+  "factoryAddress": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+  "network": "5",
+  "chainName": "Goerli Test Network",
+  "rpc": "",
+  "isV3": true
 }

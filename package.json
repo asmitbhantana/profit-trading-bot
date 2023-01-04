@@ -7,13 +7,19 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "walletWatch": "node program/main.js",
     "memepoolWatch": "node program/memepool/server.js",
-    "exportData": "node program/csv/exportData.js"
+    "exportData": "node program/csv/exportData.js",
+    "setConfig": "node program/setting/setConfig.js",
+    "setRouter": "node program/setting/setRouter.js",
+    "setApproveMax": "node program/setting/approveMax.js",
+    "setSlippage": "node program/setting/setSlippage.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "@uniswap/v3-periphery": "^1.4.3",
+    "async": "^3.2.4",
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
     "express": "^4.18.2",

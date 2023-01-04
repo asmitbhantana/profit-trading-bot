@@ -17,7 +17,6 @@ const ConfigurationSchema = new Schema({
   minimumWeth: String,
   amountPercentage: String,
   ourWallet: String,
-  tokens: [String],
   wallets: [String],
   untrackedTokens: [String],
   maxGasLimit: String,
@@ -32,7 +31,7 @@ const RouterSchema = new Schema({
   network: String,
   chainName: String,
   rpc: String,
-  version: String, // 2 For V2 and 3 for V3
+  isV3: Boolean, // 2 For V2 and 3 for V3
 });
 
 const TokenBundleSchema = new Schema({

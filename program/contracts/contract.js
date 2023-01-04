@@ -8,43 +8,36 @@ require("dotenv").config();
 const { ethers, BigNumber, Contract } = require("ethers");
 const { uniswapV2ABI, uniswapV2Router } = require("../contracts/const");
 const { erc20Abi } = require("./const");
+const { uniswapV3ABI } = require("./const");
+// const {
+//   abi: V3SwapRouterABI,
+// } = require("@uniswap/v3-periphery/artifacts/contracts/interfaces/ISwapRouter.sol/ISwapRouter.json");
+// const {
+//   abi: PeripheryPaymentsABI,
+// } = require("@uniswap/v3-periphery/artifacts/contracts/interfaces/IPeripheryPayments.sol/IPeripheryPayments.json");
+// const {
+//   abi: MulticallABI,
+// } = require("@uniswap/v3-periphery/artifacts/contracts/interfaces/IMulticall.sol/IMulticall.json");
+// const {
+//   abi: uniswapV2RouterABI,
+// } = require("@uniswap/v2-periphery/build/UniswapV2Router02.json");
 
-const {
-  abi: V3SwapRouterABI,
-} = require("@uniswap/v3-periphery/artifacts/contracts/interfaces/ISwapRouter.sol/ISwapRouter.json");
-const {
-  abi: PeripheryPaymentsABI,
-} = require("@uniswap/v3-periphery/artifacts/contracts/interfaces/IPeripheryPayments.sol/IPeripheryPayments.json");
-const {
-  abi: MulticallABI,
-} = require("@uniswap/v3-periphery/artifacts/contracts/interfaces/IMulticall.sol/IMulticall.json");
-
-/*
-- Task
-- Sell transaction
-- Buy transaction
-*/
-
-SEED_PHRASE = process.env.OWNER_WALLET_SEED_PHRASE;
+PRIVATE_KEY = process.env.PRIVATE_KEY;
 
 const getRouterContract = (provider, routerAddress) => {
-  const signer = ethers.Wallet.fromMnemonic(SEED_PHRASE).connect(provider);
+  const signer = new ethers.Wallet(PRIVATE_KEY, provider);
   routerContract = new ethers.Contract(routerAddress, uniswapV2ABI, signer);
   return routerContract;
 };
 
 const getERC20Contract = (provider, tokenAddress) => {
-  const signer = ethers.Wallet.fromMnemonic(SEED_PHRASE).connect(provider);
+  const signer = new ethers.Wallet(PRIVATE_KEY, provider);
   return new ethers.Contract(tokenAddress, erc20Abi, signer);
 };
 
 const getV3RouterContract = (provider, routerV3Address) => {
-  const signer = ethers.Wallet.fromMnemonic(SEED_PHRASE).connect(provider);
-  return new ethers.Contract(
-    routerV3Address,
-    V3SwapRouterABI.concat(PeripheryPaymentsABI).concat(MulticallABI),
-    signer
-  );
+  const signer = new ethers.Wallet(PRIVATE_KEY, provider);
+  return new ethers.Contract(routerV3Address, uniswapV3ABI, signer);
 };
 
 module.exports = {

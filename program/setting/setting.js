@@ -6,8 +6,12 @@ const {
   createUpdateSlippageFee,
 } = require("../database/action");
 const { performApprovalTransaction } = require("../monitor/performTxn");
-const config = require("../config/config.json");
-const router = require("../config/router.json");
+const config = require("./config.json");
+const router = require("./router.json");
+const slippage = require("./slippage.json");
+
+//connect to the database
+require("../database/connection");
 
 const setConfig = async () => {
   await createUpdateConfig(config);
@@ -31,18 +35,18 @@ const approveMaxToken = async (provider, address, tokenAddress) => {
   console.log("Approving tokens", performTokenApprovalResult);
 };
 
-const addTokenSlippageFee = async (feePercentage, slippagePercentage) => {
+const setSlippage = async () => {
   const updatedTokenFee = await createUpdateSlippageFee(
-    feePercentage,
-    slippagePercentage
+    slippage.feePercentage,
+    slippage.slippagePercentage
   );
 
   console.log("Token Slippage", updatedTokenFee);
 };
 
 module.exports = {
-  setConfig: setConfig,
+  setConfig,
   addNewRouter,
-  addTokenSlippageFee,
+  setSlippage,
   approveMaxToken,
 };

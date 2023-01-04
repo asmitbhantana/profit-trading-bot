@@ -103,8 +103,10 @@ const isInPoolTransaction = async (
     tokenAddress: tokenAddress,
     previousBalance: previousBalance,
     newBalance: newBalance,
-  }).exec();
-  return currentPendingTransaction != null;
+  });
+  return currentPendingTransaction
+    ? currentPendingTransaction.confirmed
+    : false;
 };
 
 const addPoolTransaction = async (
@@ -144,9 +146,9 @@ const updateConfirmation = async (
       previousBalance: previousBalance,
       newBalance: newBalance,
     },
-    { confirmed: true, failed: failed }
+    { confirmed: !failed, failed: failed }
   ).exec();
-
+  console.log("Updated Pending Transaction", updatedPendingTransaction);
   return updatedPendingTransaction;
 };
 
