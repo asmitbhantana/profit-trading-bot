@@ -27,10 +27,14 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
   //retive current owner address balance
   let ourBalanceDatas = await TokenBundle.find({
     wallet: currenConfiguration.ourWallet,
-  }).exec();
+  }).exec(); //if everything is empty
+
+  let brandNew = false;
 
   //initialize the database structure
   if (ourBalanceDatas.length == 0) {
+    brandNew = true;
+
     let ourTokens = await performWalletScan(
       chains,
       currenConfiguration.ourWallet
@@ -59,8 +63,34 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
   currenConfiguration.wallets.map(async (wallet) => {
     //retive data from moralis api
     let currentWalletData = await performWalletScan(chains, wallet);
-    console.log("1 Tracking Wallet", wallet);
 
+    const totalTokenBundle = await TokenBundle.find({ wallet: wallet }).exec();
+    //adding the total token bundle which is all sold
+    let additionalTokenBundle = [];
+    console.log("currentWalletData: ", currentWalletData);
+    totalTokenBundle.map((token) => {
+      let exclude = true;
+      for (let i = 0; i < currentWalletData.length && exclude; i++) {
+        if (
+          currentWalletData[i].token_address.toLowerCase() ==
+          token.tokenAddress.toLowerCase()
+        ) {
+          exclude = false;
+        }
+      }
+      if (exclude) {
+        additionalTokenBundle.push({
+          ...token._doc,
+          token_address: token.tokenAddress,
+          balance: "0",
+        });
+      }
+    });
+    currentWalletData = currentWalletData.concat(additionalTokenBundle);
+    console.log("data", wallet);
+    console.log("current wallet data: ", currentWalletData);
+
+    // return;
     //tally changes
     currentWalletData.map(async (data) => {
       //previous balance of the wallet
@@ -69,14 +99,28 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
         tokenAddress: data.token_address,
       }).exec();
 
-      //no previous balance hence add this to the database
-      console.log("2 Tracking Wallet", wallet, data.symbol);
-
       //our current balance of the wallet from DB
       const ourBalance = await TokenBundle.findOne({
         wallet: currenConfiguration.ourWallet,
         tokenAddress: data.token_address,
       }).exec();
+
+      if (brandNew) {
+        //just update track wallet database
+        await createUpdateTokens(wallet, data.token_address, {
+          wallet: wallet,
+
+          tokenAddress: data.token_address,
+          name: data.name,
+          decimal: data.decimals,
+          symbol: data.symbol,
+          logoURI: data.logoURI,
+          chain: chains.name,
+          network: data.network,
+          balance: data.balance,
+        });
+        return;
+      }
 
       //not the stable coins, weth etc.
       if (
@@ -84,36 +128,10 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
         currentRouter.wethAddress.toLowerCase() !=
           data.token_address.toLowerCase()
       ) {
-        console.log("3 Tracking Wallet", wallet, data.symbol);
-
-        // ourBalance
-        //   ? console.log(
-        //       "-----------\nOur Balance    :",
-        //       ourBalance.symbol,
-        //       ourBalance.balance
-        //     )
-        //   : console.log("-----------\nOur Balance:    XXX 0");
-
-        // //Print
-        // //Data from database
-        // console.log(
-        //   "Prev Balance   :",
-        //   previousBalance.symbol,
-        //   previousBalance.balance
-        // );
-
-        // // Data from the current wallet
-        // console.log(
-        //   "Current Balance:",
-        //   data.symbol,
-        //   data.balance,
-        //   "\n ----------"
-        // );
-
         const previousBalanceAmount = previousBalance
           ? BigNumber.from(previousBalance.balance)
           : BigNumber.from(0);
-        const currentBalanceAmount = data
+        const currentBalanceAmount = data.balance
           ? BigNumber.from(data.balance)
           : BigNumber.from(0);
         const ourBalanceNow = ourBalance
@@ -127,10 +145,10 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
           let amountToBuy = currentBalanceAmount.sub(previousBalanceAmount);
 
           if (!previousBalanceAmount.isZero() && ourBalance != null) {
-            percentageChange = currentBalanceAmount
-              .sub(previousBalanceAmount)
+            percentageChange = ourBalanceNow
+              .sub(currentBalanceAmount.sub(previousBalanceAmount))
               .mul(BigNumber.from(100))
-              .div(previousBalanceAmount);
+              .div(ourBalanceNow);
             amountToBuy = ourBalanceNow.mul(percentageChange).div(100);
           }
           console.log("Buy Percentage change", percentageChange.toString());
@@ -138,7 +156,6 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
           console.log("Our Balance Now", ourBalanceNow.toString());
 
           if (amountToBuy.isZero()) return;
-          //perform buy same
 
           //perform the buying of change amount if our balance is 0
           if (ourBalanceNow.isZero()) {
@@ -224,7 +241,7 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
               logoURI: data.logoURI,
               chain: chains.name,
               network: data.network,
-              balance: data.balance,
+              balance: data.balance ? data.balance : "0",
             });
           } else {
             //failed to buy
@@ -239,6 +256,7 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
 
         //the user performed sell
         else {
+          //done nothing
           if (
             previousBalanceAmount.toString() == currentBalanceAmount.toString()
           )
@@ -247,14 +265,16 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
           let percentageChange = BigNumber.from(100);
           let amountToSell = previousBalanceAmount.sub(currentBalanceAmount);
           if (!previousBalanceAmount.isZero()) {
-            percentageChange = previousBalanceAmount
-              .sub(currentBalanceAmount)
+            percentageChange = ourBalanceNow
+              .sub(previousBalanceAmount.sub(currentBalanceAmount))
               .mul(BigNumber.from(100))
-              .div(previousBalanceAmount);
+              .div(ourBalanceNow);
             percentageChange == 0
               ? (percentageChange = BigNumber.from(100))
               : BigNumber.from(percentageChange);
 
+            if (percentageChange.lt(BigNumber.from(0)))
+              percentageChange = BigNumber.from(100);
             amountToSell = ourBalanceNow.mul(percentageChange).div(100);
           }
           console.log("Sell Percentage change", percentageChange.toString());

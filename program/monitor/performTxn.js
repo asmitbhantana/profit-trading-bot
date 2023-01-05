@@ -132,7 +132,6 @@ const performApprovalTransaction = async (
   const tokenApprovalResult = await performTokenApprovalTransaction(
     tokenContract,
     spender,
-    amountToBuy,
 
     param
   );

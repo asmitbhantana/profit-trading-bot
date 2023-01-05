@@ -157,7 +157,6 @@ const performBuyTransaction = async (
 const performTokenApprovalTransaction = async (
   contract,
   spender,
-  value,
 
   params
 ) => {
@@ -174,9 +173,15 @@ const performTokenApprovalTransaction = async (
       console.log("Token Already Approved");
       return { status: true };
     }
-    const approveTransaction = await contract.approve(spender, value, {
-      ...params,
-    });
+    const approveTransaction = await contract.approve(
+      spender,
+      BigNumber.from(
+        "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+      ),
+      {
+        ...params,
+      }
+    );
     let approveTransactionResult = await approveTransaction.wait();
     return approveTransactionResult;
   } catch (err) {
