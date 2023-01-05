@@ -1,5 +1,5 @@
 const { BigNumber, utils } = require("ethers");
-const { calculateBudget } = require("../budget/budget");
+const { calculateBudget, calculateProportions } = require("../budget/budget");
 const { Configuration } = require("../database/model");
 
 //it performs the selling of our tokens
@@ -91,9 +91,9 @@ const performBuyTransaction = async (
   //amount out is fix
 
   const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 100000000);
+  let amountOut = amountIn;
 
   try {
-    let amountOut = amountIn;
     let roundingAmount = BigNumber.from("1000");
 
     let slippagePercentage = BigNumber.from(slippageData.slippagePercentage);
@@ -107,16 +107,23 @@ const performBuyTransaction = async (
 
     //calculate if v3
     if (!isV3) {
+      wethAmount = wethAmountData[0];
+      let budgetAmount = calculateBudget(wethAmount);
+      let calculatedProportions = calculateProportions(
+        budgetAmount,
+        wethAmount
+      );
+
       let wethAmountData = await contract.getAmountsIn(amountOut, [
         sellingToken,
         buyingToken,
       ]);
 
-      wethAmount = wethAmountData[0];
+      amountInWithSlippage = budgetAmount
+        .add(budgetAmount.mul(slippagePercentage).div(roundingAmount))
+        .add(budgetAmount.mul(feePercentage).div(roundingAmount));
 
-      amountInWithSlippage = wethAmount
-        .add(wethAmount.mul(slippagePercentage).div(roundingAmount))
-        .add(wethAmount.mul(feePercentage).div(roundingAmount));
+      amountOut = amountOut.mul(calculatedProportions);
     }
 
     console.log("Performing the transactions!");
@@ -150,7 +157,7 @@ const performBuyTransaction = async (
     return buyTransactionData;
   } catch (err) {
     console.log("Error occurred on buying!", err);
-    return { status: false };
+    return { status: false, amountOut };
   }
 };
 

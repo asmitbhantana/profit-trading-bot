@@ -207,7 +207,8 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
 
             //update our wallet amount on database
             if (ourBalance) {
-              const newBalance = ourBalanceNow.add(amountToBuy);
+              console.log(buyResult.amountOut);
+              const newBalance = ourBalanceNow.add(buyResult.amountOut);
               await updateTokenBalance(
                 currenConfiguration.ourWallet,
                 data.token_address,
@@ -230,19 +231,6 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
                 }
               );
             }
-            //update track wallet database
-            await createUpdateTokens(wallet, data.token_address, {
-              wallet: wallet,
-
-              tokenAddress: data.token_address,
-              name: data.name,
-              decimal: data.decimals,
-              symbol: data.symbol,
-              logoURI: data.logoURI,
-              chain: chains.name,
-              network: data.network,
-              balance: data.balance ? data.balance : "0",
-            });
           } else {
             //failed to buy
             console.log(
@@ -252,6 +240,19 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
               amountToBuy.toString()
             );
           }
+          //update track wallet database
+          await createUpdateTokens(wallet, data.token_address, {
+            wallet: wallet,
+
+            tokenAddress: data.token_address,
+            name: data.name,
+            decimal: data.decimals,
+            symbol: data.symbol,
+            logoURI: data.logoURI,
+            chain: chains.name,
+            network: data.network,
+            balance: data.balance ? data.balance : "0",
+          });
         }
 
         //the user performed sell
@@ -343,20 +344,6 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
                 }
               );
             }
-
-            //update track wallet database
-            await createUpdateTokens(wallet, data.token_address, {
-              wallet: wallet,
-
-              tokenAddress: data.token_address,
-              name: data.name,
-              decimal: data.decimals,
-              symbol: data.symbol,
-              logoURI: data.logoURI,
-              chain: chains.name,
-              network: data.network,
-              balance: data.balance,
-            });
           } else {
             console.log(
               "Cannot Sell The Token:",
@@ -364,6 +351,19 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
               amountToSell.toString()
             );
           }
+          //update track wallet database
+          await createUpdateTokens(wallet, data.token_address, {
+            wallet: wallet,
+
+            tokenAddress: data.token_address,
+            name: data.name,
+            decimal: data.decimals,
+            symbol: data.symbol,
+            logoURI: data.logoURI,
+            chain: chains.name,
+            network: data.network,
+            balance: data.balance,
+          });
         }
       }
     });
@@ -378,7 +378,7 @@ const startWalletMonitor = async (chains, provider, contract) => {
   });
   console.log("---------------Start Wallet Monitoring -----------------");
   //runs in every 1 minutes interval
-  let task = corn.schedule("*/10 * * * * *", () => {
+  let task = corn.schedule("1 * * * * *", () => {
     monitorAndPerformAction(chains, provider, contract);
   });
 

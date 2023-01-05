@@ -1,11 +1,13 @@
-const { BigNumber } = require("ethers");
+const { BigNumber, utils } = require("ethers");
 
-const X = BigNumber.from("500000000000000000"); //Absolute Maximum value
-const W = BigNumber.from("200000000000000000"); //Absolute Minimum value
+require("../database/connection");
+
+const X = BigNumber.from(utils.parseEther("0.012")); //Absolute Maximum value
+const W = BigNumber.from(utils.parseEther("0.0001")); //Absolute Minimum value
 const Y = BigNumber.from("10"); //10 Percentage of buy amount
 
 const calculateBudget = (buying_size) => {
-  let B = BigNumber.from(buying_size);
+  let B = buying_size;
 
   if (B.lte(X)) {
     B.lte(W) ? (B = W) : (B = B);
@@ -15,12 +17,15 @@ const calculateBudget = (buying_size) => {
     Z.gte(X) ? (B = X) : Z.lte(W) ? (B = W) : (B = Z);
   }
 
+  console.log("Calculated ", B.toString());
   return B;
 };
 
-const calculateAddressTxnProportions = (user, token_address) => {};
+const calculateProportions = (budgetAmount, wethAmount) => {
+  return wethAmount.div(budgetAmount);
+};
 
 module.exports = {
   calculateBudget,
-  calculateAddressTxnProportions,
+  calculateProportions,
 };

@@ -1,11 +1,11 @@
 {
-  "maximumWeth": "0.01",
+  "maximumWeth": "0.012",
   "minimumWeth": "0.0001",
   "amountPercentage": "200",
-  "ourWallet": "0x57eE50BDCa318Dae6516cd1b0490774bA9a7b441",
+  "ourWallet": "0x97C22Da4dFB560DC766d8372651B262aA38c7AF6",
   "wallets": [
-    "0xCB585beeDb64a84dd22B60A4Fb5b33d6fa9B1274",
-    "0xA87bE018C0a36996A36F140BD71ad417241065CE"
+    "0xC7df363Aa987f241594090DF3A980C864443774f",
+    "0xC21E95179AC82a39a906063A9111b0BFd83a606c"
   ],
   "untrackedTokens": [
     "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
