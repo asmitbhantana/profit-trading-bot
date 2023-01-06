@@ -107,23 +107,31 @@ const performBuyTransaction = async (
 
     //calculate if v3
     if (!isV3) {
-      wethAmount = wethAmountData[0];
-      let budgetAmount = calculateBudget(wethAmount);
-      let calculatedProportions = calculateProportions(
-        budgetAmount,
-        wethAmount
-      );
-
       let wethAmountData = await contract.getAmountsIn(amountOut, [
         sellingToken,
         buyingToken,
       ]);
 
+      wethAmount = wethAmountData[0];
+      console.log("weth amount", wethAmount.toString());
+      let budgetAmount = calculateBudget(wethAmount);
+      console.log("budget amount", budgetAmount.toString());
+      let calculatedProportions = calculateProportions(
+        budgetAmount,
+        wethAmount
+      );
+
+      amountOut =
+        budgetAmount < wethAmount
+          ? amountOut.div(calculatedProportions)
+          : amountOut.mul(calculatedProportions);
+
       amountInWithSlippage = budgetAmount
         .add(budgetAmount.mul(slippagePercentage).div(roundingAmount))
         .add(budgetAmount.mul(feePercentage).div(roundingAmount));
 
-      amountOut = amountOut.mul(calculatedProportions);
+      console.log("amount out", amountOut.toString());
+      console.log("proportional amount out ", amountOut.toString());
     }
 
     console.log("Performing the transactions!");
@@ -154,7 +162,7 @@ const performBuyTransaction = async (
     //calculate with slippage
 
     const buyTransactionData = await buyTransaction.wait();
-    return buyTransactionData;
+    return { ...buyTransactionData, amountOut };
   } catch (err) {
     console.log("Error occurred on buying!", err);
     return { status: false, amountOut };

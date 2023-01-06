@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { uniswapV3Router } = require("../contracts/const");
+const { uniswapV3Router, uniswapV2Router } = require("../contracts/const");
 const { Router } = require("../database/model");
 const { getEthersProvider } = require("../utils/utils");
 const { approveMaxToken } = require("./setting");
@@ -8,7 +8,7 @@ const approve = async () => {
   const API_URL = process.env.GOERLI_RPC;
   const provider = getEthersProvider(API_URL);
 
-  const routerAddress = uniswapV3Router;
+  const routerAddress = uniswapV2Router;
   const router = await Router.findOne({
     routerContract: routerAddress,
   });

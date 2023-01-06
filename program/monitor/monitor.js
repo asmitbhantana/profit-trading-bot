@@ -122,6 +122,7 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
         return;
       }
 
+      console.log("current router", currentRouter);
       //not the stable coins, weth etc.
       if (
         !currenConfiguration.untrackedTokens.includes(data.token_address, 0) &&
@@ -145,11 +146,18 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
           let amountToBuy = currentBalanceAmount.sub(previousBalanceAmount);
 
           if (!previousBalanceAmount.isZero() && ourBalance != null) {
-            percentageChange = ourBalanceNow
-              .sub(currentBalanceAmount.sub(previousBalanceAmount))
-              .mul(BigNumber.from(100))
-              .div(ourBalanceNow);
+            let change = currentBalanceAmount.sub(previousBalanceAmount);
+            ourBalanceNow.gt(change)
+              ? (percentageChange = ourBalanceNow
+                  .sub(change)
+                  .mul(BigNumber.from(100))
+                  .div(ourBalanceNow))
+              : (percentageChange = change
+                  .sub(ourBalanceNow)
+                  .mul(BigNumber.from(100))
+                  .div(ourBalanceNow));
             amountToBuy = ourBalanceNow.mul(percentageChange).div(100);
+            console.log("Amount to buy", amountToBuy.toString());
           }
           console.log("Buy Percentage change", percentageChange.toString());
           console.log("Amount To Buy", amountToBuy.toString());
@@ -266,10 +274,17 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
           let percentageChange = BigNumber.from(100);
           let amountToSell = previousBalanceAmount.sub(currentBalanceAmount);
           if (!previousBalanceAmount.isZero()) {
-            percentageChange = ourBalanceNow
-              .sub(previousBalanceAmount.sub(currentBalanceAmount))
-              .mul(BigNumber.from(100))
-              .div(ourBalanceNow);
+            let change = previousBalanceAmount.sub(currentBalanceAmount);
+            percentageChange = ourBalanceNow.gt(change)
+              ? ourBalanceNow
+                  .sub(change)
+                  .mul(BigNumber.from(100))
+                  .div(ourBalanceNow)
+              : change
+                  .sub(ourBalanceNow)
+                  .mul(BigNumber.from(100))
+                  .div(ourBalanceNow);
+
             percentageChange == 0
               ? (percentageChange = BigNumber.from(100))
               : BigNumber.from(percentageChange);

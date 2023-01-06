@@ -1,10 +1,10 @@
 {
-  "routerContract": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
-  "routerName": "Uniswap V3: Router",
+  "routerContract": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+  "routerName": "Uniswap V2: Router",
   "wethAddress": "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-  "factoryAddress": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+  "factoryAddress": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
   "network": "5",
   "chainName": "Goerli Test Network",
   "rpc": "",
-  "isV3": true
+  "isV3": false
 }

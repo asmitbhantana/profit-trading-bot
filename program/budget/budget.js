@@ -22,7 +22,11 @@ const calculateBudget = (buying_size) => {
 };
 
 const calculateProportions = (budgetAmount, wethAmount) => {
-  return wethAmount.div(budgetAmount);
+  let proportion =
+    budgetAmount < wethAmount
+      ? wethAmount.div(budgetAmount)
+      : budgetAmount.div(wethAmount);
+  return proportion;
 };
 
 module.exports = {

@@ -41,15 +41,15 @@ app.post("/*", async (req, res) => {
     value: contractCall.value,
     gasLimit: contractCall.gas,
   };
-  if (currentRouter.version == "2") {
+  if (!currentRouter.isV3) {
     let methodName = contractCallData.methodName;
     let params = { ...contractCallData.params, value: contractCall.value };
     await analyzeV2Transaction(methodName, routerAddress, params, metadata);
-  } else if (currentRouter.version == "3") {
+  } else {
     let subCalls = JSON.parse(contractCallData.subCalls);
     let params = { ...contractCallData.params, value: contractCall.value };
     await analyzeV3Transaction(subCalls, routerAddress, params, metadata);
-  } else res.json({ done: "error" });
+  }
 });
 
 app.listen(port, () => {

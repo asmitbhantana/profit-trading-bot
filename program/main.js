@@ -33,8 +33,8 @@ const API_URL = process.env.GOERLI_RPC;
 const provider = getEthersProvider(API_URL);
 
 //Uniswap Router Contract
-const routerContract = getV3RouterContract(provider, uniswapV3Router);
-// const routerContract = getRouterContract(provider, uniswapV2Router);
+// const routerContract = getV3RouterContract(provider, uniswapV3Router);
+const routerContract = getRouterContract(provider, uniswapV2Router);
 
 // approveMaxToken(provider, routerContract.address, routerContract.WETH);
 startWalletMonitor(EvmChain.GOERLI, provider, routerContract);
