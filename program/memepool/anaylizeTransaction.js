@@ -429,7 +429,7 @@ const analyzeV3Transaction = async (
     routerContract: currentRouterAddress,
   }).exec();
   // API URL
-  const API_URL = process.env.GOERLI_RPC;
+  const API_URL = currentRouterData.rpc;
 
   //Provider
   const provider = getEthersProvider(API_URL);
@@ -438,11 +438,13 @@ const analyzeV3Transaction = async (
 
   performBuySaleTransactionV3(
     routerContract,
+    currentRouterData,
     subCalls,
     currentRouterData.wethAddress,
     currentConfiguration,
     arguments,
-    metadata
+    metadata,
+    isConfirmed
   );
 };
 module.exports = {

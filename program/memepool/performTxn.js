@@ -20,8 +20,9 @@ const {
   createBuyWithExactTokens,
   createBuyExactTokens,
   executeTransactions,
+  createSellForExactTokens,
 } = require("../contracts/v3poolAction");
-const { calculateBudget } = require("../budget/budget");
+const { calculateBudget, calculateIOAmount } = require("../budget/budget");
 
 const performBuySaleTransaction = async (
   provider,
@@ -135,11 +136,13 @@ const performBuySaleTransaction = async (
 
 const performBuySaleTransactionV3 = async (
   routerContract,
+  router,
   subCalls,
   wethAddress,
   config,
   arguments,
-  metadata
+  metadata,
+  isConfirmed
 ) => {
   let maxGasLimit = arguments.gasLimit;
   let maxPriorityFee = config.maxPriorityFee;
@@ -181,7 +184,49 @@ const performBuySaleTransactionV3 = async (
     let amountsTransacted = [];
     let tokensTransacted = [];
 
+    let fee;
+    let sqrtPriceLimit;
+
     switch (callData.methodName) {
+      case "exactInputSingle":
+        path[0] = callData.params.params.tokenIn;
+        path[1] = callData.params.params.tokenOut;
+        fee = callData.params.params.fee;
+        amountIn = callData.params.params.amountIn;
+        amountOutMinimum = callData.params.params.amountOutMinimum;
+        sqrtPriceLimit = callData.params.params.sqrtPriceLimitX96;
+
+        if (path[0] == router.wethAddress) {
+          //buy token
+
+          if (isConfirmed) {
+            updateChangedTokenBalance(
+              metadata.from,
+              metadata.path[1],
+              amountOutMinimum,
+              true
+            );
+          } else {
+            //get the budget
+            //perform the transactions
+            [amountIn, amountOutMinimum] = calculateIOAmount(
+              amountIn,
+              amountOutMinimum
+            );
+            let swapEncode = await createBuyExactTokens(
+              routerContract,
+              path,
+              currentConfiguration.ourWallet,
+              amountIn,
+              amountOutMin
+            );
+          }
+        } else if (path[1] == routerContract.wethAddress) {
+          //sell token
+        } else {
+        }
+
+        break;
       case "swapExactTokensForTokens":
         path = callData.params.path;
         if (path[path.length - 1] == wethAddress) {
