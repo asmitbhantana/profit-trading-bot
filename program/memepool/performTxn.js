@@ -10,7 +10,10 @@ const {
   buyWithExactTokens,
   sellForExactTokens,
 } = require("../contracts/poolAction");
-const { updateTokenBalance } = require("../database/action");
+const {
+  updateTokenBalance,
+  updateChangedTokenBalance,
+} = require("../database/action");
 const { TransactionDone, TokenBundle } = require("../database/model");
 const {
   createSellExactTokens,
@@ -18,6 +21,7 @@ const {
   createBuyExactTokens,
   executeTransactions,
 } = require("../contracts/v3poolAction");
+const { calculateBudget } = require("../budget/budget");
 
 const performBuySaleTransaction = async (
   provider,
@@ -32,16 +36,19 @@ const performBuySaleTransaction = async (
   arguments,
   metadata
 ) => {
-  let maxGasLimit = arguments.gasLimit;
+  let maxGasLimit = metadata.gasLimit;
   let maxPriorityFee = config.maxPriorityFee;
   let feeData = await provider.getFeeData();
 
   if (maxGasLimit > config.maxGasLimit) {
     maxGasLimit = config.maxGasLimit;
+    console.log("Max gas limit exceeded", maxGasLimit);
   }
+
   let param = {
     maxFeePerGas: Number(feeData["maxFeePerGas"]) + Number(maxPriorityFee),
     maxPriorityFeePerGas: maxPriorityFee,
+    gasLimit: maxGasLimit,
   };
 
   console.log("Fee Param", param);
@@ -116,23 +123,12 @@ const performBuySaleTransaction = async (
     }
   }
   console.log("Transaction Result is", transactionResult);
-  if (transactionResult.state) {
-    //update user balance on the database
-    const ourBalance = await TokenBundle({
-      wallet: config.ourWallet,
-      tokenAddress: tokenTransacted,
-    });
-    const ourBalanceNow = BigNumber.from(ourBalance.balance);
-    let newBalance;
-    if (isBuy) {
-      newBalance = ourBalanceNow.add(amountTransacted);
-    } else {
-      newBalance = ourBalanceNow.sub(amountTransacted);
-    }
-    await updateTokenBalance(
+  if (transactionResult[0].status == 1) {
+    updateChangedTokenBalance(
       config.ourWallet,
       tokenTransacted,
-      newBalance.toString()
+      amountTransacted,
+      isBuy
     );
   }
 };
@@ -201,11 +197,20 @@ const performBuySaleTransactionV3 = async (
           encodedDatas.push(swapEncode);
         } else {
           //exact = true
+          //Budget Amount Calculations
+          budgetAmount = calculateBudget(amountIn);
+          calculatedProportions = calculatedProportions(budgetAmount, amountIn);
+
+          amountOutMin =
+            budgetAmount < amountIn
+              ? amountOutMin.div(calculatedProportions)
+              : amountOutMin.mul(calculatedProportions);
+
           let swapEncode = await createBuyWithExactTokens(
             routerContract,
             path,
             currentConfiguration.ourWallet,
-            amountIn,
+            budgetAmount,
             amountOutMin
           );
           tokensTransacted.push(path[path.length - 1]);
@@ -229,12 +234,25 @@ const performBuySaleTransactionV3 = async (
           encodedDatas.push(swapEncode);
         } else {
           //exact = false
+
+          //Budget Amount Calculations
+          budgetAmount = calculateBudget(amountInMaximum);
+          calculatedProportions = calculatedProportions(
+            budgetAmount,
+            amountInMaximum
+          );
+
+          amountOut =
+            budgetAmount < amountInMaximum
+              ? amountOut.div(calculatedProportions)
+              : amountOut.mul(calculatedProportions);
+
           let swapEncode = await createBuyExactTokens(
             routerContract,
             path,
             currentConfiguration.ourWallet,
             amountOut,
-            amountInMaximum
+            budgetAmount
           );
           encodedDatas.push(swapEncode);
           amountsTransacted.push(amountOut);
@@ -251,24 +269,15 @@ const performBuySaleTransactionV3 = async (
   );
 
   console.log("Transaction Result is", transactionResult);
-  if (transactionResult.state) {
+  if (transactionResult[0].status == 1) {
     amountsTransacted.forEach(async (amountTransacted, index) => {
       //update user balance on the database
-      const ourBalance = await TokenBundle({
-        wallet: config.ourWallet,
-        tokenAddress: tokensTransacted[index],
-      });
-      const ourBalanceNow = BigNumber.from(ourBalance.balance);
-      let newBalance;
-      if (isBuy) {
-        newBalance = ourBalanceNow.add(amountTransacted);
-      } else {
-        newBalance = ourBalanceNow.sub(amountTransacted);
-      }
-      updateTokenBalance(
+
+      await updateChangedTokenBalance(
         config.ourWallet,
-        tokensTransacted,
-        newBalance.toString()
+        tokensTransacted[index],
+        amountTransacted,
+        isBuy
       );
     });
   }

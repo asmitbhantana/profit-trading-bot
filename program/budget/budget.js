@@ -17,19 +17,57 @@ const calculateBudget = (buying_size) => {
     Z.gte(X) ? (B = X) : Z.lte(W) ? (B = W) : (B = Z);
   }
 
-  console.log("Calculated ", B.toString());
+  console.log("Budget Amount", B.toString());
   return B;
 };
 
 const calculateProportions = (budgetAmount, wethAmount) => {
-  let proportion =
-    budgetAmount < wethAmount
-      ? wethAmount.div(budgetAmount)
-      : budgetAmount.div(wethAmount);
+  let proportion = budgetAmount.lt(wethAmount)
+    ? wethAmount.div(budgetAmount)
+    : budgetAmount.div(wethAmount);
+
+  console.log("Proportion is", proportion.toString());
   return proportion;
+};
+
+const calculateIOAmount = (amountIn, amountOut) => {
+  console.log("Amount in is", amountIn.toString());
+  console.log("Amount out is", amountOut.toString());
+
+  amountIn = BigNumber.from(amountIn);
+  amountOut = BigNumber.from(amountOut);
+
+  let budgetAmount = calculateBudget(amountIn);
+  let calculatedProportions = calculateProportions(budgetAmount, amountIn);
+
+  let calcAmountOut = budgetAmount.lt(amountIn)
+    ? amountOut.div(calculatedProportions)
+    : amountOut.mul(calculatedProportions);
+
+  console.log("Calc amount out is", calcAmountOut.toString());
+  return [budgetAmount, calcAmountOut];
+};
+
+const calculateSellAmount = (totalBalance, amountTransact, ourBalance) => {
+  //calculate the transaction amount
+  if (totalBalance == "0") {
+    return [ourBalance, BigNumber.from(1)];
+  }
+  totalBalance = BigNumber.from(totalBalance);
+  amountTransact = BigNumber.from(amountTransact);
+
+  let ratio = totalBalance.div(amountTransact);
+  console.log("ratio is", ratio.toString());
+  console.log("total balance is", totalBalance.toString());
+  console.log("amount transact is", amountTransact.toString());
+  console.log("our balance is", ourBalance.toString());
+
+  return [BigNumber.from(ourBalance).div(ratio), ratio];
 };
 
 module.exports = {
   calculateBudget,
   calculateProportions,
+  calculateIOAmount,
+  calculateSellAmount,
 };

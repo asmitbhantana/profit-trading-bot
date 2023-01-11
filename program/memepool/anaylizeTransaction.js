@@ -1,11 +1,21 @@
 require("dotenv").config();
 const { BigNumber } = require("ethers");
+const {
+  calculateProportions,
+  calculateBudget,
+  calculateIOAmount,
+  calculateSellAmount,
+} = require("../budget/budget");
 const contract = require("../contracts/contract");
 const {
   getERC20Contract,
   getRouterContract,
   getV3RouterContract,
 } = require("../contracts/contract");
+const {
+  updateChangedTokenBalance,
+  getAllWalletBalance,
+} = require("../database/action");
 
 const { Router, TokenBundle, Configuration } = require("../database/model");
 const {
@@ -20,7 +30,8 @@ const analyzeV2Transaction = async (
   currentRouterAddress,
 
   params,
-  metadata
+  metadata,
+  isConfirmed
 ) => {
   let currentConfiguration = await Configuration.findOne({}).exec();
 
@@ -50,6 +61,33 @@ const analyzeV2Transaction = async (
   let value = params.value;
   let isBuy = true;
 
+  let walletBalance0 = await getAllWalletBalance(
+    path[0],
+    currentConfiguration.ourWallet
+  );
+  let walletBalance1 = await getAllWalletBalance(
+    path[path.length - 1],
+    currentConfiguration.ourWallet
+  );
+
+  let ourBalance0 = await TokenBundle.findOne({
+    wallet: currentConfiguration.ourWallet,
+    tokenAddress: path[0],
+  }).exec();
+
+  if (ourBalance0) ourBalance0 = ourBalance0.balance;
+  else ourBalance0 = 0;
+
+  let ourBalance1 = await TokenBundle.findOne({
+    wallet: currentConfiguration.ourWallet,
+    tokenAddress: path[path.length - 1],
+  }).exec();
+
+  if (ourBalance1) ourBalance1 = ourBalance1.balance;
+  else ourBalance1 = 0;
+
+  let ratio;
+
   console.log("Starting Of Method", methodName);
 
   switch (methodName) {
@@ -62,21 +100,195 @@ const analyzeV2Transaction = async (
       if (path[path.length - 1] == wethAddress) {
         // sell token
         isBuy = false;
-        performBuySaleTransaction(
+
+        if (isConfirmed) {
+          await updateChangedTokenBalance(
+            metadata.from,
+            path[0],
+            amountIn,
+            isBuy
+          );
+        } else {
+          [amountIn, ratio] = calculateSellAmount(
+            walletBalance0,
+            amountIn,
+            ourBalance0
+          );
+
+          await performBuySaleTransaction(
+            provider,
+            currentRouter,
+            path[0],
+            path[path.length - 1],
+            amountIn,
+            BigNumber.from(amountOutMin).div(ratio),
+            isBuy,
+            false,
+            currentConfiguration,
+            params,
+            metadata
+          );
+        }
+      } else {
+        if (isConfirmed) {
+          if (path[0] == wethAddress) {
+            //buy other token
+            await updateChangedTokenBalance(
+              metadata.from,
+              path[0],
+              amountOutMin,
+              isBuy
+            );
+          } else {
+            if (isConfirmed) {
+              await updateChangedTokenBalance(
+                metadata.from,
+                path[0],
+                amountOutMin,
+                true
+              );
+              await updateChangedTokenBalance(
+                metadata.from,
+                path[path.length - 1],
+                amountOutMin,
+                false
+              );
+            }
+          }
+        } else {
+          [amountIn, amountOutMin] = calculateIOAmount(amountIn, amountOutMin);
+
+          await performBuySaleTransaction(
+            provider,
+            currentRouter,
+            path[0],
+            path[path.length - 1],
+            amountIn,
+            amountOutMin,
+            isBuy,
+            true,
+            currentConfiguration,
+            params,
+            metadata
+          );
+        }
+      }
+
+      break;
+    case "swapTokensForExactTokens":
+      amountInMax = params.amountInMax;
+      amountOut = params.amountOut;
+
+      if (path[0] == wethAddress) {
+        if (isConfirmed) {
+          await updateChangedTokenBalance(
+            metadata.from,
+            path[path.length - 1],
+            amountOut,
+            isBuy
+          );
+        }
+
+        [amountInMax, amountOut] = calculateIOAmount(amountInMax, amountOut);
+
+        //buy
+        await performBuySaleTransaction(
           provider,
           currentRouter,
           path[0],
           path[path.length - 1],
-          amountIn,
-          amountOutMin,
+          amountInMax,
+          amountOut,
           isBuy,
           false,
           currentConfiguration,
           params,
           metadata
         );
+      } // sell token
+      else {
+        //sale token
+        if (path[path.length - 1] == wethAddress) {
+          isBuy = false;
+
+          if (isConfirmed) {
+            await updateChangedTokenBalance(
+              metadata.from,
+              path[0],
+              amountOut,
+              isBuy
+            );
+          } else {
+            [amountInMax, ratio] = calculateSellAmount(
+              walletBalance0,
+              amountInMax,
+              ourBalance0
+            );
+
+            await performBuySaleTransaction(
+              provider,
+              currentRouter,
+              path[0],
+              path[path.length - 1],
+              amountInMax,
+              BigNumber.from(amountOut).div(ratio),
+              isBuy,
+              false,
+              currentConfiguration,
+              params,
+              metadata
+            );
+          }
+        } else {
+          if (isConfirmed) {
+            await updateChangedTokenBalance(
+              metadata.from,
+              path[0],
+              amountOut,
+              true
+            );
+            await updateChangedTokenBalance(
+              wallet.from,
+              path[path.length - 1],
+              amountOut,
+              false
+            );
+          } else {
+            await performBuySaleTransaction(
+              provider,
+              currentRouter,
+              path[0],
+              path[path.length - 1],
+              amountInMax,
+              amountOut,
+              isBuy,
+              false,
+              currentConfiguration,
+              params,
+              metadata
+            );
+          }
+        }
+      }
+
+      break;
+
+    //buy
+    case "swapExactETHForTokens":
+    case "swapExactETHForTokensSupportingFeeOnTransferTokens":
+      amountIn = value;
+      amountOutMin = params.amountOutMin;
+      if (isConfirmed) {
+        await updateChangedTokenBalance(
+          wallet.from,
+          path[path.length - 1],
+          amountOutMin,
+          isBuy
+        );
       } else {
-        performBuySaleTransaction(
+        [amountIn, amountOutMin] = calculateIOAmount(amountIn, amountOutMin);
+
+        await performBuySaleTransaction(
           provider,
           currentRouter,
           path[0],
@@ -92,69 +304,34 @@ const analyzeV2Transaction = async (
       }
 
       break;
-    case "swapTokensForExactTokens":
-      amountInMax = params.amountInMax;
-      amountOut = params.amountOut;
-      if (path[path.length - 1] == wethAddress) {
-        // sell token
-        isBuy = false;
-      }
-
-      performBuySaleTransaction(
-        provider,
-        currentRouter,
-        path[0],
-        path[path.length - 1],
-        amountInMax,
-        amountOut,
-        isBuy,
-        false,
-        currentConfiguration,
-        params,
-        metadata
-      );
-
-      break;
-
-    //buy
-    case "swapExactETHForTokens":
-    case "swapExactETHForTokensSupportingFeeOnTransferTokens":
-      amountIn = value;
-      amountOutMin = params.amountOutMin;
-
-      performBuySaleTransaction(
-        provider,
-        currentRouter,
-        path[0],
-        path[path.length - 1],
-        amountIn,
-        amountOutMin,
-        isBuy,
-        true,
-        currentConfiguration,
-        params,
-        metadata
-      );
-
-      break;
     case "swapETHForExactTokens":
       //amountOut: exact amount of tokens
       amountOut = params.amountOut;
       amountIn = value;
+      if (isConfirmed) {
+        await updateChangedTokenBalance(
+          metadata.from,
+          path[path.length - 1],
+          amountOut,
+          isBuy
+        );
+      } else {
+        [amountIn, amountOut] = calculateIOAmount(amountIn, amountOut);
 
-      performBuySaleTransaction(
-        provider,
-        currentRouter,
-        path[0],
-        path[path.length - 1],
-        amountIn,
-        amountOut,
-        isBuy,
-        false,
-        currentConfiguration,
-        params,
-        metadata
-      );
+        performBuySaleTransaction(
+          provider,
+          currentRouter,
+          path[0],
+          path[path.length - 1],
+          amountIn,
+          amountOut,
+          isBuy,
+          false,
+          currentConfiguration,
+          params,
+          metadata
+        );
+      }
 
       break;
     //sell
@@ -165,20 +342,33 @@ const analyzeV2Transaction = async (
       amountIn = params.amountIn;
       amountOutMin = params.amountOutMin;
       isBuy = false;
-
-      performBuySaleTransaction(
-        provider,
-        currentRouter,
-        path[0],
-        path[path.length - 1],
-        amountIn,
-        amountOutMin,
-        isBuy,
-        false,
-        currentConfiguration,
-        params,
-        metadata
-      );
+      if (isConfirmed) {
+        await updateChangedTokenBalance(
+          metadata.from,
+          path[0],
+          amountIn,
+          isBuy
+        );
+      } else {
+        [amountIn, ratio] = calculateSellAmount(
+          walletBalance0,
+          amountIn,
+          ourBalance0
+        );
+        performBuySaleTransaction(
+          provider,
+          currentRouter,
+          path[0],
+          path[path.length - 1],
+          amountIn,
+          BigNumber.from(amountOutMin).div(ratio),
+          isBuy,
+          false,
+          currentConfiguration,
+          params,
+          metadata
+        );
+      }
 
       break;
 
@@ -188,20 +378,33 @@ const analyzeV2Transaction = async (
       amountOut = params.amountOut;
       amountInMax = params.amountInMax;
       isBuy = false;
-
-      performBuySaleTransaction(
-        provider,
-        currentRouter,
-        path[0],
-        path[path.length - 1],
-        amountInMax,
-        amountOut,
-        isBuy,
-        true,
-        currentConfiguration,
-        params,
-        metadata
-      );
+      if (isConfirmed) {
+        await updateChangedTokenBalance(
+          metadata.from,
+          path[0],
+          amountInMax,
+          isBuy
+        );
+      } else {
+        [amountInMax, ratio] = calculateSellAmount(
+          walletBalance0,
+          amountInMax,
+          ourBalance0
+        );
+        performBuySaleTransaction(
+          provider,
+          currentRouter,
+          path[0],
+          path[path.length - 1],
+          amountInMax,
+          BigNumber.from(amountOut).div(ratio),
+          isBuy,
+          true,
+          currentConfiguration,
+          params,
+          metadata
+        );
+      }
 
       break;
   }
@@ -212,7 +415,8 @@ const analyzeV3Transaction = async (
   subCalls,
   routerAddress,
   arguments,
-  metadata
+  metadata,
+  isConfirmed
 ) => {
   //we will get params and every methods
   //make sure we change the multicall from one method to another

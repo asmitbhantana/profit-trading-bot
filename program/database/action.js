@@ -21,6 +21,7 @@ Configurations:
   update all the config
  */
 
+const { BigNumber } = require("ethers");
 const {
   Configuration,
   TokenBundle,
@@ -83,8 +84,49 @@ const updateTokenBalance = async function (wallet, token, new_balance) {
     },
     { balance: new_balance }
   ).exec();
-
+  console.log("token updated", tokenToUpdate);
   return tokenToUpdate;
+};
+
+const updateChangedTokenBalance = async function (
+  wallet,
+  token,
+  changedBalance,
+  isBuy
+) {
+  let currentBalanceAmount = await TokenBundle.find({
+    wallet: wallet,
+    tokenAddress: token,
+  }).exec();
+
+  if (currentBalanceAmount.length > 0) {
+    currentBalanceAmount = BigNumber.from(currentBalanceAmount[0].balance);
+    if (isBuy)
+      currentBalanceAmount = currentBalanceAmount.add(
+        BigNumber.from(changedBalance)
+      );
+    else
+      currentBalanceAmount = currentBalanceAmount.sub(
+        BigNumber.from(changedBalance)
+      );
+
+    const newBalance = updateTokenBalance(
+      wallet,
+      token,
+      currentBalanceAmount.toString()
+    );
+    console.log("token updated", newBalance);
+  } else {
+    if (isBuy) {
+      const newBalance = TokenBundle({
+        wallet: wallet,
+        tokenAddress: token,
+        balance: changedBalance,
+      });
+      newBalance.save();
+      console.log("token updated", newBalance);
+    }
+  }
 };
 
 const isTrackingwallet = async (wallet) => {
@@ -154,6 +196,28 @@ const updateConfirmation = async (
   return updatedPendingTransaction;
 };
 
+const getAllWalletBalance = async (token_address, excludeWallet) => {
+  const allWalletBalance = await TokenBundle.find({
+    tokenAddress: token_address,
+  }).exec();
+  console.log("token", token_address);
+  console.log("All Balance", allWalletBalance);
+  let totalBalanceNow = BigNumber.from("0");
+  allWalletBalance.map((bundle) => {
+    if (bundle.wallet != excludeWallet) {
+      totalBalanceNow.add(BigNumber.from(bundle.balance));
+    }
+  });
+
+  console.log(
+    "Total Balance for",
+    token_address,
+    "is",
+    totalBalanceNow.toString()
+  );
+  return totalBalanceNow;
+};
+
 module.exports = {
   createUpdateTokens,
   createUpdateConfig,
@@ -165,4 +229,6 @@ module.exports = {
   addPoolTransaction,
   updateConfirmation,
   updateTokenBalance,
+  getAllWalletBalance,
+  updateChangedTokenBalance,
 };

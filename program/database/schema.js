@@ -1,10 +1,11 @@
+const { getAddress } = require("ethers/lib/utils");
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const TransactionSchema = new Schema({
   hash: String,
   success: Boolean,
-  tokenAddress: String,
+  tokenAddress: { type: String, get: getAddress },
   date: { type: Date, default: Date.now },
   value: String,
   sender: String,
@@ -36,7 +37,7 @@ const RouterSchema = new Schema({
 
 const TokenBundleSchema = new Schema({
   wallet: String,
-  tokenAddress: String,
+  tokenAddress: { type: String, get: getAddress },
   name: String,
   decimal: Number,
   symbol: String,
@@ -49,7 +50,7 @@ const TokenBundleSchema = new Schema({
 //it keep tracks of all the transactions that are on the current memepool saves their hashes
 const TransactionPoolSchema = new Schema({
   targetWallet: String,
-  tokenAddress: String,
+  tokenAddress: { type: String, get: getAddress },
   transactionHash: String,
   previousBalance: String,
   newBalance: String,

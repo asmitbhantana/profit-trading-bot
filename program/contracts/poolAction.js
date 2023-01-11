@@ -119,6 +119,8 @@ const buyWithExactTokens = async (
 
     console.log("Buying Amount", amountToBuy.toString());
     console.log("Weth Amount", wethAmount.toString());
+    console.log("selling token", sellingToken);
+    console.log("buying token", buyingToken);
     const buyTransaction = await contract.swapExactTokensForTokens(
       amountToBuy, // amount you want to buy
       wethAmount, //max weth you can spend
