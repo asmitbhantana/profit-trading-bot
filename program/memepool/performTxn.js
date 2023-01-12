@@ -13,6 +13,7 @@ const {
 const {
   updateTokenBalance,
   updateChangedTokenBalance,
+  getAllWalletBalance,
 } = require("../database/action");
 const { TransactionDone, TokenBundle } = require("../database/model");
 const {
@@ -22,7 +23,11 @@ const {
   executeTransactions,
   createSellForExactTokens,
 } = require("../contracts/v3poolAction");
-const { calculateBudget, calculateIOAmount } = require("../budget/budget");
+const {
+  calculateBudget,
+  calculateIOAmount,
+  calculateSellAmount,
+} = require("../budget/budget");
 
 const performBuySaleTransaction = async (
   provider,
@@ -135,25 +140,31 @@ const performBuySaleTransaction = async (
 };
 
 const performBuySaleTransactionV3 = async (
+  provider,
   routerContract,
   router,
   subCalls,
-  wethAddress,
   config,
   arguments,
   metadata,
   isConfirmed
 ) => {
-  let maxGasLimit = arguments.gasLimit;
+  let maxGasLimit = metadata.gasLimit;
   let maxPriorityFee = config.maxPriorityFee;
   let feeData = await provider.getFeeData();
 
   if (maxGasLimit > config.maxGasLimit) {
     maxGasLimit = config.maxGasLimit;
   }
+  //TODO:: change this on production
   let param = {
-    maxFeePerGas: Number(feeData["maxFeePerGas"]) + Number(maxPriorityFee),
-    maxPriorityFeePerGas: maxPriorityFee,
+    maxFeePerGas:
+      Number(feeData["maxFeePerGas"]) + Number(feeData["maxFeePerGas"] * 10),
+    // Number(feeData["maxFeePerGas"]) + Number(maxPriorityFee),
+
+    // maxPriorityFeePerGas: maxPriorityFee,
+    maxPriorityFeePerGas: feeData["maxFeePerGas"] * 10,
+    gasLimit: maxGasLimit,
   };
 
   let doneTransaction = new TransactionDone({
@@ -169,23 +180,32 @@ const performBuySaleTransactionV3 = async (
 
   doneTransaction.save();
 
-  const encodedDatas = [];
   let transactionResult;
+  let ratio;
 
-  subCalls.forEach(async (call) => {
+  let amountsTransacted = [];
+  let tokensTransacted = [];
+  let transactedType = [];
+
+  console.log("in perform transaction subcalls ->", subCalls);
+  console.log("in perform transaction confirmed ->", isConfirmed);
+  await subCalls.forEach(async (call) => {
+    console.log("in perform transaction ->", call);
     const callData = call.data;
-
+    console.log("call data ->", callData);
     let amountOutMin = callData.params.amountOutMin;
     let amountIn = callData.params.amountIn;
     let amountOut = callData.params.amountOut;
     let amountInMaximum = callData.params.amountInMax;
     let path = [];
 
-    let amountsTransacted = [];
-    let tokensTransacted = [];
-
     let fee;
     let sqrtPriceLimit;
+
+    console.log("method", callData.methodName);
+    console.log("router", router);
+    console.log("router", router.wethAddress);
+    let encodedDatas;
 
     switch (callData.methodName) {
       case "exactInputSingle":
@@ -202,7 +222,7 @@ const performBuySaleTransactionV3 = async (
           if (isConfirmed) {
             updateChangedTokenBalance(
               metadata.from,
-              metadata.path[1],
+              path[1],
               amountOutMinimum,
               true
             );
@@ -213,119 +233,128 @@ const performBuySaleTransactionV3 = async (
               amountIn,
               amountOutMinimum
             );
-            let swapEncode = await createBuyExactTokens(
+            encodedDatas = await createBuyWithExactTokens(
               routerContract,
               path,
-              currentConfiguration.ourWallet,
+              fee,
+              config.ourWallet,
               amountIn,
-              amountOutMin
+              amountOutMinimum,
+              sqrtPriceLimit
             );
+
+            console.log("received encoded datas is", encodedDatas);
+            tokensTransacted.push(path[1]);
+            amountsTransacted.push(amountOutMinimum);
+
+            transactedType.push(true);
           }
         } else if (path[1] == routerContract.wethAddress) {
           //sell token
-        } else {
-        }
+          if (isConfirmed) {
+            updateChangedTokenBalance(
+              metadata.from,
+              metadata.path[0],
+              amountIn,
+              false
+            );
+            break;
+          } else {
+            const wallet0Balance = await getAllWalletBalance(
+              path[0],
+              config.ourWallet
+            );
+            let ourBalance0 = await TokenBundle.findOne({
+              wallet: config.ourWallet,
+              tokenAddress: path[0],
+            }).exec();
 
-        break;
-      case "swapExactTokensForTokens":
-        path = callData.params.path;
-        if (path[path.length - 1] == wethAddress) {
-          let swapEncode = await createSellExactTokens(
+            [amountIn, ratio] = await calculateSellAmount(
+              wallet0Balance,
+              amountIn,
+              ourBalance0
+            );
+
+            amountOutMin = BigNumber.from(amountOutMin).div(ratio);
+
+            encodedDatas = await createSellExactTokens(
+              routerContract,
+              path,
+              config.ourWallet,
+              amountIn,
+              amountOutMin
+            );
+
+            tokensTransacted.push(path[0]);
+            amountsTransacted.push(amountIn);
+            transactedType.push(false);
+
+            console.log("encoded datas sell", encodedDatas);
+          }
+        } else {
+          //sell token
+          const wallet0Balance = await getAllWalletBalance(
+            path[0],
+            config.ourWallet
+          );
+          let ourBalance0 = await TokenBundle.findOne({
+            wallet: config.ourWallet,
+            tokenAddress: path[0],
+          }).exec();
+
+          [amountIn, ratio] = await calculateSellAmount(
+            wallet0Balance,
+            amountIn,
+            ourBalance0
+          );
+
+          amountOutMin = BigNumber.from(amountOutMin).div(ratio);
+
+          encodedDatas = await createSellExactTokens(
             routerContract,
             path,
-            currentConfiguration.ourWallet,
+            fee,
+            config.ourWallet,
             amountIn,
-            amountOutMin
+            amountOutMin,
+            sqrtPriceLimit
           );
+
           tokensTransacted.push(path[0]);
           amountsTransacted.push(amountIn);
-          encodedDatas.push(swapEncode);
-        } else {
-          //exact = true
-          //Budget Amount Calculations
-          budgetAmount = calculateBudget(amountIn);
-          calculatedProportions = calculatedProportions(budgetAmount, amountIn);
+          transactedType.push(false);
 
-          amountOutMin =
-            budgetAmount < amountIn
-              ? amountOutMin.div(calculatedProportions)
-              : amountOutMin.mul(calculatedProportions);
+          tokensTransacted.push(path[1]);
+          amountsTransacted.push(amountOutMin);
+          transactedType.push(true);
 
-          let swapEncode = await createBuyWithExactTokens(
-            routerContract,
-            path,
-            currentConfiguration.ourWallet,
-            budgetAmount,
-            amountOutMin
-          );
-          tokensTransacted.push(path[path.length - 1]);
-          amountsTransacted.push(amountIn);
-          encodedDatas.push(swapEncode);
+          console.log("encoded datas simple buy", encodedDatas);
         }
+    }
 
-        break;
-      case "swapTokensForExactTokens":
-        path = callData.params.path;
-        if (path[path.length - 1] == wethAddress) {
-          let swapEncode = await createSellExactTokens(
-            routerContract,
-            path,
-            currentConfiguration.ourWallet,
-            amountIn,
-            amountOutMin
-          );
-          tokensTransacted.push(path[0]);
-          amountsTransacted.push(amountIn);
-          encodedDatas.push(swapEncode);
-        } else {
-          //exact = false
+    if (isConfirmed) return;
+    console.log("encoded datas up of is confirmed", encodedDatas);
 
-          //Budget Amount Calculations
-          budgetAmount = calculateBudget(amountInMaximum);
-          calculatedProportions = calculatedProportions(
-            budgetAmount,
-            amountInMaximum
-          );
+    transactionResult = await executeTransactions(
+      routerContract,
+      encodedDatas,
+      param
+    );
 
-          amountOut =
-            budgetAmount < amountInMaximum
-              ? amountOut.div(calculatedProportions)
-              : amountOut.mul(calculatedProportions);
+    console.log("Transaction Result is", transactionResult);
+    if (transactionResult.status == 1) {
+      amountsTransacted.forEach(async (amountTransacted, index) => {
+        //update user balance on the database
 
-          let swapEncode = await createBuyExactTokens(
-            routerContract,
-            path,
-            currentConfiguration.ourWallet,
-            amountOut,
-            budgetAmount
-          );
-          encodedDatas.push(swapEncode);
-          amountsTransacted.push(amountOut);
-          tokensTransacted.push(path[path.length - 1]);
-        }
-
-        break;
+        await updateChangedTokenBalance(
+          config.ourWallet,
+          tokensTransacted[index],
+          amountTransacted,
+          transactedType[index]
+        );
+      });
     }
   });
-  transactionResult = await executeTransactions(
-    routerContract,
-    encodedDatas,
-    param
-  );
-
-  console.log("Transaction Result is", transactionResult);
-  if (transactionResult[0].status == 1) {
-    amountsTransacted.forEach(async (amountTransacted, index) => {
-      //update user balance on the database
-
-      await updateChangedTokenBalance(
-        config.ourWallet,
-        tokensTransacted[index],
-        amountTransacted,
-        isBuy
-      );
-    });
-  }
 };
 
 module.exports = {

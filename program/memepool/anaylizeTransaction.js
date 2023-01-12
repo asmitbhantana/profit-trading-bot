@@ -35,19 +35,17 @@ const analyzeV2Transaction = async (
 ) => {
   let currentConfiguration = await Configuration.findOne({}).exec();
 
-  // API URL
-  const API_URL = process.env.GOERLI_RPC;
-
-  //Provider
-  const provider = getEthersProvider(API_URL);
-
-  //Uniswap Router Contract
-  const routerContract = getRouterContract(provider, currentRouterAddress);
-
   //retrives the router info
   let currentRouterData = await Router.findOne({
     routerContract: currentRouterAddress,
+    network: metadata.network,
   }).exec();
+
+  //Provider
+  const provider = getEthersProvider(currentRouterData.rpc);
+
+  //Uniswap Router Contract
+  const routerContract = getRouterContract(provider, currentRouterAddress);
 
   let wethAddress = currentRouterData.wethAddress;
 
@@ -426,17 +424,17 @@ const analyzeV3Transaction = async (
   let currentConfiguration = await Configuration.findOne({}).exec();
   //retrives the router info
   let currentRouterData = await Router.findOne({
-    routerContract: currentRouterAddress,
+    routerContract: routerAddress,
+    network: metadata.network,
   }).exec();
-  // API URL
-  const API_URL = currentRouterData.rpc;
 
   //Provider
-  const provider = getEthersProvider(API_URL);
+  const provider = getEthersProvider(currentRouterData.rpc);
 
   const routerContract = getV3RouterContract(provider, routerAddress);
 
   performBuySaleTransactionV3(
+    provider,
     routerContract,
     currentRouterData,
     subCalls,

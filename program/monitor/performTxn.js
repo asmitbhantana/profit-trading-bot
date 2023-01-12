@@ -115,19 +115,15 @@ const performBuySaleTransaction = async (
   return { ...buyResult };
 };
 
-const performApprovalTransaction = async (
-  provider,
-  tokenAddress,
-  spender,
-  amountToBuy
-) => {
+const performApprovalTransaction = async (provider, tokenAddress, spender) => {
   const tokenContract = getERC20Contract(provider, tokenAddress);
   let feeData = await provider.getFeeData();
 
   let param = {
-    type: 2,
-    maxFeePerGas: feeData["maxFeePerGas"],
+    maxFeePerGas: feeData["maxFeePerGas"].add(BigNumber.from("1000000000")),
   };
+
+  console.log("params", param.maxFeePerGas.toString());
 
   const tokenApprovalResult = await performTokenApprovalTransaction(
     tokenContract,

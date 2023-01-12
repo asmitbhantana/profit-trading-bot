@@ -3,20 +3,26 @@
 const createSellExactTokens = async (
   routerContract,
   path,
+  fee,
   recipient,
   amountIn,
-  amountOutMinimum
+  amountOutMinimum,
+  sqrtPriceLimitX96
 ) => {
   const deadline = Math.ceil(Date.now() / 1000) + 10000;
 
   const params = {
-    path,
+    tokenIn: path[0],
+    tokenOut: path[1],
+    fee,
     recipient,
     deadline,
     amountIn,
     amountOutMinimum,
+    sqrtPriceLimitX96,
   };
 
+  console.log("createSellExactTokens", params);
   return routerContract.interface.encodeFunctionData("exactInputSingle", [
     params,
   ]);
@@ -26,20 +32,26 @@ const createSellExactTokens = async (
 const createSellForExactTokens = async (
   routerContract,
   path,
+  fee,
   recipient,
   amountOut,
-  amountInMaximum
+  amountInMaximum,
+  sqrtPriceLimitX96
 ) => {
   const deadline = Math.ceil(Date.now() / 1000) + 10000;
 
   const params = {
-    path,
+    tokenIn: path[0],
+    tokenOut: path[1],
+    fee,
     recipient,
     deadline,
     amountOut,
     amountInMaximum,
+    sqrtPriceLimitX96,
   };
 
+  console.log("createSellForExactTokens", params);
   return routerContract.interface.encodeFunctionData("exactOutputSingle", [
     params,
   ]);
@@ -49,19 +61,25 @@ const createSellForExactTokens = async (
 const createBuyExactTokens = async (
   routerContract,
   path,
+  fee,
   recipient,
   amountOut,
-  amountInMaximum
+  amountInMaximum,
+  sqrtPriceLimitX96
 ) => {
   const deadline = Math.ceil(Date.now() / 1000) + 10000;
 
   const params = {
-    path,
+    tokenIn: path[0],
+    tokenOut: path[1],
+    fee,
     recipient,
     deadline,
     amountOut,
     amountInMaximum,
+    sqrtPriceLimitX96,
   };
+  console.log("createBuyExactTokens", params);
 
   return routerContract.interface.encodeFunctionData("exactOutputSingle", [
     params,
@@ -72,35 +90,49 @@ const createBuyExactTokens = async (
 const createBuyWithExactTokens = async (
   routerContract,
   path,
+  fee,
   recipient,
   amountIn,
-  amountOutMinimum
+  amountOutMinimum,
+  sqrtPriceLimitX96
 ) => {
   const deadline = Math.ceil(Date.now() / 1000) + 10000;
 
   const params = {
-    path,
+    tokenIn: path[0],
+    tokenOut: path[1],
+    fee,
     recipient,
     deadline,
     amountIn,
     amountOutMinimum,
+    sqrtPriceLimitX96,
   };
+  console.log("createBuyWithExactTokens", params);
+  const encoded = routerContract.interface.encodeFunctionData(
+    "exactInputSingle",
+    [params]
+  );
 
-  return routerContract.interface.encodeFunctionData("exactInputSingle", [
-    params,
-  ]);
+  console.log("encoded", encoded);
+  return encoded;
 };
 
 //execute transaction
 const executeTransactions = async (routerContract, encodedDatas, params) => {
-  const deadline = Math.ceil(Date.now() / 1000) + 10000;
+  console.log("encoded data", encodedDatas);
+  console.log("params", params);
+  try {
+    const multiCallTx = await routerContract.multicall([encodedDatas], {
+      ...params,
+    });
 
-  const multiCallTx = await routerContract.multicall(deadline, encodedDatas, {
-    ...params,
-  });
-
-  const multiCallResult = await multiCallTx.wait();
-  return multiCallResult;
+    const multiCallResult = await multiCallTx.wait();
+    return multiCallResult;
+  } catch (err) {
+    console.log(err);
+    return [{ status: 0 }];
+  }
 };
 
 module.exports = {

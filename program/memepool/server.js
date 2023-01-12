@@ -26,7 +26,6 @@ app.post("/*", async (req, res) => {
     const isConfirmed = txnData.status == "confirmed";
     const contractCall = txnData;
     const contractCallData = txnData.contractCall;
-    console.log("Contract Call-------", contractCallData);
     let currentRouter = await Router.findOne({
       routerContract: contractCallData.contractAddress,
     }).exec();
@@ -52,7 +51,7 @@ app.post("/*", async (req, res) => {
         isConfirmed
       );
     } else {
-      let subCalls = JSON.parse(contractCallData.subCalls);
+      let subCalls = contractCallData.subCalls;
       let params = { ...contractCallData.params, value: contractCall.value };
       await analyzeV3Transaction(
         subCalls,

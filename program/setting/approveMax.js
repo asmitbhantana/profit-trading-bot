@@ -5,13 +5,14 @@ const { getEthersProvider } = require("../utils/utils");
 const { approveMaxToken } = require("./setting");
 
 const approve = async () => {
-  const API_URL = process.env.GOERLI_RPC;
-  const provider = getEthersProvider(API_URL);
-
-  const routerAddress = uniswapV2Router;
+  const network = "matic-main";
+  const routerAddress = uniswapV3Router;
   const router = await Router.findOne({
     routerContract: routerAddress,
+    network: network,
   });
+
+  const provider = getEthersProvider(router.rpc);
   console.log("routerAddress", routerAddress);
   console.log("wethAddress", router.wethAddress);
   await approveMaxToken(provider, routerAddress, router.wethAddress);
