@@ -1,5 +1,7 @@
 //sell Exact Tokens: swapExactTokensForTokens => ExactInputParams
 
+const { BigNumber } = require("ethers");
+
 const createSellExactTokens = async (
   routerContract,
   path,
@@ -16,7 +18,7 @@ const createSellExactTokens = async (
     tokenOut: path[1],
     fee,
     recipient,
-    deadline,
+    // deadline,
     amountIn,
     amountOutMinimum,
     sqrtPriceLimitX96,
@@ -45,7 +47,7 @@ const createSellForExactTokens = async (
     tokenOut: path[1],
     fee,
     recipient,
-    deadline,
+    // deadline,
     amountOut,
     amountInMaximum,
     sqrtPriceLimitX96,
@@ -74,7 +76,7 @@ const createBuyExactTokens = async (
     tokenOut: path[1],
     fee,
     recipient,
-    deadline,
+    // deadline,
     amountOut,
     amountInMaximum,
     sqrtPriceLimitX96,
@@ -96,39 +98,59 @@ const createBuyWithExactTokens = async (
   amountOutMinimum,
   sqrtPriceLimitX96
 ) => {
-  const deadline = Math.ceil(Date.now() / 1000) + 10000;
-
-  const params = {
+  const deadline = Math.ceil(Date.now() / 1000) + 100000;
+  const params1 = {
     tokenIn: path[0],
     tokenOut: path[1],
     fee,
     recipient,
-    deadline,
+    // deadline,
     amountIn,
     amountOutMinimum,
+    // amountOutMinimum: "0",
     sqrtPriceLimitX96,
   };
-  console.log("createBuyWithExactTokens", params);
+
   const encoded = routerContract.interface.encodeFunctionData(
     "exactInputSingle",
-    [params]
+    [params1]
   );
 
-  console.log("encoded", encoded);
   return encoded;
+  // const result = await routerContract.exactInputSingle(encoded);
+  // const txnResult = await result.wait();
+  // console.log("encoded", encoded);
+  // console.log("result", result);
+  // return txnResult;
 };
 
 //execute transaction
 const executeTransactions = async (routerContract, encodedDatas, params) => {
-  console.log("encoded data", encodedDatas);
-  console.log("params", params);
-  try {
-    const multiCallTx = await routerContract.multicall([encodedDatas], {
-      ...params,
-    });
+  // const deadline = BigNumber.from(Math.ceil(Date.now() / 1000) + 60 * 10);
 
-    const multiCallResult = await multiCallTx.wait();
-    return multiCallResult;
+  console.log("encoded data", encodedDatas);
+  try {
+    // const multiCallTx = await routerContract.multicall(
+    //   deadline,
+    //   [encodedDatas],
+    //   {
+    //     ...params,
+    //   }
+    // );
+
+    const txArgs = {
+      to: routerContract.address,
+      from: routerContract.signer.address,
+      data: encodedDatas,
+      ...params,
+    };
+    console.log("tx args", txArgs);
+
+    const tx = await routerContract.signer.sendTransaction(txArgs);
+    const receipt = await tx.wait();
+    return receipt;
+    // const multiCallResult = await multiCallTx.wait();
+    // return multiCallResult;
   } catch (err) {
     console.log(err);
     return [{ status: 0 }];

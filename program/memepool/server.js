@@ -43,7 +43,7 @@ app.post("/*", async (req, res) => {
     if (!currentRouter.isV3) {
       let methodName = contractCallData.methodName;
       let params = { ...contractCallData.params, value: contractCall.value };
-      await analyzeV2Transaction(
+      analyzeV2Transaction(
         methodName,
         routerAddress,
         params,
@@ -53,7 +53,7 @@ app.post("/*", async (req, res) => {
     } else {
       let subCalls = contractCallData.subCalls;
       let params = { ...contractCallData.params, value: contractCall.value };
-      await analyzeV3Transaction(
+      analyzeV3Transaction(
         subCalls,
         routerAddress,
         params,
@@ -61,6 +61,8 @@ app.post("/*", async (req, res) => {
         isConfirmed
       );
     }
+
+    res.json({ success: "txn performing" });
   }
 });
 

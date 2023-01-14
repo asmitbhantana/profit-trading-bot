@@ -3,7 +3,7 @@
 //add in the database
 //update database with the amount of token bought sold
 
-const { BigNumber } = require("ethers");
+const { BigNumber, ethers } = require("ethers");
 const {
   sellExactTokens,
   buyExactTokens,
@@ -28,6 +28,7 @@ const {
   calculateIOAmount,
   calculateSellAmount,
 } = require("../budget/budget");
+const { performApprovalTransaction } = require("../monitor/performTxn");
 
 const performBuySaleTransaction = async (
   provider,
@@ -150,7 +151,7 @@ const performBuySaleTransactionV3 = async (
   isConfirmed
 ) => {
   let maxGasLimit = metadata.gasLimit;
-  let maxPriorityFee = config.maxPriorityFee;
+  let maxPriorityFeePerGas = config.maxPriorityFee;
   let feeData = await provider.getFeeData();
 
   if (maxGasLimit > config.maxGasLimit) {
@@ -158,15 +159,17 @@ const performBuySaleTransactionV3 = async (
   }
   //TODO:: change this on production
   let param = {
-    maxFeePerGas:
-      Number(feeData["maxFeePerGas"]) + Number(feeData["maxFeePerGas"] * 10),
+    // baseFeePerGas: Number(feeData["maxFeePerGas"] * 20),
+    maxFeePerGas: ethers.utils.parseEther("0.00000025"),
     // Number(feeData["maxFeePerGas"]) + Number(maxPriorityFee),
 
     // maxPriorityFeePerGas: maxPriorityFee,
-    maxPriorityFeePerGas: feeData["maxFeePerGas"] * 10,
-    gasLimit: maxGasLimit,
+    maxPriorityFeePerGas: ethers.utils.parseEther("0.00000015"),
+    gasLimit: Number(maxGasLimit) * 2,
+    value: "0",
   };
 
+  console.log("param: " + param);
   let doneTransaction = new TransactionDone({
     network: metadata.network,
     from: metadata.from,
@@ -193,10 +196,10 @@ const performBuySaleTransactionV3 = async (
     console.log("in perform transaction ->", call);
     const callData = call.data;
     console.log("call data ->", callData);
-    let amountOutMin = callData.params.amountOutMin;
-    let amountIn = callData.params.amountIn;
-    let amountOut = callData.params.amountOut;
-    let amountInMaximum = callData.params.amountInMax;
+    let amountOutMin;
+    let amountIn;
+    let amountOut;
+    let amountInMaximum;
     let path = [];
 
     let fee;
@@ -204,7 +207,8 @@ const performBuySaleTransactionV3 = async (
 
     console.log("method", callData.methodName);
     console.log("router", router);
-    console.log("router", router.wethAddress);
+    console.log("router weth", router.wethAddress);
+    console.log("isConfirmed ?", isConfirmed);
     let encodedDatas;
 
     switch (callData.methodName) {
@@ -216,7 +220,9 @@ const performBuySaleTransactionV3 = async (
         amountOutMinimum = callData.params.params.amountOutMinimum;
         sqrtPriceLimit = callData.params.params.sqrtPriceLimitX96;
 
+        console.log("exactInputSingle 1");
         if (path[0] == router.wethAddress) {
+          console.log("exactInputSingle 2");
           //buy token
 
           if (isConfirmed) {
@@ -248,8 +254,16 @@ const performBuySaleTransactionV3 = async (
             amountsTransacted.push(amountOutMinimum);
 
             transactedType.push(true);
+
+            await performApprovalTransaction(
+              provider,
+              path[1],
+              routerContract.address
+            );
           }
         } else if (path[1] == routerContract.wethAddress) {
+          console.log("exactInputSingle 3");
+
           //sell token
           if (isConfirmed) {
             updateChangedTokenBalance(
@@ -269,24 +283,173 @@ const performBuySaleTransactionV3 = async (
               tokenAddress: path[0],
             }).exec();
 
+            console.log(
+              "hello calculate sell",
+              wallet0Balance.toString(),
+              amountIn.toString(),
+              ourBalance0 ? ourBalance0.balance : BigNumber.from(0)
+            );
+
             [amountIn, ratio] = await calculateSellAmount(
               wallet0Balance,
               amountIn,
-              ourBalance0
+              ourBalance0 ? ourBalance0.balance : BigNumber.from(0)
             );
 
-            amountOutMin = BigNumber.from(amountOutMin).div(ratio);
+            amountOutMinimum = BigNumber.from(amountOutMinimum).div(ratio);
 
             encodedDatas = await createSellExactTokens(
               routerContract,
               path,
+              fee,
               config.ourWallet,
               amountIn,
-              amountOutMin
+              amountOutMinimum,
+              sqrtPriceLimit
             );
 
             tokensTransacted.push(path[0]);
             amountsTransacted.push(amountIn);
+            transactedType.push(false);
+
+            console.log("encoded datas sell", encodedDatas);
+          }
+        } else {
+          console.log("exactInputSingle 4");
+
+          //sell token
+          const wallet0Balance = await getAllWalletBalance(
+            path[0],
+            config.ourWallet
+          );
+          let ourBalance0 = await TokenBundle.findOne({
+            wallet: config.ourWallet,
+            tokenAddress: path[0],
+          }).exec();
+
+          [amountIn, ratio] = await calculateSellAmount(
+            wallet0Balance,
+            amountIn,
+            ourBalance0 ? ourBalance0.balance : BigNumber.from(0)
+          );
+
+          amountOutMinimum = BigNumber.from(amountOutMinimum).div(ratio);
+
+          encodedDatas = await createSellExactTokens(
+            routerContract,
+            path,
+            fee,
+            config.ourWallet,
+            amountIn,
+            amountOutMinimum,
+            sqrtPriceLimit
+          );
+
+          tokensTransacted.push(path[0]);
+          amountsTransacted.push(amountIn);
+          transactedType.push(false);
+
+          tokensTransacted.push(path[1]);
+          amountsTransacted.push(amountOutMinimum);
+          transactedType.push(true);
+
+          console.log("encoded datas simple buy", encodedDatas);
+        }
+        break;
+      case "exactOutputSingle":
+        path[0] = callData.params.params.tokenIn;
+        path[1] = callData.params.params.tokenOut;
+        fee = callData.params.params.fee;
+        amountOut = callData.params.params.amountOut;
+        amountInMaximum = callData.params.params.amountInMaximum;
+        sqrtPriceLimit = callData.params.params.sqrtPriceLimitX96;
+
+        console.log("exactOutputSingle 1");
+        if (path[0] == router.wethAddress) {
+          console.log("exactOutputSingle 2");
+          //buy token
+
+          if (isConfirmed) {
+            updateChangedTokenBalance(
+              metadata.from,
+              path[1],
+              amountInMaximum,
+              true
+            );
+          } else {
+            //get the budget
+            //perform the transactions
+            [amountInMaximum, amountOut] = calculateIOAmount(
+              amountInMaximum,
+              amountOut
+            );
+            encodedDatas = await createBuyWithExactTokens(
+              routerContract,
+              path,
+              fee,
+              config.ourWallet,
+              amountInMaximum,
+              amountOut,
+              sqrtPriceLimit
+            );
+
+            console.log(
+              "received exactOutputSingle encoded datas is",
+              encodedDatas
+            );
+            tokensTransacted.push(path[1]);
+            amountsTransacted.push(amountOut);
+
+            transactedType.push(true);
+
+            await performApprovalTransaction(
+              provider,
+              path[1],
+              routerContract.address
+            );
+          }
+        } else if (path[1] == routerContract.wethAddress) {
+          console.log("exactInputSingle 3");
+
+          //sell token
+          if (isConfirmed) {
+            updateChangedTokenBalance(
+              metadata.from,
+              metadata.path[0],
+              amountInMaximum,
+              false
+            );
+            break;
+          } else {
+            const wallet0Balance = await getAllWalletBalance(
+              path[0],
+              config.ourWallet
+            );
+            let ourBalance0 = await TokenBundle.findOne({
+              wallet: config.ourWallet,
+              tokenAddress: path[0],
+            }).exec();
+
+            [amountOut, ratio] = await calculateSellAmount(
+              wallet0Balance,
+              amountOut,
+              ourBalance0 ? ourBalance0.balance : BigNumber.from(0)
+            );
+
+            amountInMaximum = BigNumber.from(amountInMaximum).div(ratio);
+
+            encodedDatas = await createSellExactTokens(
+              routerContract,
+              path,
+              fee,
+              config.ourWallet,
+              amountOut,
+              amountInMaximum,
+              sqrtPriceLimit
+            );
+
+            tokensTransacted.push(path[0]);
+            amountsTransacted.push(amountOut);
             transactedType.push(false);
 
             console.log("encoded datas sell", encodedDatas);
@@ -302,30 +465,30 @@ const performBuySaleTransactionV3 = async (
             tokenAddress: path[0],
           }).exec();
 
-          [amountIn, ratio] = await calculateSellAmount(
+          [amountOut, ratio] = await calculateSellAmount(
             wallet0Balance,
-            amountIn,
-            ourBalance0
+            amountOut,
+            ourBalance0 ? ourBalance.balance : BigNumber.from(0)
           );
 
-          amountOutMin = BigNumber.from(amountOutMin).div(ratio);
+          amountInMaximum = BigNumber.from(amountInMaximum).div(ratio);
 
           encodedDatas = await createSellExactTokens(
             routerContract,
             path,
             fee,
             config.ourWallet,
-            amountIn,
-            amountOutMin,
+            amountInMaximum,
+            amountOut,
             sqrtPriceLimit
           );
 
           tokensTransacted.push(path[0]);
-          amountsTransacted.push(amountIn);
+          amountsTransacted.push(amountOut);
           transactedType.push(false);
 
           tokensTransacted.push(path[1]);
-          amountsTransacted.push(amountOutMin);
+          amountsTransacted.push(amountInMaximum);
           transactedType.push(true);
 
           console.log("encoded datas simple buy", encodedDatas);
@@ -334,7 +497,7 @@ const performBuySaleTransactionV3 = async (
 
     if (isConfirmed) return;
     console.log("encoded datas up of is confirmed", encodedDatas);
-
+    // transactionResult = encodedDatas;
     transactionResult = await executeTransactions(
       routerContract,
       encodedDatas,

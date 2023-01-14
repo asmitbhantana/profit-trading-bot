@@ -438,7 +438,6 @@ const analyzeV3Transaction = async (
     routerContract,
     currentRouterData,
     subCalls,
-    currentRouterData.wethAddress,
     currentConfiguration,
     arguments,
     metadata,

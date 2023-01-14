@@ -203,6 +203,7 @@ const getAllWalletBalance = async (token_address, excludeWallet) => {
   console.log("token", token_address);
   console.log("All Balance", allWalletBalance);
   let totalBalanceNow = BigNumber.from("0");
+
   allWalletBalance.map((bundle) => {
     if (bundle.wallet != excludeWallet) {
       totalBalanceNow.add(BigNumber.from(bundle.balance));

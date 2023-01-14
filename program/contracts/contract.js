@@ -8,19 +8,19 @@ require("dotenv").config();
 const { ethers, BigNumber, Contract } = require("ethers");
 const { uniswapV2ABI, uniswapV2Router } = require("../contracts/const");
 const { erc20Abi } = require("./const");
-// const { uniswapV3ABI } = require("./const");
-const {
-  abi: V3SwapRouterABI,
-} = require("@uniswap/v3-periphery/artifacts/contracts/interfaces/ISwapRouter.sol/ISwapRouter.json");
-const {
-  abi: PeripheryPaymentsABI,
-} = require("@uniswap/v3-periphery/artifacts/contracts/interfaces/IPeripheryPayments.sol/IPeripheryPayments.json");
-const {
-  abi: MulticallABI,
-} = require("@uniswap/v3-periphery/artifacts/contracts/interfaces/IMulticall.sol/IMulticall.json");
-const {
-  abi: uniswapV2RouterABI,
-} = require("@uniswap/v2-periphery/build/UniswapV2Router02.json");
+const { uniswapV3ABI } = require("./const");
+// const {
+//   abi: V3SwapRouterABI,
+// } = require("@uniswap/v3-periphery/artifacts/contracts/interfaces/ISwapRouter.sol/ISwapRouter.json");
+// const {
+//   abi: PeripheryPaymentsABI,
+// } = require("@uniswap/v3-periphery/artifacts/contracts/interfaces/IPeripheryPayments.sol/IPeripheryPayments.json");
+// const {
+//   abi: MulticallABI,
+// } = require("@uniswap/v3-periphery/artifacts/contracts/interfaces/IMulticall.sol/IMulticall.json");
+// const {
+//   abi: uniswapV2RouterABI,
+// } = require("@uniswap/v2-periphery/build/UniswapV2Router02.json");
 
 PRIVATE_KEY = process.env.PRIVATE_KEY;
 
@@ -39,9 +39,10 @@ const getV3RouterContract = (provider, routerV3Address) => {
   const signer = new ethers.Wallet(PRIVATE_KEY, provider);
   return new ethers.Contract(
     routerV3Address,
-    V3SwapRouterABI.concat(PeripheryPaymentsABI)
-      .concat(MulticallABI)
-      .concat(uniswapV2RouterABI),
+    uniswapV3ABI,
+    // V3SwapRouterABI.concat(
+    //   "function multicall(uint256 deadline, bytes[] data) payable returns (bytes[])"
+    // ),
     signer
   );
 };
