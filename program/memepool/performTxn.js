@@ -157,16 +157,14 @@ const performBuySaleTransactionV3 = async (
   if (maxGasLimit > config.maxGasLimit) {
     maxGasLimit = config.maxGasLimit;
   }
-  //TODO:: change this on production
+  //TODO: comment for the polygone
   let param = {
-    // baseFeePerGas: Number(feeData["maxFeePerGas"] * 20),
-    maxFeePerGas: ethers.utils.parseEther("0.00000025"),
-    // Number(feeData["maxFeePerGas"]) + Number(maxPriorityFee),
+    // maxFeePerGas: ethers.utils.parseEther("0.00000025"),
+    maxFeePerGas: Number(feeData["maxFeePerGas"]) + Number(maxPriorityFee),
 
-    // maxPriorityFeePerGas: maxPriorityFee,
-    maxPriorityFeePerGas: ethers.utils.parseEther("0.00000015"),
+    maxPriorityFeePerGas: maxPriorityFeePerGas,
+    // maxPriorityFeePerGas: ethers.utils.parseEther("0.00000015"),
     gasLimit: Number(maxGasLimit) * 2,
-    value: "0",
   };
 
   console.log("param: " + param);

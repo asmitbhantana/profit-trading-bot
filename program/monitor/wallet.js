@@ -5,7 +5,6 @@ const getWalletERC20List = async (chains, user_wallet) => {
     address: user_wallet,
     chain: chains,
   });
-
   return response.data;
 };
 

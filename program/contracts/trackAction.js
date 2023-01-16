@@ -51,6 +51,7 @@ const performSellTransaction = async (
         amountAfterSlippage,
         [sellingToken, buyingToken],
         to,
+        BigNumber.from("0"),
         {
           ...params,
         }
@@ -134,15 +135,27 @@ const performBuyTransaction = async (
       console.log("proportional amount out ", amountOut.toString());
     }
 
-    console.log("Performing the transactions!");
+    console.log(
+      "Performing the transactions!",
+      amountOut,
+      amountInWithSlippage,
+      [sellingToken, buyingToken],
+      to,
+      timeRN,
+      {
+        ...params,
+      }
+    );
     let buyTransaction;
 
+    console.log("Buy tokens");
     if (isV3)
       buyTransaction = await contract.swapTokensForExactTokens(
         amountOut,
         amountInWithSlippage,
         [sellingToken, buyingToken],
         to,
+        BigNumber.from("0"),
         {
           ...params,
         }
@@ -154,6 +167,7 @@ const performBuyTransaction = async (
         [sellingToken, buyingToken],
         to,
         timeRN,
+
         {
           ...params,
         }

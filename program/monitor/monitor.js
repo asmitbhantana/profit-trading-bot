@@ -47,7 +47,7 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
         let ourBalanceData = new TokenBundle({
           wallet: currenConfiguration.ourWallet,
 
-          tokenAddress: element.tokenAddress,
+          tokenAddress: element.token_address,
           name: element.name,
           decimal: element.decimals,
           symbol: element.symbol,
@@ -155,10 +155,16 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
 
           if (!previousBalanceAmount.isZero() && ourBalance != null) {
             let change = currentBalanceAmount.sub(previousBalanceAmount);
-            percentageChange = totalBalanceNow
-              .sub(change)
-              .mul(BigNumber.from(100))
-              .div(totalBalanceNow);
+
+            if (totalBalanceNow.toString() != "0") {
+              percentageChange = totalBalanceNow
+                .sub(change)
+                .mul(BigNumber.from(100))
+                .div(totalBalanceNow);
+            }
+            {
+              percentageChange = BigNumber.from("100");
+            }
 
             amountToBuy = ourBalanceNow.mul(percentageChange).div(100);
             console.log("Amount to buy", amountToBuy.toString());
@@ -182,11 +188,9 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
             currentRouter.wethAddress,
             data.token_address,
             amountToBuy,
-            currenConfiguration.ourWallet,
+            currenConfiguration,
             true,
             currentRouter.isV3,
-
-            currenConfiguration.maxGasLimit,
 
             {
               targetWallet: wallet,
@@ -279,10 +283,13 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
           let amountToSell = previousBalanceAmount.sub(currentBalanceAmount);
           if (!previousBalanceAmount.isZero()) {
             let change = previousBalanceAmount.sub(currentBalanceAmount);
-            percentageChange = totalBalanceNow
-              .sub(change)
-              .mul(BigNumber.from(100))
-              .div(totalBalanceNow);
+
+            totalBalanceNow.toString() == "0"
+              ? (percentageChange = BigNumber.from(0))
+              : (percentageChange = totalBalanceNow
+                  .sub(change)
+                  .mul(BigNumber.from(100))
+                  .div(totalBalanceNow));
 
             percentageChange == 0
               ? (percentageChange = BigNumber.from(100))
@@ -309,11 +316,9 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
             data.token_address,
             currentRouter.wethAddress,
             amountToSell,
-            currenConfiguration.ourWallet,
+            currenConfiguration,
             false,
             currentRouter.isV3,
-
-            currenConfiguration.maxGasLimit,
 
             {
               targetWallet: wallet,

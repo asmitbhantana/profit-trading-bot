@@ -19,11 +19,9 @@ const performBuySaleTransaction = async (
   sellingToken,
   buyingToken,
   amountToBuy,
-  wallet,
+  config,
   isBuy,
   isV3,
-
-  maxGasLimit,
 
   //optional params
   { targetWallet, tokenAddress, previousBalance, newBalance }
@@ -33,10 +31,15 @@ const performBuySaleTransaction = async (
 
   let feeData = await provider.getFeeData();
 
+  //TODO: change this on production
   let param = {
-    type: 2,
     maxFeePerGas: feeData["maxFeePerGas"],
-    gasLimit: maxGasLimit,
+    maxPriorityFeePerGas: config.maxPriorityFee,
+
+    // maxFeePerGas: ethers.utils.parseEther("0.00000025"),
+    // maxPriorityFeePerGas: ethers.utils.parseEther("0.00000015"),
+
+    gasLimit: config.maxGasLimit,
   };
 
   let [buyResult, amountIn] = [0, 0];
@@ -67,7 +70,7 @@ const performBuySaleTransaction = async (
       sellingToken,
       buyingToken,
       amountToBuy,
-      wallet,
+      config.ourWallet,
       isV3,
 
       param,
@@ -83,7 +86,7 @@ const performBuySaleTransaction = async (
       sellingToken,
       buyingToken,
       amountToBuy,
-      wallet,
+      config.ourWallet,
       isV3,
 
       param,

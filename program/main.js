@@ -26,15 +26,13 @@ const { BigNumber } = require("ethers");
 // addNewRouter();
 // addTokenSlippageFee("0", "0");
 
-// API URL
-const API_URL = process.env.GOERLI_RPC;
-
 //Provider
-const provider = getEthersProvider(API_URL);
+const provider = getEthersProvider(process.env.RPC);
 
 //Uniswap Router Contract
-// const routerContract = getV3RouterContract(provider, uniswapV3Router);
-const routerContract = getRouterContract(provider, uniswapV2Router);
+const routerContract = getRouterContract(provider, process.env.ROUTER);
 
 // approveMaxToken(provider, routerContract.address, routerContract.WETH);
 startWalletMonitor(EvmChain.GOERLI, provider, routerContract);
+// startWalletMonitor(EvmChain.POLYGON, provider, routerContract);
+//

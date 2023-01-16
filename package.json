@@ -11,8 +11,7 @@
     "setConfig": "node program/setting/setConfig.js",
     "setRouter": "node program/setting/setRouter.js",
     "setApproveMax": "node program/setting/approveMax.js",
-    "setSlippage": "node program/setting/setSlippage.js",
-    "exportData": "node program/csv/exportData.js"
+    "setSlippage": "node program/setting/setSlippage.js"
   },
   "keywords": [],
   "author": "",
