@@ -20,6 +20,7 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
   //retives all tokens and wallets
   let currenConfiguration = await Configuration.findOne({}).exec();
 
+  console.log("contract address", contract.address);
   //retrives the router info
   let currentRouter = await Router.findOne({
     routerContract: contract.address,
