@@ -1,10 +1,10 @@
 {
   "routerContract": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
-  "routerName": "Uniswap V2: Router",
-  "wethAddress": "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
+  "routerName": "Uniswap V3: Router",
+  "wethAddress": "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
   "factoryAddress": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
-  "network": "5",
-  "chainName": "mumbai Test Network",
-  "rpc": "https://rpc-mumbai.maticvigil.com/",
+  "network": "goerli",
+  "chainName": "goerli Network",
+  "rpc": "https://goerli.infura.io/v3/0e72f6a4443b450d8e76b4cac196c229",
   "isV3": true
 }

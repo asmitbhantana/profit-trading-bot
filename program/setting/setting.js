@@ -28,8 +28,7 @@ const approveMaxToken = async (provider, address, tokenAddress) => {
   const performTokenApprovalResult = await performApprovalTransaction(
     provider,
     tokenAddress,
-    address,
-    BigNumber.from(amount)
+    address
   );
 
   console.log("Approving tokens", performTokenApprovalResult);
@@ -37,11 +36,9 @@ const approveMaxToken = async (provider, address, tokenAddress) => {
 
 const setSlippage = async () => {
   const updatedTokenFee = await createUpdateSlippageFee(
-    slippage.feePercentage,
-    slippage.slippagePercentage
+    slippage.slippagePercentage,
+    slippage.feePercentage
   );
-
-  console.log("Token Slippage", updatedTokenFee);
 };
 
 module.exports = {

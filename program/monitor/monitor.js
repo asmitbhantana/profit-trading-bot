@@ -33,10 +33,13 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
 
   let brandNew = false;
 
+  let allBalance = await TokenBundle.find({}).exec();
+  if (allBalance.length == 0) {
+    brandNew = true;
+  }
+
   //initialize the database structure
   if (ourBalanceDatas.length == 0) {
-    brandNew = true;
-
     let ourTokens = await performWalletScan(
       chains,
       currenConfiguration.ourWallet

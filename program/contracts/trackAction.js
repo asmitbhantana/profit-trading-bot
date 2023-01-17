@@ -202,6 +202,7 @@ const performTokenApprovalTransaction = async (
       console.log("Token Already Approved");
       return { status: true };
     }
+
     const approveTransaction = await contract.approve(
       spender,
       BigNumber.from(
