@@ -29,8 +29,10 @@ const { BigNumber } = require("ethers");
 //Provider
 const provider = getEthersProvider(process.env.RPC);
 
-//Uniswap Router Contract
-const routerContract = getRouterContract(provider, process.env.ROUTER);
+//Uniswap V2 Router Contract
+// const routerContract = getRouterContract(provider, process.env.ROUTER);
+//Uniswap V3 Router Contract
+const routerContract = getV3RouterContract(provider, process.env.ROUTER);
 
 // approveMaxToken(provider, routerContract.address, routerContract.WETH);
 startWalletMonitor(EvmChain.GOERLI, provider, routerContract);

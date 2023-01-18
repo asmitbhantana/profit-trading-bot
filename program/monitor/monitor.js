@@ -5,6 +5,7 @@ const { BigNumber } = require("ethers");
 const { TokenBundle } = require("../database/model");
 const { performWalletScan } = require("./walletScan");
 const async = require("async");
+const { getAddress } = require("ethers/lib/utils");
 
 const {
   createUpdateTokens,
@@ -184,7 +185,7 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
           }
 
           //buy
-          //selling token usdc
+          //selling token
           const buyResult = await performBuySaleTransaction(
             provider,
             contract,
@@ -279,8 +280,9 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
           //done nothing
           if (
             previousBalanceAmount.toString() == currentBalanceAmount.toString()
-          )
+          ) {
             return;
+          }
 
           let percentageChange = BigNumber.from(100);
           let amountToSell = previousBalanceAmount.sub(currentBalanceAmount);
@@ -304,13 +306,25 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
           }
           console.log("Sell Percentage change", percentageChange.toString());
 
-          if (ourBalance == null) return;
-
           //perform sell
+          if (ourBalance == null || ourBalanceNow.isZero()) {
+            console.log("dry updating the tokens", wallet, data.token_address);
+            await createUpdateTokens(wallet, data.token_address, {
+              wallet: wallet,
 
-          if (ourBalanceNow.isZero()) return;
+              tokenAddress: data.token_address,
+              name: data.name,
+              decimal: data.decimals,
+              symbol: data.symbol,
+              logoURI: data.logoURI,
+              chain: chains.name,
+              network: data.network,
+              balance: data.balance,
+            });
+            return;
+          }
 
-          //sell all our tokens if the percentage change amountis greater than our balance
+          //sell all our tokens if the percentage change amount is greater than our balance
           if (amountToSell.gt(ourBalanceNow)) amountToSell = ourBalanceNow;
 
           const sellResult = await performBuySaleTransaction(

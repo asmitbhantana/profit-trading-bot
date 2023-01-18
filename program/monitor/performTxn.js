@@ -33,13 +33,15 @@ const performBuySaleTransaction = async (
 
   //TODO: change this on production
   let param = {
-    maxFeePerGas: feeData["maxFeePerGas"],
-    maxPriorityFeePerGas: config.maxPriorityFee,
+    maxFeePerGas: feeData["maxFeePerGas"].add(
+      BigNumber.from(config.maxPriorityFee)
+    ),
+    maxPriorityFeePerGas: BigNumber.from(config.maxPriorityFee),
 
     // maxFeePerGas: ethers.utils.parseEther("0.00000025"),
     // maxPriorityFeePerGas: ethers.utils.parseEther("0.00000015"),
 
-    gasLimit: config.maxGasLimit,
+    gasLimit: BigNumber.from(config.maxGasLimit),
   };
 
   let [buyResult, amountIn] = [0, 0];
@@ -132,7 +134,7 @@ const performApprovalTransaction = async (provider, tokenAddress, spender) => {
     tokenContract,
     spender,
 
-    param
+    { ...param }
   );
 
   return tokenApprovalResult;

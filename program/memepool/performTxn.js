@@ -54,8 +54,8 @@ const performBuySaleTransaction = async (
 
   let param = {
     maxFeePerGas: Number(feeData["maxFeePerGas"]) + Number(maxPriorityFee),
-    maxPriorityFeePerGas: maxPriorityFee,
-    gasLimit: maxGasLimit,
+    maxPriorityFeePerGas: BigNumber.from(maxPriorityFee),
+    gasLimit: BigNumber.from(maxGasLimit),
   };
 
   console.log("Fee Param", param);
@@ -162,7 +162,7 @@ const performBuySaleTransactionV3 = async (
     // maxFeePerGas: ethers.utils.parseEther("0.00000025"),
     maxFeePerGas: Number(feeData["maxFeePerGas"]) + Number(maxPriorityFee),
 
-    maxPriorityFeePerGas: maxPriorityFeePerGas,
+    maxPriorityFeePerGas: BigNumber.from(maxPriorityFeePerGas),
     // maxPriorityFeePerGas: ethers.utils.parseEther("0.00000015"),
     gasLimit: Number(maxGasLimit) * 2,
   };

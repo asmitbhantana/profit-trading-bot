@@ -5,7 +5,7 @@ const { Schema } = mongoose;
 const TransactionSchema = new Schema({
   hash: String,
   success: Boolean,
-  tokenAddress: { type: String, get: getAddress },
+  tokenAddress: { type: String, get: getAddress, set: getAddress },
   date: { type: Date, default: Date.now },
   value: String,
   sender: String,
@@ -37,7 +37,7 @@ const RouterSchema = new Schema({
 
 const TokenBundleSchema = new Schema({
   wallet: String,
-  tokenAddress: { type: String, get: getAddress },
+  tokenAddress: { type: String, get: getAddress, set: getAddress },
   name: String,
   decimal: Number,
   symbol: String,
@@ -50,7 +50,7 @@ const TokenBundleSchema = new Schema({
 //it keep tracks of all the transactions that are on the current memepool saves their hashes
 const TransactionPoolSchema = new Schema({
   targetWallet: String,
-  tokenAddress: { type: String, get: getAddress },
+  tokenAddress: { type: String, get: getAddress, set: getAddress },
   transactionHash: String,
   previousBalance: String,
   newBalance: String,
