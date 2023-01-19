@@ -2,11 +2,11 @@ const { BigNumber, utils } = require("ethers");
 
 require("../database/connection");
 
-const X = BigNumber.from(utils.parseEther("0.012")); //Absolute Maximum value
-const W = BigNumber.from(utils.parseEther("0.0001")); //Absolute Minimum value
-const Y = BigNumber.from("10"); //10 Percentage of buy amount
+// const X = BigNumber.from(utils.parseEther("0.012")); //Absolute Maximum value
+// const W = BigNumber.from(utils.parseEther("0.0001")); //Absolute Minimum value
+// const Y = BigNumber.from("10"); //10 Percentage of buy amount
 
-const calculateBudget = (buying_size) => {
+const calculateBudget = (buying_size, X, W, Y) => {
   let B = buying_size;
 
   if (B.lte(X)) {
@@ -30,14 +30,14 @@ const calculateProportions = (budgetAmount, wethAmount) => {
   return proportion;
 };
 
-const calculateIOAmount = (amountIn, amountOut) => {
+const calculateIOAmount = (amountIn, amountOut, X, W, Y) => {
   console.log("Amount in is", amountIn.toString());
   console.log("Amount out is", amountOut.toString());
 
   amountIn = BigNumber.from(amountIn);
   amountOut = BigNumber.from(amountOut);
 
-  let budgetAmount = calculateBudget(amountIn);
+  let budgetAmount = calculateBudget(amountIn, X, W, Y);
   let calculatedProportions = calculateProportions(budgetAmount, amountIn);
 
   let calcAmountOut = budgetAmount.lt(amountIn)

@@ -115,7 +115,12 @@ const performBuyTransaction = async (
 
       wethAmount = wethAmountData[0];
       console.log("weth amount", wethAmount.toString());
-      let budgetAmount = calculateBudget(wethAmount);
+      let budgetAmount = calculateBudget(
+        wethAmount,
+        BigNumber.from(utils.parseEther(config.maximumWeth)),
+        BigNumber.from(utils.parseEther(config.minimumWeth)),
+        BigNumber.from(utils.parseEther(config.amountPercentage))
+      );
       console.log("budget amount", budgetAmount.toString());
       let calculatedProportions = calculateProportions(
         budgetAmount,

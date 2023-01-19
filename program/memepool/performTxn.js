@@ -23,11 +23,7 @@ const {
   executeTransactions,
   createSellForExactTokens,
 } = require("../contracts/v3poolAction");
-const {
-  calculateBudget,
-  calculateIOAmount,
-  calculateSellAmount,
-} = require("../budget/budget");
+const { calculateIOAmount, calculateSellAmount } = require("../budget/budget");
 const { performApprovalTransaction } = require("../monitor/performTxn");
 
 const performBuySaleTransaction = async (
@@ -235,7 +231,10 @@ const performBuySaleTransactionV3 = async (
             //perform the transactions
             [amountIn, amountOutMinimum] = calculateIOAmount(
               amountIn,
-              amountOutMinimum
+              amountOutMinimum,
+              BigNumber.from(utils.parseEther(config.maximumWeth)),
+              BigNumber.from(utils.parseEther(config.minimumWeth)),
+              BigNumber.from(utils.parseEther(config.amountPercentage))
             );
             encodedDatas = await createBuyWithExactTokens(
               routerContract,
@@ -379,7 +378,10 @@ const performBuySaleTransactionV3 = async (
             //perform the transactions
             [amountInMaximum, amountOut] = calculateIOAmount(
               amountInMaximum,
-              amountOut
+              amountOut,
+              BigNumber.from(utils.parseEther(config.maximumWeth)),
+              BigNumber.from(utils.parseEther(config.minimumWeth)),
+              BigNumber.from(utils.parseEther(config.amountPercentage))
             );
             encodedDatas = await createBuyWithExactTokens(
               routerContract,

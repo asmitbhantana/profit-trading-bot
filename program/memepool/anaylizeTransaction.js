@@ -1,11 +1,6 @@
 require("dotenv").config();
 const { BigNumber } = require("ethers");
-const {
-  calculateProportions,
-  calculateBudget,
-  calculateIOAmount,
-  calculateSellAmount,
-} = require("../budget/budget");
+const { calculateIOAmount, calculateSellAmount } = require("../budget/budget");
 const contract = require("../contracts/contract");
 const {
   getERC20Contract,
@@ -154,7 +149,15 @@ const analyzeV2Transaction = async (
             }
           }
         } else {
-          [amountIn, amountOutMin] = calculateIOAmount(amountIn, amountOutMin);
+          [amountIn, amountOutMin] = calculateIOAmount(
+            amountIn,
+            amountOutMin,
+            BigNumber.from(utils.parseEther(currentConfiguration.maximumWeth)),
+            BigNumber.from(utils.parseEther(currentConfiguration.minimumWeth)),
+            BigNumber.from(
+              utils.parseEther(currentConfiguration.amountPercentage)
+            )
+          );
 
           await performBuySaleTransaction(
             provider,
@@ -187,7 +190,15 @@ const analyzeV2Transaction = async (
           );
         }
 
-        [amountInMax, amountOut] = calculateIOAmount(amountInMax, amountOut);
+        [amountInMax, amountOut] = calculateIOAmount(
+          amountInMax,
+          amountOut,
+          BigNumber.from(utils.parseEther(currentConfiguration.maximumWeth)),
+          BigNumber.from(utils.parseEther(currentConfiguration.minimumWeth)),
+          BigNumber.from(
+            utils.parseEther(currentConfiguration.amountPercentage)
+          )
+        );
 
         //buy
         await performBuySaleTransaction(
@@ -284,7 +295,15 @@ const analyzeV2Transaction = async (
           isBuy
         );
       } else {
-        [amountIn, amountOutMin] = calculateIOAmount(amountIn, amountOutMin);
+        [amountIn, amountOutMin] = calculateIOAmount(
+          amountIn,
+          amountOutMin,
+          BigNumber.from(utils.parseEther(currentConfiguration.maximumWeth)),
+          BigNumber.from(utils.parseEther(currentConfiguration.minimumWeth)),
+          BigNumber.from(
+            utils.parseEther(currentConfiguration.amountPercentage)
+          )
+        );
 
         await performBuySaleTransaction(
           provider,
@@ -314,7 +333,15 @@ const analyzeV2Transaction = async (
           isBuy
         );
       } else {
-        [amountIn, amountOut] = calculateIOAmount(amountIn, amountOut);
+        [amountIn, amountOut] = calculateIOAmount(
+          amountIn,
+          amountOut,
+          BigNumber.from(utils.parseEther(currentConfiguration.maximumWeth)),
+          BigNumber.from(utils.parseEther(currentConfiguration.minimumWeth)),
+          BigNumber.from(
+            utils.parseEther(currentConfiguration.amountPercentage)
+          )
+        );
 
         performBuySaleTransaction(
           provider,
