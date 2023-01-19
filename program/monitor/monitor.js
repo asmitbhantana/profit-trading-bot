@@ -21,7 +21,6 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
   //retives all tokens and wallets
   let currenConfiguration = await Configuration.findOne({}).exec();
 
-  console.log("contract address", contract.address);
   //retrives the router info
   let currentRouter = await Router.findOne({
     routerContract: contract.address,
@@ -73,7 +72,6 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
     const totalTokenBundle = await TokenBundle.find({ wallet: wallet }).exec();
     //adding the total token bundle which is all sold
     let additionalTokenBundle = [];
-    console.log("currentWalletData: ", currentWalletData);
     totalTokenBundle.map((token) => {
       let exclude = true;
       for (let i = 0; i < currentWalletData.length && exclude; i++) {
@@ -93,8 +91,6 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
       }
     });
     currentWalletData = currentWalletData.concat(additionalTokenBundle);
-    console.log("data", wallet);
-    console.log("current wallet data: ", currentWalletData);
 
     // return;
     //tally changes
@@ -134,7 +130,6 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
         return;
       }
 
-      console.log("current router", currentRouter);
       //not the stable coins, weth etc.
       if (
         !currenConfiguration.untrackedTokens.includes(data.token_address, 0) &&
@@ -227,7 +222,6 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
 
             //update our wallet amount on database
             if (ourBalance) {
-              console.log(buyResult.amountOut);
               const newBalance = ourBalanceNow.add(buyResult.amountOut);
               await updateTokenBalance(
                 currenConfiguration.ourWallet,
