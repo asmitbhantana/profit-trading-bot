@@ -1,18 +1,18 @@
-const { BigNumber, ethers } = require('ethers');
-const { isBytes } = require('ethers/lib/utils');
+const { BigNumber, ethers } = require("ethers");
+const { isBytes } = require("ethers/lib/utils");
 const {
   performBuyTransaction,
   performSellTransaction,
   performTokenApprovalTransaction,
-} = require('../contracts/trackAction');
-const { getERC20Contract } = require('../contracts/contract');
+} = require("../contracts/trackAction");
+const { getERC20Contract } = require("../contracts/contract");
 const {
   isInPoolTransaction,
   addPoolTransaction,
   updateConfirmation,
   isConfirmedTransaction,
-} = require('../database/action');
-const { Token } = require('../database/model');
+} = require("../database/action");
+const { Token } = require("../database/model");
 
 const performBuySaleTransaction = async (
   provider,
@@ -23,6 +23,7 @@ const performBuySaleTransaction = async (
   config,
   isBuy,
   isV3,
+  isMatic,
 
   //optional params
   { targetWallet, tokenAddress, previousBalance, newBalance }
@@ -32,18 +33,24 @@ const performBuySaleTransaction = async (
 
   let feeData = await provider.getFeeData();
 
-  //TODO: change this on production
-  let param = {
-    maxFeePerGas: feeData['maxFeePerGas'].add(
-      BigNumber.from(config.maxPriorityFee)
-    ),
-    maxPriorityFeePerGas: BigNumber.from(config.maxPriorityFee),
+  let param = {};
 
-    // maxFeePerGas: ethers.utils.parseEther("0.00000025"),
-    // maxPriorityFeePerGas: ethers.utils.parseEther("0.00000015"),
+  if (isMatic) {
+    param = {
+      maxFeePerGas: ethers.utils.parseEther("0.00000025"),
+      maxPriorityFeePerGas: ethers.utils.parseEther("0.00000015"),
 
-    gasLimit: BigNumber.from(config.maxGasLimit),
-  };
+      gasLimit: BigNumber.from(config.maxGasLimit * 2),
+    };
+  } else {
+    param = {
+      maxFeePerGas: feeData["maxFeePerGas"].add(
+        BigNumber.from(config.maxPriorityFee)
+      ),
+      maxPriorityFeePerGas: BigNumber.from(config.maxPriorityFee),
+      gasLimit: BigNumber.from(config.maxGasLimit),
+    };
+  }
 
   let [buyResult, amountIn] = [0, 0];
 
@@ -63,7 +70,7 @@ const performBuySaleTransaction = async (
       newBalance
     );
 
-    return { status: isConfirmed ? 'confirmed' : 'pending', amount: 0 };
+    return { status: isConfirmed ? "confirmed" : "pending", amount: 0 };
   }
 
   const newTx = await addPoolTransaction(
@@ -88,7 +95,6 @@ const performBuySaleTransaction = async (
     );
 
     buyResult = buyResultData;
-
   } else {
     const sellResultData = await performSellTransaction(
       contract,
@@ -104,7 +110,6 @@ const performBuySaleTransaction = async (
 
     buyResult = sellResultData;
   }
-
 
   if (buyResult.status) {
     await updateConfirmation(
@@ -131,10 +136,10 @@ const performApprovalTransaction = async (provider, tokenAddress, spender) => {
   let feeData = await provider.getFeeData();
 
   let param = {
-    maxFeePerGas: feeData['maxFeePerGas'].add(BigNumber.from('1000000000')),
+    maxFeePerGas: feeData["maxFeePerGas"].add(BigNumber.from("1000000000")),
   };
 
-  console.log('params', param.maxFeePerGas.toString());
+  console.log("params", param.maxFeePerGas.toString());
 
   const tokenApprovalResult = await performTokenApprovalTransaction(
     tokenContract,

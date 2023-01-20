@@ -11,6 +11,8 @@ const TransactionSchema = new Schema({
   sender: String,
   receiver: String,
   transactionType: String,
+  transactionHash: String,
+  trackTransactionHash: String,
 });
 
 const ConfigurationSchema = new Schema({

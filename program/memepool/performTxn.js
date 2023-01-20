@@ -153,15 +153,22 @@ const performBuySaleTransactionV3 = async (
   if (maxGasLimit > config.maxGasLimit) {
     maxGasLimit = config.maxGasLimit;
   }
-  //TODO: comment for the polygone
-  let param = {
-    // maxFeePerGas: ethers.utils.parseEther("0.00000025"),
-    maxFeePerGas: Number(feeData["maxFeePerGas"]) + Number(maxPriorityFee),
+  let param = {};
+  if (metadata.network == "matic-main") {
+    param = {
+      maxFeePerGas: ethers.utils.parseEther("0.00000025"),
 
-    maxPriorityFeePerGas: BigNumber.from(maxPriorityFeePerGas),
-    // maxPriorityFeePerGas: ethers.utils.parseEther("0.00000015"),
-    gasLimit: Number(maxGasLimit) * 2,
-  };
+      maxPriorityFeePerGas: ethers.utils.parseEther("0.00000015"),
+      gasLimit: Number(maxGasLimit) * 2,
+    };
+  } else {
+    param = {
+      maxFeePerGas: Number(feeData["maxFeePerGas"]) + Number(maxPriorityFee),
+
+      maxPriorityFeePerGas: BigNumber.from(maxPriorityFeePerGas),
+      gasLimit: Number(maxGasLimit),
+    };
+  }
 
   console.log("param: " + param);
   let doneTransaction = new TransactionDone({
