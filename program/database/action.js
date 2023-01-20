@@ -21,15 +21,15 @@ Configurations:
   update all the config
  */
 
-const { BigNumber } = require("ethers");
+const { BigNumber } = require('ethers');
 const {
   Configuration,
   TokenBundle,
   Router,
   TransactionPool,
   Token,
-} = require("./model");
-const { RouterSchema } = require("./schema");
+} = require('./model');
+const { RouterSchema } = require('./schema');
 
 const createUpdateConfig = async function (config) {
   const updatedConfig = await Configuration.findOneAndUpdate({}, config, {
@@ -84,7 +84,7 @@ const updateTokenBalance = async function (wallet, token, new_balance) {
     },
     { balance: new_balance }
   ).exec();
-  console.log("token updated", tokenToUpdate);
+  console.log('token updated', tokenToUpdate);
   return tokenToUpdate;
 };
 
@@ -115,7 +115,6 @@ const updateChangedTokenBalance = async function (
       token,
       currentBalanceAmount.toString()
     );
-    console.log("token updated", newBalance);
   } else {
     if (isBuy) {
       const newBalance = TokenBundle({
@@ -124,7 +123,6 @@ const updateChangedTokenBalance = async function (
         balance: changedBalance,
       });
       newBalance.save();
-      console.log("token updated", newBalance);
     }
   }
 };
@@ -146,7 +144,6 @@ const isInPoolTransaction = async (
     previousBalance: previousBalance,
     newBalance: newBalance,
   }).exec();
-  console.log("current pending transaction", currentPendingTransaction);
   if (currentPendingTransaction) {
     if (currentPendingTransaction.confirmed) {
       return !currentPendingTransaction.failed;
@@ -155,6 +152,24 @@ const isInPoolTransaction = async (
   } else {
     return false;
   }
+};
+
+const isConfirmedTransaction = async (
+  targetWallet,
+  tokenAddress,
+  previousBalance,
+  newBalance
+) => {
+  let currentPendingTransaction = await TransactionPool.findOne({
+    targetWallet: targetWallet,
+    tokenAddress: tokenAddress,
+    previousBalance: previousBalance,
+    newBalance: newBalance,
+  }).exec();
+  if (currentPendingTransaction) {
+    return currentPendingTransaction.confirmed;
+  }
+  return false;
 };
 
 const addPoolTransaction = async (
@@ -196,7 +211,6 @@ const updateConfirmation = async (
     },
     { confirmed: true, failed: failed }
   ).exec();
-  console.log("Updated Pending Transaction", updatedPendingTransaction);
   return updatedPendingTransaction;
 };
 
@@ -204,22 +218,20 @@ const getAllWalletBalance = async (token_address, excludeWallet) => {
   const allWalletBalance = await TokenBundle.find({
     tokenAddress: token_address,
   }).exec();
-  console.log("token", token_address);
-  console.log("All Balance", allWalletBalance);
-  let totalBalanceNow = BigNumber.from("0");
+  let totalBalanceNow = BigNumber.from('0');
 
-  allWalletBalance.map((bundle) => {
-    if (bundle.wallet != excludeWallet) {
-      totalBalanceNow.add(BigNumber.from(bundle.balance));
+  allWalletBalance.forEach((balance) => {
+    if (Array.from(balance).length) {
+      Array.from(balance).forEach((bundle) => {
+        if (bundle.wallet != excludeWallet)
+          totalBalanceNow = totalBalanceNow.add(BigNumber.from(bundle.balance));
+      });
+    } else {
+      if (balance.wallet != excludeWallet)
+        totalBalanceNow = totalBalanceNow.add(BigNumber.from(balance.balance));
     }
   });
 
-  console.log(
-    "Total Balance for",
-    token_address,
-    "is",
-    totalBalanceNow.toString()
-  );
   return totalBalanceNow;
 };
 
@@ -236,4 +248,5 @@ module.exports = {
   updateTokenBalance,
   getAllWalletBalance,
   updateChangedTokenBalance,
+  isConfirmedTransaction,
 };
