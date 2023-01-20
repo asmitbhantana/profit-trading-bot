@@ -34,7 +34,8 @@ const RouterSchema = new Schema({
   network: String,
   chainName: String,
   rpc: String,
-  isV3: Boolean, // 2 For V2 and 3 for V3
+  isV3: Boolean, // false For V2 and true for V3
+  isUniversalRouter: Boolean, // true for universal router and false for non-universal router
 });
 
 const TokenBundleSchema = new Schema({

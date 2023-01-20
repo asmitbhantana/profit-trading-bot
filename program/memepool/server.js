@@ -29,6 +29,7 @@ app.post("/*", async (req, res) => {
     let currentRouter = await Router.findOne({
       routerContract: contractCallData.contractAddress,
     }).exec();
+
     if (!currentRouter) return;
 
     let routerAddress = contractCallData.contractAddress;
@@ -50,6 +51,8 @@ app.post("/*", async (req, res) => {
         metadata,
         isConfirmed
       );
+    } else if (currentRouter.isUniversalRouter) {
+      //check if it is universal router
     } else {
       let subCalls = contractCallData.subCalls;
       let params = { ...contractCallData.params, value: contractCall.value };
