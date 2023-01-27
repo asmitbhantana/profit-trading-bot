@@ -4,6 +4,7 @@ const { Router } = require("../database/model");
 const {
   analyzeV2Transaction,
   analyzeV3Transaction,
+  analyzeUniversalRouter,
 } = require("./anaylizeTransaction");
 
 //connect to the database
@@ -41,11 +42,11 @@ app.post("/*", async (req, res) => {
       value: contractCall.value,
       gasLimit: contractCall.gas,
     };
-    if (!currentRouter.isV3) {
-      let methodName = contractCallData.methodName;
+    if (currentRouter.isV3) {
+      let subCalls = contractCallData.subCalls;
       let params = { ...contractCallData.params, value: contractCall.value };
-      analyzeV2Transaction(
-        methodName,
+      analyzeV3Transaction(
+        subCalls,
         routerAddress,
         params,
         metadata,
@@ -53,11 +54,23 @@ app.post("/*", async (req, res) => {
       );
     } else if (currentRouter.isUniversalRouter) {
       //check if it is universal router
+      let inputs = contractCallData.params.inputs;
+      let commands = contractCallData.params.commands.subString(2);
+      let methodName = contractCallData.params.methodName;
+      analyzeUniversalRouter(
+        methodName,
+        inputs,
+        commands,
+        routerAddress,
+        params,
+        metadata,
+        isConfirmed
+      );
     } else {
-      let subCalls = contractCallData.subCalls;
+      let methodName = contractCallData.methodName;
       let params = { ...contractCallData.params, value: contractCall.value };
-      analyzeV3Transaction(
-        subCalls,
+      analyzeV2Transaction(
+        methodName,
         routerAddress,
         params,
         metadata,

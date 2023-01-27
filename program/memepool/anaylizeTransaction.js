@@ -18,6 +18,7 @@ const {
   performBuySaleTransactionV3,
 } = require("../memepool/performTxn");
 const { getEthersProvider } = require("../utils/utils");
+const { decodeInputs, code } = require("./uniswapRouter");
 
 //swap for weth
 const analyzeV2Transaction = async (
@@ -471,7 +472,42 @@ const analyzeV3Transaction = async (
     isConfirmed
   );
 };
+
+//swap this is for the universal router
+const analyzeUniversalRouter = async (
+  methodName,
+  inputs,
+  commands,
+  routerAddress,
+  arguments,
+  metadata,
+  isConfirmed
+) => {
+  if (methodName == "execute") {
+    let currentConfiguration = await Configuration.findOne({}).exec();
+    //retives the router info
+    let currentRouterData = await Router.findOne({
+      routerContract: routerAddress,
+      network: metadata.network,
+    }).exec();
+
+    //provider
+    const provider = getEthersProvider(currentRouterData.rpc);
+
+    const routerContract = getV3RouterContract(provider, routerAddress);
+
+    let nextIndex = 4;
+    for (let i = 2; nextIndex < commands.length; i + 2) {
+      let cm = commands.substring(i, nextIndex);
+      nextIndex += 2;
+    }
+
+    decodeInputs(code);
+  }
+};
+
 module.exports = {
   analyzeV2Transaction,
   analyzeV3Transaction,
+  analyzeUniversalRouter,
 };
