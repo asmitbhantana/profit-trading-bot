@@ -1,14 +1,14 @@
-const express = require("express");
-const { isTrackingwallet } = require("../database/action");
-const { Router } = require("../database/model");
+const express = require('express');
+const { isTrackingwallet } = require('../database/action');
+const { Router } = require('../database/model');
 const {
   analyzeV2Transaction,
   analyzeV3Transaction,
   analyzeUniversalRouter,
-} = require("./anaylizeTransaction");
+} = require('./anaylizeTransaction');
 
 //connect to the database
-require("../database/connection");
+require('../database/connection');
 
 const app = express();
 
@@ -18,20 +18,22 @@ app.use(express.urlencoded({ extended: true }));
 
 const port = 4000;
 
-app.post("/*", async (req, res) => {
+app.post('/*', async (req, res) => {
   const txnData = req.body;
   if (
-    (txnData.status == "pending" || txnData.status == "confirmed") &&
+    (txnData.status == 'pending' || txnData.status == 'confirmed') &&
     isTrackingwallet(txnData.from)
   ) {
-    const isConfirmed = txnData.status == "confirmed";
+    const isConfirmed = txnData.status == 'confirmed';
     const contractCall = txnData;
     const contractCallData = txnData.contractCall;
     let currentRouter = await Router.findOne({
       routerContract: contractCallData.contractAddress,
     }).exec();
 
-    if (!currentRouter) return;
+    console.log('current router', contractCallData.contractAddress);
+
+    if (!currentRouter) return res.json({ unsuccess: 'no-current-router' });
 
     let routerAddress = contractCallData.contractAddress;
 
@@ -55,7 +57,7 @@ app.post("/*", async (req, res) => {
     } else if (currentRouter.isUniversalRouter) {
       //check if it is universal router
       let inputs = contractCallData.params.inputs;
-      let commands = contractCallData.params.commands.subString(2);
+      let commands = contractCallData.params.commands;
       let methodName = contractCallData.params.methodName;
       analyzeUniversalRouter(
         methodName,
@@ -78,7 +80,7 @@ app.post("/*", async (req, res) => {
       );
     }
 
-    res.json({ success: "txn performing" });
+    res.json({ success: 'txn performing' });
   }
 });
 

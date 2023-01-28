@@ -1,10 +1,11 @@
 {
-  "routerContract": "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45",
+  "routerContract": "0x4c60051384bd2d3c01bfc845cf5f4b44bcbe9de5",
   "routerName": "Uniswap V3: Router",
   "wethAddress": "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
   "factoryAddress": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
   "network": "matic-main",
   "chainName": "Polygon Network",
   "rpc": "https://polygon.llamarpc.com",
-  "isV3": true
+  "isV3": false,
+  "isUniversalRouter": true
 }
