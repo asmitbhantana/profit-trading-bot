@@ -18,7 +18,7 @@ const createSellExactTokens = async (
     tokenOut: path[1],
     fee,
     recipient,
-    // deadline,
+    deadline, //TODO: should add deadline to Matic
     amountIn,
     amountOutMinimum,
     sqrtPriceLimitX96,
@@ -47,7 +47,7 @@ const createSellForExactTokens = async (
     tokenOut: path[1],
     fee,
     recipient,
-    // deadline,
+    deadline, //TODO: should add deadline to Matic
     amountOut,
     amountInMaximum,
     sqrtPriceLimitX96,
@@ -76,7 +76,7 @@ const createBuyExactTokens = async (
     tokenOut: path[1],
     fee,
     recipient,
-    // deadline,
+    deadline, //TODO: should add deadline to Matic
     amountOut,
     amountInMaximum,
     sqrtPriceLimitX96,
@@ -104,10 +104,9 @@ const createBuyWithExactTokens = async (
     tokenOut: path[1],
     fee,
     recipient,
-    // deadline,
+    deadline, //TODO: should add deadline to Matic
     amountIn,
     amountOutMinimum,
-    // amountOutMinimum: "0",
     sqrtPriceLimitX96,
   };
 

@@ -27,10 +27,10 @@ const ConfigurationSchema = new Schema({
 });
 
 const RouterSchema = new Schema({
-  routerContract: String,
+  routerContract: { type: String, get: getAddress, set: getAddress },
   routerName: String,
-  wethAddress: String,
-  factoryAddress: String,
+  wethAddress: { type: String, get: getAddress, set: getAddress },
+  factoryAddress: { type: String, get: getAddress, set: getAddress },
   network: String,
   chainName: String,
   rpc: String,

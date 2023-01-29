@@ -3,7 +3,7 @@
 //add in the database
 //update database with the amount of token bought sold
 
-const { BigNumber, ethers } = require("ethers");
+const { BigNumber, ethers, utils } = require("ethers");
 const {
   sellExactTokens,
   buyExactTokens,
@@ -216,13 +216,16 @@ const performBuySaleTransactionV3 = async (
       case "exactInputSingle":
         path[0] = callData.params.params.tokenIn;
         path[1] = callData.params.params.tokenOut;
-        fee = callData.params.params.fee;
+        fee = callData.params.params.fee || 3000;
         amountIn = callData.params.params.amountIn;
         amountOutMinimum = callData.params.params.amountOutMinimum;
-        sqrtPriceLimit = callData.params.params.sqrtPriceLimitX96;
+        sqrtPriceLimit = callData.params.params.sqrtPriceLimitX96 || 0;
 
         console.log("exactInputSingle 1");
-        if (path[0] == router.wethAddress) {
+        console.log("path[0]=>", path[0]);
+        console.log("router weth address", router.wethAddress);
+
+        if (path[0].toLowerCase() == router.wethAddress.toLowerCase()) {
           console.log("exactInputSingle 2");
           //buy token
 
@@ -265,7 +268,7 @@ const performBuySaleTransactionV3 = async (
               routerContract.address
             );
           }
-        } else if (path[1] == routerContract.wethAddress) {
+        } else if (path[1] == router.wethAddress) {
           console.log("exactInputSingle 3");
 
           //sell token
@@ -339,6 +342,10 @@ const performBuySaleTransactionV3 = async (
 
           amountOutMinimum = BigNumber.from(amountOutMinimum).div(ratio);
 
+          console.log("amount in", amountIn);
+          console.log("amount out", amountOutMinimum);
+          console.log("ratio", ratio);
+
           encodedDatas = await createSellExactTokens(
             routerContract,
             path,
@@ -363,13 +370,13 @@ const performBuySaleTransactionV3 = async (
       case "exactOutputSingle":
         path[0] = callData.params.params.tokenIn;
         path[1] = callData.params.params.tokenOut;
-        fee = callData.params.params.fee;
+        fee = callData.params.params.fee || 3000;
         amountOut = callData.params.params.amountOut;
         amountInMaximum = callData.params.params.amountInMaximum;
         sqrtPriceLimit = callData.params.params.sqrtPriceLimitX96;
 
         console.log("exactOutputSingle 1");
-        if (path[0] == router.wethAddress) {
+        if (path[0].toLowerCase() == router.wethAddress.toLowerCase()) {
           console.log("exactOutputSingle 2");
           //buy token
 
@@ -415,7 +422,7 @@ const performBuySaleTransactionV3 = async (
               routerContract.address
             );
           }
-        } else if (path[1] == routerContract.wethAddress) {
+        } else if (path[1] == router.wethAddress) {
           console.log("exactInputSingle 3");
 
           //sell token

@@ -1,31 +1,31 @@
-require('dotenv').config();
-const { BigNumber } = require('ethers');
-const { calculateIOAmount, calculateSellAmount } = require('../budget/budget');
-const { uniswapV2Router, uniswapV3Router } = require('../contracts/const');
-const contract = require('../contracts/contract');
+require("dotenv").config();
+const { BigNumber } = require("ethers");
+const { calculateIOAmount, calculateSellAmount } = require("../budget/budget");
+const { uniswapV2Router, uniswapV3Router } = require("../contracts/const");
+const contract = require("../contracts/contract");
 const {
   getERC20Contract,
   getRouterContract,
   getV3RouterContract,
-} = require('../contracts/contract');
+} = require("../contracts/contract");
 const {
   updateChangedTokenBalance,
   getAllWalletBalance,
-} = require('../database/action');
+} = require("../database/action");
 
-const { Router, TokenBundle, Configuration } = require('../database/model');
+const { Router, TokenBundle, Configuration } = require("../database/model");
 const {
   performBuySaleTransaction,
   performBuySaleTransactionV3,
-} = require('../memepool/performTxn');
-const { getEthersProvider } = require('../utils/utils');
+} = require("../memepool/performTxn");
+const { getEthersProvider } = require("../utils/utils");
 const {
   decodeInputs,
   code,
   decodeCode,
   method_name,
   isV3Method,
-} = require('./uniswapRouter');
+} = require("./uniswapRouter");
 
 //swap for weth
 const analyzeV2Transaction = async (
@@ -89,12 +89,12 @@ const analyzeV2Transaction = async (
 
   let ratio;
 
-  console.log('Starting Of Method', methodName);
+  console.log("Starting Of Method", methodName);
 
   switch (methodName) {
     //may be buy or sell
-    case 'swapExactTokensForTokens':
-    case 'swapExactTokensForTokensSupportingFeeOnTransferTokens':
+    case "swapExactTokensForTokens":
+    case "swapExactTokensForTokensSupportingFeeOnTransferTokens":
       amountIn = params.amountIn;
       amountOutMin = params.amountOutMin;
 
@@ -184,7 +184,7 @@ const analyzeV2Transaction = async (
       }
 
       break;
-    case 'swapTokensForExactTokens':
+    case "swapTokensForExactTokens":
       amountInMax = params.amountInMax;
       amountOut = params.amountOut;
 
@@ -291,8 +291,8 @@ const analyzeV2Transaction = async (
       break;
 
     //buy
-    case 'swapExactETHForTokens':
-    case 'swapExactETHForTokensSupportingFeeOnTransferTokens':
+    case "swapExactETHForTokens":
+    case "swapExactETHForTokensSupportingFeeOnTransferTokens":
       amountIn = value;
       amountOutMin = params.amountOutMin;
       if (isConfirmed) {
@@ -329,7 +329,7 @@ const analyzeV2Transaction = async (
       }
 
       break;
-    case 'swapETHForExactTokens':
+    case "swapETHForExactTokens":
       //amountOut: exact amount of tokens
       amountOut = params.amountOut;
       amountIn = value;
@@ -368,9 +368,9 @@ const analyzeV2Transaction = async (
 
       break;
     //sell
-    case 'swapExactTokensForETH':
+    case "swapExactTokensForETH":
     //amountIn: exact token amount, amountOutMin:  minimum amount of eth required
-    case 'swapExactTokensForETHSupportingFeeOnTransferTokens':
+    case "swapExactTokensForETHSupportingFeeOnTransferTokens":
       //amountIn: exact token amount, amountOutMin:  minimum amount of eth required
       amountIn = params.amountIn;
       amountOutMin = params.amountOutMin;
@@ -405,7 +405,7 @@ const analyzeV2Transaction = async (
 
       break;
 
-    case 'swapTokensForExactETH':
+    case "swapTokensForExactETH":
       //amountOut: exactTokenAmount,
       // amountInMax: amount of token to be swapped should be smaller than the total
       amountOut = params.amountOut;
@@ -463,6 +463,9 @@ const analyzeV3Transaction = async (
     network: metadata.network,
   }).exec();
 
+  console.log("current Router data", routerAddress);
+  console.log(metadata.network);
+
   //Provider
   const provider = getEthersProvider(currentRouterData.rpc);
 
@@ -490,35 +493,39 @@ const analyzeUniversalRouter = async (
   metadata,
   isConfirmed
 ) => {
-  console.log('methodName', methodName);
-  console.log('call_inputs', call_inputs);
-  console.log('commands', commands);
-  if (methodName == 'execute') {
+  console.log("methodName", methodName);
+  console.log("call_inputs", call_inputs);
+  console.log("commands", commands);
+  if (methodName == "execute" || methodName == "execute0") {
     //decode and get methods with inputs
     let inputs = [];
     let methods = [];
     let nextIndex = 4;
-    for (let i = 2; nextIndex < commands.length; i + 2) {
+
+    for (let i = 2; nextIndex <= commands.length; i = i + 2) {
       let cm = commands.substring(i, nextIndex);
       let code = decodeCode(cm);
       if (code != null) {
+        console.log("methods", methods);
+        console.log("method_name", method_name[code]);
         methods.push(method_name[code]);
         inputs.push({ input: decodeInputs(code, call_inputs[i / 2 - 1]) });
       }
       nextIndex += 2;
     }
 
-    console.log('methodName', methodName);
-    console.log('methods', methods);
-    console.log('inputs', inputs);
+    console.log("methodName", methodName);
+    console.log("methods", methods);
+    console.log("inputs", inputs);
 
+    let tokens;
     //manage inputs with input decoder
     inputs.forEach((i) => {
-      if (typeof i == 'string') {
+      if (typeof i.input[3] == "string") {
         let path = i.input[3];
         let path1 = path.substring(0, 42);
-        let path2 = '0x' + path.substring(path.length - 40, path.length);
-        i.input[3] = [path1, path2];
+        let path2 = "0x" + path.substring(path.length - 40, path.length);
+        tokens = [path1, path2];
       }
     });
 
@@ -529,27 +536,32 @@ const analyzeUniversalRouter = async (
         //is v3
         let param = {};
 
-        if (methods[i] == 'exactInputSingle') {
+        if (methods[i] == "exactInputSingle") {
           param = {
             amountIn: inputs[i].input[1],
-            amountOutMin: inputs[i].input[2],
-            path: inputs[i].input[3],
+            amountOutMinimum: inputs[i].input[2],
+            path: tokens,
+            tokenIn: tokens[0],
+            tokenOut: tokens[1],
             to: metadata.from,
           };
         } else {
           param = {
             amountOut: inputs[i].input[1],
-            amountInMax: inputs[i].input[2],
-            path: inputs[i].input[3],
+            amountInMaximum: inputs[i].input[2],
+            path: tokens,
+            tokenIn: tokens[0],
+            tokenOut: tokens[1],
             to: metadata.from,
           };
         }
+        console.log("param->", param);
 
         let subcalls = [
           {
             data: {
               methodName: methods[i],
-              params: param,
+              params: { params: param },
             },
           },
         ];
@@ -565,21 +577,23 @@ const analyzeUniversalRouter = async (
         //is v2
         let param = {};
 
-        if (methods[i] == 'swapExactTokensForTokens') {
+        if (methods[i] == "swapExactTokensForTokens") {
           param = {
             amountIn: inputs[i].input[1],
-            amountOutMin: inputs[i].input[2],
-            path: inputs[i].input[3],
+            amountOutMinimum: inputs[i].input[2],
+            path: tokens,
+            tokenIn: tokens[0],
+            tokenOut: tokens[1],
             to: metadata.from,
-            deadline: '0',
+            deadline: "0",
           };
         } else {
           param = {
             amountOut: inputs[i].input[1],
-            amountInMax: inputs[i].input[2],
-            path: inputs[i].input[3],
+            amountInMaximum: inputs[i].input[2],
+            path: tokens,
             to: metadata.from,
-            deadline: '0',
+            deadline: "0",
           };
         }
 
