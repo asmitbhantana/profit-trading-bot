@@ -44,9 +44,13 @@ app.post('/*', async (req, res) => {
       value: contractCall.value,
       gasLimit: contractCall.gas,
     };
+    let params = {
+      ...contractCallData.params,
+      value: contractCall.value,
+    };
+
     if (currentRouter.isV3) {
       let subCalls = contractCallData.subCalls;
-      let params = { ...contractCallData.params, value: contractCall.value };
       analyzeV3Transaction(
         subCalls,
         routerAddress,
@@ -59,6 +63,8 @@ app.post('/*', async (req, res) => {
       let inputs = contractCallData.params.inputs;
       let commands = contractCallData.params.commands;
       let methodName = contractCallData.params.methodName;
+
+      console.log('inside of router');
       analyzeUniversalRouter(
         methodName,
         inputs,
@@ -70,7 +76,6 @@ app.post('/*', async (req, res) => {
       );
     } else {
       let methodName = contractCallData.methodName;
-      let params = { ...contractCallData.params, value: contractCall.value };
       analyzeV2Transaction(
         methodName,
         routerAddress,

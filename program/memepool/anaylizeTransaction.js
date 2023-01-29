@@ -490,6 +490,9 @@ const analyzeUniversalRouter = async (
   metadata,
   isConfirmed
 ) => {
+  console.log('methodName', methodName);
+  console.log('call_inputs', call_inputs);
+  console.log('commands', commands);
   if (methodName == 'execute') {
     //decode and get methods with inputs
     let inputs = [];
