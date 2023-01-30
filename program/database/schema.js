@@ -69,7 +69,6 @@ const TokenSchema = new Schema({
 
 const TransactionsDoneSchema = new Schema({
   txnHash: String,
-  ourTxnHash: String,
   network: String,
   from: String,
   to: String,

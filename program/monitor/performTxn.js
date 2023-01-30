@@ -117,7 +117,8 @@ const performBuySaleTransaction = async (
       tokenAddress,
       previousBalance,
       newBalance,
-      false
+      false,
+      buyResult.transactionHash
     );
   } else {
     await updateConfirmation(
@@ -125,7 +126,8 @@ const performBuySaleTransaction = async (
       tokenAddress,
       previousBalance,
       newBalance,
-      true
+      true,
+      buyResult.transactionHash
     );
   }
   return { ...buyResult };

@@ -21,15 +21,15 @@ Configurations:
   update all the config
  */
 
-const { BigNumber } = require('ethers');
+const { BigNumber } = require("ethers");
 const {
   Configuration,
   TokenBundle,
   Router,
   TransactionPool,
   Token,
-} = require('./model');
-const { RouterSchema } = require('./schema');
+} = require("./model");
+const { RouterSchema } = require("./schema");
 
 const createUpdateConfig = async function (config) {
   const updatedConfig = await Configuration.findOneAndUpdate({}, config, {
@@ -84,7 +84,7 @@ const updateTokenBalance = async function (wallet, token, new_balance) {
     },
     { balance: new_balance }
   ).exec();
-  console.log('token updated', tokenToUpdate);
+  console.log("token updated", tokenToUpdate);
   return tokenToUpdate;
 };
 
@@ -200,7 +200,8 @@ const updateConfirmation = async (
   previousBalance,
   newBalance,
 
-  failed
+  failed,
+  txnHash
 ) => {
   let updatedPendingTransaction = TransactionPool.findOneAndUpdate(
     {
@@ -209,7 +210,7 @@ const updateConfirmation = async (
       previousBalance: previousBalance,
       newBalance: newBalance,
     },
-    { confirmed: true, failed: failed }
+    { confirmed: true, failed: failed, txnHash: txnHash }
   ).exec();
   return updatedPendingTransaction;
 };
@@ -218,7 +219,7 @@ const getAllWalletBalance = async (token_address, excludeWallet) => {
   const allWalletBalance = await TokenBundle.find({
     tokenAddress: token_address,
   }).exec();
-  let totalBalanceNow = BigNumber.from('0');
+  let totalBalanceNow = BigNumber.from("0");
 
   allWalletBalance.forEach((balance) => {
     if (Array.from(balance).length) {

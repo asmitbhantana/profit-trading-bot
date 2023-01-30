@@ -2,6 +2,7 @@ require("dotenv").config();
 const ethers = require("ethers");
 
 let provider = null;
+let precision = ethers.BigNumber.from("10000");
 
 const getEthersProvider = (API_URL) => {
   if (!provider) {
@@ -13,4 +14,5 @@ const getEthersProvider = (API_URL) => {
 
 module.exports = {
   getEthersProvider,
+  precision,
 };

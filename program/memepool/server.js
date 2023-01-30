@@ -38,11 +38,13 @@ app.post("/*", async (req, res) => {
     let routerAddress = contractCallData.contractAddress;
 
     let metadata = {
+      txnHash: txnData.hash,
       network: contractCall.network,
       from: contractCall.from,
       to: contractCall.to,
       value: contractCall.value,
       gasLimit: contractCall.gas,
+      isConfirmed: txnData.status == "confirmed",
     };
     let params = {
       ...contractCallData.params,

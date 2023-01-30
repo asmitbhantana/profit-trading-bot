@@ -18,7 +18,7 @@ const {
   performBuySaleTransaction,
   performBuySaleTransactionV3,
 } = require("../memepool/performTxn");
-const { getEthersProvider } = require("../utils/utils");
+const { getEthersProvider, precision } = require("../utils/utils");
 const {
   decodeInputs,
   code,
@@ -122,7 +122,7 @@ const analyzeV2Transaction = async (
             path[0],
             path[path.length - 1],
             amountIn,
-            BigNumber.from(amountOutMin).div(ratio),
+            BigNumber.from(amountOutMin).div(ratio).mul(precision),
             isBuy,
             false,
             currentConfiguration,
@@ -248,7 +248,7 @@ const analyzeV2Transaction = async (
               path[0],
               path[path.length - 1],
               amountInMax,
-              BigNumber.from(amountOut).div(ratio),
+              BigNumber.from(amountOut).div(ratio).mul(precision),
               isBuy,
               false,
               currentConfiguration,
@@ -394,7 +394,7 @@ const analyzeV2Transaction = async (
           path[0],
           path[path.length - 1],
           amountIn,
-          BigNumber.from(amountOutMin).div(ratio),
+          BigNumber.from(amountOutMin).div(ratio).mul(precision),
           isBuy,
           false,
           currentConfiguration,
@@ -430,7 +430,7 @@ const analyzeV2Transaction = async (
           path[0],
           path[path.length - 1],
           amountInMax,
-          BigNumber.from(amountOut).div(ratio),
+          BigNumber.from(amountOut).div(ratio).mul(precision),
           isBuy,
           true,
           currentConfiguration,
@@ -550,8 +550,8 @@ const analyzeUniversalRouter = async (
             amountOut: inputs[i].input[1],
             amountInMaximum: inputs[i].input[2],
             path: tokens,
-            tokenIn: tokens[0],
-            tokenOut: tokens[1],
+            tokenIn: tokens[1],
+            tokenOut: tokens[0],
             to: metadata.from,
           };
         }
@@ -591,7 +591,9 @@ const analyzeUniversalRouter = async (
           param = {
             amountOut: inputs[i].input[1],
             amountInMaximum: inputs[i].input[2],
-            path: tokens,
+            path: tokens.reverse(),
+            tokenIn: tokens[1],
+            tokenOut: tokens[0],
             to: metadata.from,
             deadline: "0",
           };

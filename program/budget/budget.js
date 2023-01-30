@@ -1,4 +1,5 @@
 const { BigNumber, utils } = require("ethers");
+const { precision } = require("../utils/utils");
 
 require("../database/connection");
 
@@ -23,8 +24,8 @@ const calculateBudget = (buying_size, X, W, Y) => {
 
 const calculateProportions = (budgetAmount, wethAmount) => {
   let proportion = budgetAmount.lt(wethAmount)
-    ? wethAmount.div(budgetAmount)
-    : budgetAmount.div(wethAmount);
+    ? wethAmount.mul(precision).div(budgetAmount)
+    : budgetAmount.mul(precision).div(wethAmount);
 
   console.log("Proportion is", proportion.toString());
   return proportion;
@@ -41,8 +42,8 @@ const calculateIOAmount = (amountIn, amountOut, X, W, Y) => {
   let calculatedProportions = calculateProportions(budgetAmount, amountIn);
 
   let calcAmountOut = budgetAmount.lt(amountIn)
-    ? amountOut.div(calculatedProportions)
-    : amountOut.mul(calculatedProportions);
+    ? amountOut.div(calculatedProportions).mul(precision)
+    : amountOut.mul(calculatedProportions).div(precision);
 
   console.log("Calc amount out is", calcAmountOut.toString());
   return [budgetAmount, calcAmountOut];
@@ -56,13 +57,28 @@ const calculateSellAmount = (totalBalance, amountTransact, ourBalance) => {
   totalBalance = BigNumber.from(totalBalance);
   amountTransact = BigNumber.from(amountTransact);
 
-  let ratio = totalBalance.div(amountTransact);
+  let ratio = totalBalance.lt(amountTransact)
+    ? amountTransact.mul(precision).div(totalBalance)
+    : totalBalance.mul(precision).div(amountTransact);
+
   console.log("ratio is", ratio.toString());
   console.log("total balance is", totalBalance.toString());
   console.log("amount transact is", amountTransact.toString());
   console.log("our balance is", ourBalance.toString());
 
-  return [BigNumber.from(ourBalance).div(ratio), ratio];
+  if (ratio.gt(BigNumber.from(10000))) ratio = BigNumber.from(10000);
+
+  let ourAmountIn = BigNumber.from(ourBalance).div(ratio).mul(precision);
+
+  console.log("our amount in", ourAmountIn.toString());
+
+  let txnRatio = ourAmountIn.lt(amountTransact)
+    ? amountTransact.mul(precision).div(ourAmountIn)
+    : ourAmountIn.mul(precision).div(amountTransact);
+
+  console.log("txn ratio is", txnRatio.toString());
+
+  return [ourAmountIn, txnRatio];
 };
 
 module.exports = {
