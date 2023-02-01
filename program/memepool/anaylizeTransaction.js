@@ -469,7 +469,18 @@ const analyzeV3Transaction = async (
   //Provider
   const provider = getEthersProvider(currentRouterData.rpc);
 
-  const routerContract = getV3RouterContract(provider, routerAddress);
+  let routerContract;
+  if (!currentRouterData.isUniversalRouter) {
+    console.log("router is not universal router hence");
+
+    routerContract = getV3RouterContract(provider, routerAddress);
+  } else {
+    console.log("router is universal router hence");
+    routerContract = contract.getUniversalRouterContract(
+      provider,
+      routerAddress
+    );
+  }
 
   performBuySaleTransactionV3(
     provider,

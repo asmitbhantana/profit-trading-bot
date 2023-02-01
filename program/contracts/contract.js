@@ -6,7 +6,12 @@
 */
 require("dotenv").config();
 const { ethers, BigNumber, Contract } = require("ethers");
-const { uniswapV2ABI, uniswapV2Router } = require("../contracts/const");
+const {
+  uniswapV2ABI,
+  uniswapV2Router,
+  uniswapV3Router,
+  uniswapUniversalRouterABI,
+} = require("../contracts/const");
 const { erc20Abi } = require("./const");
 const { uniswapV3ABI } = require("./const");
 // const {
@@ -37,12 +42,14 @@ const getERC20Contract = (provider, tokenAddress) => {
 
 const getV3RouterContract = (provider, routerV3Address) => {
   const signer = new ethers.Wallet(PRIVATE_KEY, provider);
+  return new ethers.Contract(routerV3Address, uniswapV3ABI, signer);
+};
+
+const getUniversalRouterContract = (provider, universalRouterAddress) => {
+  const signer = new ethers.Wallet(PRIVATE_KEY, provider);
   return new ethers.Contract(
-    routerV3Address,
-    uniswapV3ABI,
-    // V3SwapRouterABI.concat(
-    //   "function multicall(uint256 deadline, bytes[] data) payable returns (bytes[])"
-    // ),
+    universalRouterAddress,
+    uniswapUniversalRouterABI,
     signer
   );
 };
@@ -51,4 +58,5 @@ module.exports = {
   getRouterContract,
   getERC20Contract,
   getV3RouterContract,
+  getUniversalRouterContract,
 };
