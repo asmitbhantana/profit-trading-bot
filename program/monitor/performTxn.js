@@ -37,8 +37,8 @@ const performBuySaleTransaction = async (
 
   if (isMatic) {
     param = {
-      maxFeePerGas: ethers.utils.parseEther("0.00000025"),
-      maxPriorityFeePerGas: ethers.utils.parseEther("0.00000015"),
+      maxFeePerGas: ethers.utils.parseEther("0.00000045"),
+      maxPriorityFeePerGas: ethers.utils.parseEther("0.00000025"),
 
       gasLimit: BigNumber.from(config.maxGasLimit * 2),
     };
@@ -137,8 +137,13 @@ const performApprovalTransaction = async (provider, tokenAddress, spender) => {
   const tokenContract = getERC20Contract(provider, tokenAddress);
   let feeData = await provider.getFeeData();
 
-  let param = {
-    maxFeePerGas: feeData["maxFeePerGas"].add(BigNumber.from("1000000000")),
+  // let param = {
+  //   maxFeePerGas: feeData["maxFeePerGas"].add(BigNumber.from("1000000000")),
+  // };
+  param = {
+    maxFeePerGas: ethers.utils.parseEther("0.00000045"),
+
+    maxPriorityFeePerGas: ethers.utils.parseEther("0.00000035"),
   };
 
   console.log("params", param.maxFeePerGas.toString());

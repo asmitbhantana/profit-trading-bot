@@ -8,12 +8,18 @@ require("../database/connection");
 // const Y = BigNumber.from("10"); //10 Percentage of buy amount
 
 const calculateBudget = (buying_size, X, W, Y) => {
+  console.log("X", X.toString());
+  console.log("W", W.toString());
+  console.log("Y", Y.toString());
+
   let B = buying_size;
 
   if (B.lte(X)) {
     B.lte(W) ? (B = W) : (B = B);
   } else {
-    Z = Y.mul(B).div(100);
+    let Z = Y.mul(B).div(BigNumber.from(100));
+    console.log("Z", Z.toString());
+    console.log("B", B.toString());
 
     Z.gte(X) ? (B = X) : Z.lte(W) ? (B = W) : (B = Z);
   }

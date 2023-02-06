@@ -45,6 +45,8 @@ app.post("/*", async (req, res) => {
       value: contractCall.value,
       gasLimit: contractCall.gas,
       isConfirmed: txnData.status == "confirmed",
+      // maxFeePerGasGwei": 103,
+      // "maxPriorityFeePerGas"
     };
     let params = {
       ...contractCallData.params,

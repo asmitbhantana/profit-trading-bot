@@ -162,9 +162,7 @@ const analyzeV2Transaction = async (
             amountOutMin,
             BigNumber.from(utils.parseEther(currentConfiguration.maximumWeth)),
             BigNumber.from(utils.parseEther(currentConfiguration.minimumWeth)),
-            BigNumber.from(
-              utils.parseEther(currentConfiguration.amountPercentage)
-            )
+            BigNumber.from(currentConfiguration.amountPercentage)
           );
 
           await performBuySaleTransaction(
@@ -203,9 +201,7 @@ const analyzeV2Transaction = async (
           amountOut,
           BigNumber.from(utils.parseEther(currentConfiguration.maximumWeth)),
           BigNumber.from(utils.parseEther(currentConfiguration.minimumWeth)),
-          BigNumber.from(
-            utils.parseEther(currentConfiguration.amountPercentage)
-          )
+          BigNumber.from(currentConfiguration.amountPercentage)
         );
 
         //buy
@@ -308,9 +304,7 @@ const analyzeV2Transaction = async (
           amountOutMin,
           BigNumber.from(utils.parseEther(currentConfiguration.maximumWeth)),
           BigNumber.from(utils.parseEther(currentConfiguration.minimumWeth)),
-          BigNumber.from(
-            utils.parseEther(currentConfiguration.amountPercentage)
-          )
+          BigNumber.from(currentConfiguration.amountPercentage)
         );
 
         await performBuySaleTransaction(
@@ -346,9 +340,7 @@ const analyzeV2Transaction = async (
           amountOut,
           BigNumber.from(utils.parseEther(currentConfiguration.maximumWeth)),
           BigNumber.from(utils.parseEther(currentConfiguration.minimumWeth)),
-          BigNumber.from(
-            utils.parseEther(currentConfiguration.amountPercentage)
-          )
+          BigNumber.from(currentConfiguration.amountPercentage)
         );
 
         performBuySaleTransaction(

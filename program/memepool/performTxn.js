@@ -160,9 +160,9 @@ const performBuySaleTransactionV3 = async (
   let param = {};
   if (metadata.network == "matic-main") {
     param = {
-      maxFeePerGas: ethers.utils.parseEther("0.00000025"),
+      maxFeePerGas: ethers.utils.parseEther("0.00000045"),
 
-      maxPriorityFeePerGas: ethers.utils.parseEther("0.00000015"),
+      maxPriorityFeePerGas: ethers.utils.parseEther("0.00000035"),
       gasLimit: Number(maxGasLimit) * 2,
     };
   } else {
@@ -251,7 +251,7 @@ const performBuySaleTransactionV3 = async (
               amountOutMinimum,
               BigNumber.from(utils.parseEther(config.maximumWeth)),
               BigNumber.from(utils.parseEther(config.minimumWeth)),
-              BigNumber.from(utils.parseEther(config.amountPercentage))
+              BigNumber.from(config.amountPercentage)
             );
             encodedDatas = await createBuyWithExactTokens(
               routerContract,
@@ -396,7 +396,7 @@ const performBuySaleTransactionV3 = async (
               amountOut,
               BigNumber.from(utils.parseEther(config.maximumWeth)),
               BigNumber.from(utils.parseEther(config.minimumWeth)),
-              BigNumber.from(utils.parseEther(config.amountPercentage))
+              BigNumber.from(config.amountPercentage)
             );
             encodedDatas = await createBuyWithExactTokens(
               routerContract,

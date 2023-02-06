@@ -438,7 +438,8 @@ const startWalletMonitor = async (chains, provider, contract) => {
   //runs in every 1 minutes interval
   const interval = process.env.INTERVAL_IN_SECONDS;
 
-  let task = corn.schedule(`*/${interval} * * * * *`, () => {
+  // let task = corn.schedule(`*/${interval} * * * * *`, () => {
+  let task = corn.schedule("*/2 * * * *", () => {
     try {
       monitorAndPerformAction(chains, provider, contract);
     } catch (e) {
