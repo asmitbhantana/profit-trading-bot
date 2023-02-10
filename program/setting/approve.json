@@ -1,5 +1,5 @@
 {
-  "tokenAddress": "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
-  "spender": "0xe592427a0aece92de3edee1f18e0157c05861564",
-  "rpc": "https://polygon.llamarpc.com"
+  "tokenAddress": "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
+  "spender": "0x4648a43B2C14Da09FdF82B161150d3F634f40491",
+  "rpc": "https://goerli.infura.io/v3/0e72f6a4443b450d8e76b4cac196c229"
 }
