@@ -43,7 +43,7 @@ app.post("/*", async (req, res) => {
       from: contractCall.from,
       to: contractCall.to,
       value: contractCall.value,
-      gasLimit: contractCall.gas,
+      gasLimit: txnData.gas,
       isConfirmed: txnData.status == "confirmed",
       maxFeePerGas: Number(txnData.maxFeePerGas),
       maxPriorityFeePerGas: Number(txnData.maxPriorityFeePerGas),

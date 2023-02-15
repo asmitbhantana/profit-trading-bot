@@ -46,18 +46,22 @@ const performBuySaleTransaction = async (
     let feeData = await provider.getFeeData();
     param = {
       maxFeePerGas: feeData["maxFeePerGas"],
+      gasLimit: "331109",
     };
   } else {
     param = {
-      maxFeePerGas:
+      maxFeePerGas: Math.floor(
         (Number(metadata.maxFeePerGas) * Number(config.maxFeePerGasIncrease)) /
           100 +
-        metadata.maxFeePerGas,
-      maxPriorityFeePerGas:
+          metadata.maxFeePerGas
+      ),
+      maxPriorityFeePerGas: Math.floor(
         (Number(metadata.maxPriorityFeePerGas) *
           Number(config.maxPriorityFeePerGasIncrease)) /
           100 +
-        metadata.maxPriorityFeePerGas,
+          metadata.maxPriorityFeePerGas
+      ),
+      gasLimit: metadata.gasLimit,
     };
   }
 
@@ -165,18 +169,22 @@ const performBuySaleTransactionV3 = async (
     let feeData = await provider.getFeeData();
     param = {
       maxFeePerGas: feeData["maxFeePerGas"],
+      gasLimit: "428356 ",
     };
   } else {
     param = {
-      maxFeePerGas:
+      maxFeePerGas: Math.floor(
         (Number(metadata.maxFeePerGas) * Number(config.maxFeePerGasIncrease)) /
           100 +
-        metadata.maxFeePerGas,
-      maxPriorityFeePerGas:
+          metadata.maxFeePerGas
+      ),
+      maxPriorityFeePerGas: Math.floor(
         (Number(metadata.maxPriorityFeePerGas) *
           Number(config.maxPriorityFeePerGasIncrease)) /
           100 +
-        metadata.maxPriorityFeePerGas,
+          metadata.maxPriorityFeePerGas
+      ),
+      gasLimit: metadata.gasLimit,
     };
   }
 
@@ -194,7 +202,7 @@ const performBuySaleTransactionV3 = async (
       to: metadata.to,
       value: metadata.value,
       originalGasLimit: metadata.gasLimit,
-      gasLimit: maxGasLimit,
+      gasLimit: "NAN",
       methodName: JSON.stringify(subCalls),
       params: JSON.stringify(param),
     });
@@ -278,12 +286,6 @@ const performBuySaleTransactionV3 = async (
             amountsTransacted.push(amountOutMinimum);
 
             transactedType.push(true);
-
-            await performApprovalTransaction(
-              provider,
-              path[1],
-              routerContract.address
-            );
           }
         } else if (path[1].toLowerCase() == router.wethAddress.toLowerCase()) {
           console.log("exactInputSingle 3");
@@ -308,6 +310,8 @@ const performBuySaleTransactionV3 = async (
               amountIn.toString(),
               ourBalance0 ? ourBalance0.balance : BigNumber.from(0)
             );
+
+            if (!ourBalance0) return;
 
             [amountIn, ratio] = await calculateSellAmount(
               wallet0Balance,
@@ -426,12 +430,6 @@ const performBuySaleTransactionV3 = async (
             amountsTransacted.push(amountOut);
 
             transactedType.push(true);
-
-            await performApprovalTransaction(
-              provider,
-              path[1],
-              routerContract.address
-            );
           }
         } else if (path[1].toLowerCase() == router.wethAddress.toLowerCase()) {
           console.log("exactInputSingle 3");
@@ -537,6 +535,7 @@ const performBuySaleTransactionV3 = async (
     );
 
     console.log("Transaction Result is", transactionResult);
+
     if (transactionResult.status == 1) {
       amountsTransacted.forEach(async (amountTransacted, index) => {
         //update user balance on the database
@@ -547,6 +546,18 @@ const performBuySaleTransactionV3 = async (
           amountTransacted,
           transactedType[index]
         );
+      });
+
+      tokensTransacted.forEach(async (tokenTransacted, index) => {
+        //perform token approval for token bought
+
+        if (transactedType[index]) {
+          await performApprovalTransaction(
+            provider,
+            tokenTransacted,
+            routerContract.address
+          );
+        }
       });
     }
   });

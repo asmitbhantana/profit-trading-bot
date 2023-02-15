@@ -18,7 +18,7 @@ const createSellExactTokens = async (
     tokenOut: path[1],
     fee,
     recipient,
-    deadline, //TODO: should add deadline to Matic
+    // deadline, //TODO: should add deadline to Matic
     amountIn,
     amountOutMinimum,
     sqrtPriceLimitX96,
@@ -47,7 +47,7 @@ const createSellForExactTokens = async (
     tokenOut: path[1],
     fee,
     recipient,
-    deadline, //TODO: should add deadline to Matic
+    // deadline, //TODO: should add deadline to Matic
     amountOut,
     amountInMaximum,
     sqrtPriceLimitX96,
@@ -76,7 +76,7 @@ const createBuyExactTokens = async (
     tokenOut: path[1],
     fee,
     recipient,
-    deadline, //TODO: should add deadline to Matic
+    // deadline, //TODO: should add deadline to Matic
     amountOut,
     amountInMaximum,
     sqrtPriceLimitX96,
@@ -125,18 +125,10 @@ const createBuyWithExactTokens = async (
 
 //execute transaction
 const executeTransactions = async (routerContract, encodedDatas, params) => {
-  // const deadline = BigNumber.from(Math.ceil(Date.now() / 1000) + 60 * 10);
+  const deadline = BigNumber.from(Math.ceil(Date.now() / 1000) + 60 * 10);
 
   console.log("encoded data", encodedDatas);
   try {
-    // const multiCallTx = await routerContract.multicall(
-    //   deadline,
-    //   [encodedDatas],
-    //   {
-    //     ...params,
-    //   }
-    // );
-
     const txArgs = {
       to: routerContract.address,
       from: routerContract.signer.address,
@@ -148,6 +140,7 @@ const executeTransactions = async (routerContract, encodedDatas, params) => {
     const tx = await routerContract.signer.sendTransaction(txArgs);
     const receipt = await tx.wait();
     return receipt;
+
     // const multiCallResult = await multiCallTx.wait();
     // return multiCallResult;
   } catch (err) {
