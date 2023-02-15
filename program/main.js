@@ -35,6 +35,6 @@ const provider = getEthersProvider(process.env.RPC);
 const routerContract = getV3RouterContract(provider, process.env.ROUTER);
 
 // approveMaxToken(provider, routerContract.address, routerContract.WETH);
-startWalletMonitor(EvmChain.POLYGON, provider, routerContract);
+startWalletMonitor(EvmChain.GOERLI, provider, routerContract);
 // startWalletMonitor(EvmChain.POLYGON, provider, routerContract);
 //

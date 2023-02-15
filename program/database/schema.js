@@ -22,8 +22,9 @@ const ConfigurationSchema = new Schema({
   ourWallet: String,
   wallets: [String],
   untrackedTokens: [String],
-  maxGasLimit: String,
-  maxPriorityFee: String,
+  maxFeePerGasIncrease: String, // percentage 30
+  maxPriorityFeePerGasIncrease: String, // percentage 20
+  maximumPriorityFeePerGas: String, // maximum gas in gwei
 });
 
 const RouterSchema = new Schema({

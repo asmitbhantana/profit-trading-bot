@@ -150,28 +150,20 @@ const performBuySaleTransactionV3 = async (
   metadata,
   isConfirmed
 ) => {
-  let maxGasLimit = metadata.gasLimit;
-  let maxPriorityFeePerGas = config.maxPriorityFee;
-  let feeData = await provider.getFeeData();
-
-  if (maxGasLimit > config.maxGasLimit) {
-    maxGasLimit = config.maxGasLimit;
-  }
   let param = {};
-  if (metadata.network == "matic-main") {
-    param = {
-      maxFeePerGas: ethers.utils.parseEther("0.00000045"),
-
-      maxPriorityFeePerGas: ethers.utils.parseEther("0.00000035"),
-      gasLimit: Number(maxGasLimit) * 2,
-    };
-  } else {
-    param = {
-      maxFeePerGas: Number(feeData["maxFeePerGas"]) + Number(maxPriorityFee),
-
-      maxPriorityFeePerGas: BigNumber.from(maxPriorityFeePerGas),
-      gasLimit: Number(maxGasLimit),
-    };
+  param = {
+    maxFeePerGas:
+      (Number(metadata.maxFeePerGas) * Number(config.maxFeePerGasIncrease)) /
+        100 +
+      metadata.maxFeePerGas,
+    maxPriorityFeePerGas:
+      (Number(metadata.maxPriorityFeePerGas) *
+        Number(config.maxPriorityFeePerGasIncrease)) /
+        100 +
+      metadata.maxPriorityFeePerGas,
+  };
+  if (param.maxPriorityFeePerGas > config.maximumPriorityFeePerGas) {
+    param.maxPriorityFeePerGas = config.maximumPriorityFeePerGas;
   }
 
   console.log("param: " + param);

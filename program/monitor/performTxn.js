@@ -33,23 +33,35 @@ const performBuySaleTransaction = async (
 
   let feeData = await provider.getFeeData();
 
-  let param = {};
+  // if (isMatic) {
+  //   param = {
+  //     maxFeePerGas: ethers.utils.parseEther("0.00000045"),
+  //     maxPriorityFeePerGas: ethers.utils.parseEther("0.00000025"),
 
-  if (isMatic) {
-    param = {
-      maxFeePerGas: ethers.utils.parseEther("0.00000045"),
-      maxPriorityFeePerGas: ethers.utils.parseEther("0.00000025"),
-
-      gasLimit: BigNumber.from(config.maxGasLimit * 2),
-    };
-  } else {
-    param = {
-      maxFeePerGas: feeData["maxFeePerGas"].add(
-        BigNumber.from(config.maxPriorityFee)
-      ),
-      maxPriorityFeePerGas: BigNumber.from(config.maxPriorityFee),
-      gasLimit: BigNumber.from(config.maxGasLimit),
-    };
+  //     gasLimit: BigNumber.from(config.maxGasLimit * 2),
+  //   };
+  // } else {
+  //   param = {
+  //     maxFeePerGas: feeData["maxFeePerGas"].add(
+  //       BigNumber.from(config.maxPriorityFee)
+  //     ),
+  //     maxPriorityFeePerGas: BigNumber.from(config.maxPriorityFee),
+  //     gasLimit: BigNumber.from(config.maxGasLimit),
+  //   };
+  // }
+  param = {
+    maxFeePerGas:
+      (Number(metadata.maxFeePerGas) * Number(config.maxFeePerGasIncrease)) /
+        100 +
+      metadata.maxFeePerGas,
+    maxPriorityFeePerGas:
+      (Number(metadata.maxPriorityFeePerGas) *
+        Number(config.maxPriorityFeePerGasIncrease)) /
+        100 +
+      metadata.maxPriorityFeePerGas,
+  };
+  if (param.maxPriorityFeePerGas > config.maximumPriorityFeePerGas) {
+    param.maxPriorityFeePerGas = config.maximumPriorityFeePerGas;
   }
 
   let [buyResult, amountIn] = [0, 0];
