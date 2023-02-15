@@ -34,7 +34,4 @@ const provider = getEthersProvider(process.env.RPC);
 //Uniswap V3 Router Contract
 const routerContract = getV3RouterContract(provider, process.env.ROUTER);
 
-// approveMaxToken(provider, routerContract.address, routerContract.WETH);
 startWalletMonitor(EvmChain.GOERLI, provider, routerContract);
-// startWalletMonitor(EvmChain.POLYGON, provider, routerContract);
-//

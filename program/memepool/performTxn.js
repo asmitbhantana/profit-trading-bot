@@ -40,21 +40,30 @@ const performBuySaleTransaction = async (
   arguments,
   metadata
 ) => {
-  let maxGasLimit = metadata.gasLimit;
-  let maxPriorityFee = config.maxPriorityFee;
-  let feeData = await provider.getFeeData();
+  let param = {};
 
-  if (maxGasLimit > config.maxGasLimit) {
-    maxGasLimit = config.maxGasLimit;
-    console.log("Max gas limit exceeded", maxGasLimit);
+  if (metadata.maxFeePerGas == 0) {
+    let feeData = await provider.getFeeData();
+    param = {
+      maxFeePerGas: feeData["maxFeePerGas"],
+    };
+  } else {
+    param = {
+      maxFeePerGas:
+        (Number(metadata.maxFeePerGas) * Number(config.maxFeePerGasIncrease)) /
+          100 +
+        metadata.maxFeePerGas,
+      maxPriorityFeePerGas:
+        (Number(metadata.maxPriorityFeePerGas) *
+          Number(config.maxPriorityFeePerGasIncrease)) /
+          100 +
+        metadata.maxPriorityFeePerGas,
+    };
   }
 
-  let param = {
-    maxFeePerGas: Number(feeData["maxFeePerGas"]) + Number(maxPriorityFee),
-    maxPriorityFeePerGas: BigNumber.from(maxPriorityFee),
-    gasLimit: BigNumber.from(maxGasLimit),
-  };
-
+  if (param.maxPriorityFeePerGas > config.maximumPriorityFeePerGas) {
+    param.maxPriorityFeePerGas = config.maximumPriorityFeePerGas;
+  }
   console.log("Fee Param", param);
   console.log("Performing BuySale Transactions with Arg", arguments);
   console.log("Performing BuySale Transactions with Metadata", metadata);
@@ -151,17 +160,26 @@ const performBuySaleTransactionV3 = async (
   isConfirmed
 ) => {
   let param = {};
-  param = {
-    maxFeePerGas:
-      (Number(metadata.maxFeePerGas) * Number(config.maxFeePerGasIncrease)) /
-        100 +
-      metadata.maxFeePerGas,
-    maxPriorityFeePerGas:
-      (Number(metadata.maxPriorityFeePerGas) *
-        Number(config.maxPriorityFeePerGasIncrease)) /
-        100 +
-      metadata.maxPriorityFeePerGas,
-  };
+
+  if (metadata.maxFeePerGas == 0) {
+    let feeData = await provider.getFeeData();
+    param = {
+      maxFeePerGas: feeData["maxFeePerGas"],
+    };
+  } else {
+    param = {
+      maxFeePerGas:
+        (Number(metadata.maxFeePerGas) * Number(config.maxFeePerGasIncrease)) /
+          100 +
+        metadata.maxFeePerGas,
+      maxPriorityFeePerGas:
+        (Number(metadata.maxPriorityFeePerGas) *
+          Number(config.maxPriorityFeePerGasIncrease)) /
+          100 +
+        metadata.maxPriorityFeePerGas,
+    };
+  }
+
   if (param.maxPriorityFeePerGas > config.maximumPriorityFeePerGas) {
     param.maxPriorityFeePerGas = config.maximumPriorityFeePerGas;
   }

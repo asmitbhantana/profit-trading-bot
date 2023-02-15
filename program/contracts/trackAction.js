@@ -143,7 +143,7 @@ const performBuyTransaction = async (
 
     let buyTransaction;
 
-    if (isV3)
+    if (isV3) {
       buyTransaction = await contract.swapTokensForExactTokens(
         amountOut,
         amountInWithSlippage,
@@ -154,7 +154,7 @@ const performBuyTransaction = async (
           ...params,
         }
       );
-    else
+    } else
       buyTransaction = await contract.swapTokensForExactTokens(
         amountOut,
         amountInWithSlippage,

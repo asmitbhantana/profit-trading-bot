@@ -435,12 +435,12 @@ const startWalletMonitor = async (chains, provider, contract) => {
     apiKey: MORALIS_API,
   });
   console.log("---------------Start Wallet Monitoring -----------------");
-  //runs in every 1 minutes interval
-  const interval = process.env.INTERVAL_IN_SECONDS;
+  //runs in every x minutes interval
+  const interval = process.env.INTERVAL_IN_MIN;
 
-  // let task = corn.schedule(`*/${interval} * * * * *`, () => {
-  let task = corn.schedule("*/2 * * * *", () => {
+  let task = corn.schedule(`*/${interval} * * * *`, () => {
     try {
+      console.log("task is running");
       monitorAndPerformAction(chains, provider, contract);
     } catch (e) {
       console.log(e);

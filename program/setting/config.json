@@ -2,12 +2,13 @@
   "maximumWeth": "0.12",
   "minimumWeth": "0.001",
   "amountPercentage": "200",
-  "ourWallet": "0xD114dDe767a972Eb3665840b14F78FaEE3943E80",
+  "ourWallet": "0x562EE1a849E62930084f4986D3b43a7dA198Bf13",
   "wallets": [
-    "0xf8D8bA1F5f592C53eAe8F8d750a6b0F09ca31Cee",
-    "0xF50Ca4d17Eb4819Ca1590c97eefaC8bd4B08Fe70"
+    "0x91a669C006A89A2983985a5db3a314E4AfC579FD",
+    "0x7259a8E5637f8B3336Dd9eB20E6fed7D9C67F489"
   ],
   "untrackedTokens": [],
-  "maxGasLimit": "245215",
-  "maxPriorityFee": "4000000000"
+  "maxFeePerGasIncrease": "30",
+  "maxPriorityFeePerGasIncrease": "20",
+  "maximumPriorityFeePerGas": "5000000000"
 }

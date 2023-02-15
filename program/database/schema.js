@@ -16,15 +16,15 @@ const TransactionSchema = new Schema({
 });
 
 const ConfigurationSchema = new Schema({
-  maximumWeth: String,
-  minimumWeth: String,
-  amountPercentage: String,
-  ourWallet: String,
-  wallets: [String],
-  untrackedTokens: [String],
+  maximumWeth: String, //0.12 in weth string
+  minimumWeth: String, //0.001 in weth string
+  amountPercentage: String, //200 for 20%
+  ourWallet: String, //wallet address on string
+  wallets: [String], //wallets addresses on array [string]
+  untrackedTokens: [String], //untracked tokens strings
   maxFeePerGasIncrease: String, // percentage 30
   maxPriorityFeePerGasIncrease: String, // percentage 20
-  maximumPriorityFeePerGas: String, // maximum gas in gwei
+  maximumPriorityFeePerGas: String, // maximum gas in wei
 });
 
 const RouterSchema = new Schema({
