@@ -148,127 +148,143 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
 
         //action
         //the user performed buy
+        // if (previousBalanceAmount.lt(currentBalanceAmount)) {
+        //   let percentageChange = BigNumber.from(100);
+        //   let amountToBuy = currentBalanceAmount.sub(previousBalanceAmount);
+
+        //   if (!previousBalanceAmount.isZero() && ourBalance != null) {
+        //     let change = currentBalanceAmount.sub(previousBalanceAmount);
+
+        //     if (totalBalanceNow.toString() != "0") {
+        //       percentageChange = change
+        //         .mul(BigNumber.from("100"))
+        //         .div(totalBalanceNow);
+        //     } else {
+        //       percentageChange = BigNumber.from("10000");
+        //     }
+
+        //     amountToBuy = ourBalanceNow.mul(percentageChange).div(100);
+        //     console.log("Amount to buy", amountToBuy.toString());
+        //   }
+        //   console.log("Buy Percentage change", percentageChange.toString());
+        //   console.log("Amount To Buy", amountToBuy.toString());
+        //   console.log("Our Balance Now", ourBalanceNow.toString());
+
+        //   if (amountToBuy.isZero()) return;
+
+        //   //perform the buying of change amount if our balance is 0
+        //   if (ourBalanceNow.isZero()) {
+        //     amountToBuy = currentBalanceAmount.sub(previousBalanceAmount);
+        //   }
+
+        //   //buy
+        //   //selling token
+        //   const buyResult = await performBuySaleTransaction(
+        //     provider,
+        //     contract,
+        //     currentRouter.wethAddress,
+        //     data.token_address,
+        //     amountToBuy,
+        //     currenConfiguration,
+        //     true,
+        //     currentRouter.isV3,
+        //     currentRouter.network == "matic-main",
+
+        //     {
+        //       targetWallet: wallet,
+        //       tokenAddress: data.token_address,
+        //       previousBalance: previousBalanceAmount.toString(),
+        //       newBalance: currentBalanceAmount.toString(),
+        //     }
+        //   );
+
+        //   if (buyResult.status == "pending") return;
+        //   else if (buyResult.status == "confirmed") {
+        //     //update track wallet database
+        //     await createUpdateTokens(wallet, data.token_address, {
+        //       wallet: wallet,
+
+        //       tokenAddress: data.token_address,
+        //       name: data.name,
+        //       decimal: data.decimals,
+        //       symbol: data.symbol,
+        //       logoURI: data.logoURI,
+        //       chain: chains.name,
+        //       network: data.network,
+        //       balance: data.balance ? data.balance : "0",
+        //     });
+        //     return;
+        //   }
+
+        //   //perform buy
+        //   //execute approval of tokens
+        //   console.log(
+        //     "-----> Buying Token ",
+        //     data.symbol,
+        //     "in",
+        //     amountToBuy.toString() + "<----------"
+        //   );
+
+        //   if (buyResult.status) {
+        //     console.log("Approving Tokens", data.symbol);
+        //     const performTokenApprovalResult = await performApprovalTransaction(
+        //       provider,
+        //       data.token_address,
+        //       contract.address,
+        //       amountToBuy
+        //     );
+
+        //     //update our wallet amount on database
+        //     if (ourBalance) {
+        //       const newBalance = ourBalanceNow.add(buyResult.amountOut);
+        //       await updateTokenBalance(
+        //         currenConfiguration.ourWallet,
+        //         data.token_address,
+        //         newBalance.toString()
+        //       );
+        //     } else {
+        //       await createUpdateTokens(
+        //         currenConfiguration.ourWallet,
+        //         data.token_address,
+        //         {
+        //           wallet: currenConfiguration.ourWallet,
+        //           tokenAddress: data.token_address,
+        //           name: data.name,
+        //           decimal: data.decimals,
+        //           symbol: data.symbol,
+        //           logoURI: data.logoURI,
+        //           chain: chains.name,
+        //           network: data.network,
+        //           balance: amountToBuy.toString(),
+        //         }
+        //       );
+        //     }
+        //   } else {
+        //     //failed to buy
+        //     console.log(
+        //       "Cannot Buy The Token:",
+        //       data.token_address,
+        //       "in",
+        //       amountToBuy.toString()
+        //     );
+        //   }
+        //   //update track wallet database
+        //   await createUpdateTokens(wallet, data.token_address, {
+        //     wallet: wallet,
+
+        //     tokenAddress: data.token_address,
+        //     name: data.name,
+        //     decimal: data.decimals,
+        //     symbol: data.symbol,
+        //     logoURI: data.logoURI,
+        //     chain: chains.name,
+        //     network: data.network,
+        //     balance: data.balance ? data.balance : "0",
+        //   });
+        // }
+
+        //just update on the buy txn, omit the buying of transactions
         if (previousBalanceAmount.lt(currentBalanceAmount)) {
-          let percentageChange = BigNumber.from(100);
-          let amountToBuy = currentBalanceAmount.sub(previousBalanceAmount);
-
-          if (!previousBalanceAmount.isZero() && ourBalance != null) {
-            let change = currentBalanceAmount.sub(previousBalanceAmount);
-
-            if (totalBalanceNow.toString() != "0") {
-              percentageChange = change
-                .mul(BigNumber.from("100"))
-                .div(totalBalanceNow);
-            } else {
-              percentageChange = BigNumber.from("10000");
-            }
-
-            amountToBuy = ourBalanceNow.mul(percentageChange).div(100);
-            console.log("Amount to buy", amountToBuy.toString());
-          }
-          console.log("Buy Percentage change", percentageChange.toString());
-          console.log("Amount To Buy", amountToBuy.toString());
-          console.log("Our Balance Now", ourBalanceNow.toString());
-
-          if (amountToBuy.isZero()) return;
-
-          //perform the buying of change amount if our balance is 0
-          if (ourBalanceNow.isZero()) {
-            amountToBuy = currentBalanceAmount.sub(previousBalanceAmount);
-          }
-
-          //buy
-          //selling token
-          const buyResult = await performBuySaleTransaction(
-            provider,
-            contract,
-            currentRouter.wethAddress,
-            data.token_address,
-            amountToBuy,
-            currenConfiguration,
-            true,
-            currentRouter.isV3,
-            currentRouter.network == "matic-main",
-
-            {
-              targetWallet: wallet,
-              tokenAddress: data.token_address,
-              previousBalance: previousBalanceAmount.toString(),
-              newBalance: currentBalanceAmount.toString(),
-            }
-          );
-
-          if (buyResult.status == "pending") return;
-          else if (buyResult.status == "confirmed") {
-            //update track wallet database
-            await createUpdateTokens(wallet, data.token_address, {
-              wallet: wallet,
-
-              tokenAddress: data.token_address,
-              name: data.name,
-              decimal: data.decimals,
-              symbol: data.symbol,
-              logoURI: data.logoURI,
-              chain: chains.name,
-              network: data.network,
-              balance: data.balance ? data.balance : "0",
-            });
-            return;
-          }
-
-          //perform buy
-          //execute approval of tokens
-          console.log(
-            "-----> Buying Token ",
-            data.symbol,
-            "in",
-            amountToBuy.toString() + "<----------"
-          );
-
-          if (buyResult.status) {
-            console.log("Approving Tokens", data.symbol);
-            const performTokenApprovalResult = await performApprovalTransaction(
-              provider,
-              data.token_address,
-              contract.address,
-              amountToBuy
-            );
-
-            //update our wallet amount on database
-            if (ourBalance) {
-              const newBalance = ourBalanceNow.add(buyResult.amountOut);
-              await updateTokenBalance(
-                currenConfiguration.ourWallet,
-                data.token_address,
-                newBalance.toString()
-              );
-            } else {
-              await createUpdateTokens(
-                currenConfiguration.ourWallet,
-                data.token_address,
-                {
-                  wallet: currenConfiguration.ourWallet,
-                  tokenAddress: data.token_address,
-                  name: data.name,
-                  decimal: data.decimals,
-                  symbol: data.symbol,
-                  logoURI: data.logoURI,
-                  chain: chains.name,
-                  network: data.network,
-                  balance: amountToBuy.toString(),
-                }
-              );
-            }
-          } else {
-            //failed to buy
-            console.log(
-              "Cannot Buy The Token:",
-              data.token_address,
-              "in",
-              amountToBuy.toString()
-            );
-          }
-          //update track wallet database
           await createUpdateTokens(wallet, data.token_address, {
             wallet: wallet,
 
