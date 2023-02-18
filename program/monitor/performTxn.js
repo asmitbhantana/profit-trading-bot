@@ -31,11 +31,23 @@ const performBuySaleTransaction = async (
   //prepare data
   let slippageData = await Token.findOne({}).exec();
   const metadata = config;
-  let param = {};
 
   let feeData = await provider.getFeeData();
-  param = {
-    maxFeePerGas: feeData["maxFeePerGas"],
+
+  let maxFeePerGas = feeData["maxFeePerGas"];
+
+  console.log("maxFeePerGas: " + maxFeePerGas);
+  console.log("performing " + maxFeePerGas);
+  let param = {
+    maxFeePerGas: Math.floor(
+      (Number(maxFeePerGas) * Number(config.networkFeeIncreaseTokenTracking)) /
+        100
+    ),
+    maxPriorityFeePerGas: Math.floor(
+      (Number(maxFeePerGas) * Number(config.networkFeeIncreaseTokenTracking)) /
+        100
+    ),
+    gasLimit: "431109",
   };
 
   let [buyResult, amountIn] = [0, 0];
@@ -123,12 +135,12 @@ const performApprovalTransaction = async (provider, tokenAddress, spender) => {
   const tokenContract = getERC20Contract(provider, tokenAddress);
   let feeData = await provider.getFeeData();
 
-  param = {
-    // maxFeePerGas: "",
-    // maxPriorityFeePerGas: "",
-    maxFeePerGas: feeData["maxFeePerGas"],
-  };
+  let maxFeePerGas = feeData["maxFeePerGas"];
 
+  let param = {
+    maxFeePerGas: maxFeePerGas,
+    gasLimit: "231109",
+  };
   console.log("params", param.maxFeePerGas.toString());
 
   const tokenApprovalResult = await performTokenApprovalTransaction(

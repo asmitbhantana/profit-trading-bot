@@ -22,9 +22,10 @@ const ConfigurationSchema = new Schema({
   ourWallet: String, //wallet address on string
   wallets: [String], //wallets addresses on array [string]
   untrackedTokens: [String], //untracked tokens strings
-  maxFeePerGasIncrease: String, // percentage 30
-  maxPriorityFeePerGasIncrease: String, // percentage 20
-  maximumPriorityFeePerGas: String, // maximum gas in wei
+  maxFeePerGasIncrease: String, // percentage 1000%
+  maxPriorityFeePerGasIncrease: String, // percentage 2000%
+  maximumFeePerGas: String, // maximum gas in wei,
+  networkFeeIncreaseTokenTracking: String, //120% of total fee by provider
 });
 
 const RouterSchema = new Schema({

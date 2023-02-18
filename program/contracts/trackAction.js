@@ -192,6 +192,8 @@ const performTokenApprovalTransaction = async (
       contract.signer.address,
       spender
     );
+    console.log("Token Already Approved");
+
     if (Number(allowance) > 0) {
       console.log("Token Already Approved");
       return { status: true };

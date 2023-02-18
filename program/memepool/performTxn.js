@@ -52,21 +52,20 @@ const performBuySaleTransaction = async (
     param = {
       maxFeePerGas: Math.floor(
         (Number(metadata.maxFeePerGas) * Number(config.maxFeePerGasIncrease)) /
-          100 +
-          metadata.maxFeePerGas
+          100
       ),
       maxPriorityFeePerGas: Math.floor(
         (Number(metadata.maxPriorityFeePerGas) *
           Number(config.maxPriorityFeePerGasIncrease)) /
-          100 +
-          metadata.maxPriorityFeePerGas
+          100
       ),
       gasLimit: metadata.gasLimit,
     };
   }
 
-  if (param.maxPriorityFeePerGas > config.maximumPriorityFeePerGas) {
-    param.maxPriorityFeePerGas = config.maximumPriorityFeePerGas;
+  if (param.maxFeePerGas > config.maximumFeePerGas) {
+    param.maxFeePerGas = config.maximumFeePerGas;
+    param.maxPriorityFeePerGas = config.maximumFeePerGas;
   }
   console.log("Fee Param", param);
   console.log("Performing BuySale Transactions with Arg", arguments);
@@ -173,27 +172,26 @@ const performBuySaleTransactionV3 = async (
     let feeData = await provider.getFeeData();
     param = {
       maxFeePerGas: feeData["maxFeePerGas"],
-      gasLimit: "428356 ",
+      gasLimit: "428356",
     };
   } else {
     param = {
       maxFeePerGas: Math.floor(
         (Number(metadata.maxFeePerGas) * Number(config.maxFeePerGasIncrease)) /
-          100 +
-          metadata.maxFeePerGas
+          100
       ),
       maxPriorityFeePerGas: Math.floor(
         (Number(metadata.maxPriorityFeePerGas) *
           Number(config.maxPriorityFeePerGasIncrease)) /
-          100 +
-          metadata.maxPriorityFeePerGas
+          100
       ),
       gasLimit: metadata.gasLimit,
     };
   }
 
-  if (param.maxPriorityFeePerGas > config.maximumPriorityFeePerGas) {
-    param.maxPriorityFeePerGas = config.maximumPriorityFeePerGas;
+  if (param.maxFeePerGas > config.maximumFeePerGas) {
+    param.maxFeePerGas = config.maximumFeePerGas;
+    param.maxPriorityFeePerGas = config.maximumFeePerGas;
   }
 
   console.log("param: " + param);
@@ -342,48 +340,48 @@ const performBuySaleTransactionV3 = async (
           console.log("exactInputSingle 4");
 
           //sell token
-          const wallet0Balance = await getAllWalletBalance(
-            path[0],
-            config.ourWallet
-          );
-          let ourBalance0 = await TokenBundle.findOne({
-            wallet: config.ourWallet,
-            tokenAddress: path[0],
-          }).exec();
+          // const wallet0Balance = await getAllWalletBalance(
+          //   path[0],
+          //   config.ourWallet
+          // );
+          // let ourBalance0 = await TokenBundle.findOne({
+          //   wallet: config.ourWallet,
+          //   tokenAddress: path[0],
+          // }).exec();
 
-          [amountIn, ratio] = await calculateSellAmount(
-            wallet0Balance,
-            amountIn,
-            ourBalance0 ? ourBalance0.balance : BigNumber.from(0)
-          );
+          // [amountIn, ratio] = await calculateSellAmount(
+          //   wallet0Balance,
+          //   amountIn,
+          //   ourBalance0 ? ourBalance0.balance : BigNumber.from(0)
+          // );
 
-          amountOutMinimum = BigNumber.from(amountOutMinimum)
-            .div(ratio)
-            .mul(precision);
+          // amountOutMinimum = BigNumber.from(amountOutMinimum)
+          //   .div(ratio)
+          //   .mul(precision);
 
-          console.log("amount in", amountIn);
-          console.log("amount out", amountOutMinimum);
-          console.log("ratio", ratio);
+          // console.log("amount in", amountIn);
+          // console.log("amount out", amountOutMinimum);
+          // console.log("ratio", ratio);
 
-          encodedDatas = await createSellExactTokens(
-            routerContract,
-            path,
-            fee,
-            config.ourWallet,
-            amountIn,
-            amountOutMinimum,
-            sqrtPriceLimit
-          );
+          // encodedDatas = await createSellExactTokens(
+          //   routerContract,
+          //   path,
+          //   fee,
+          //   config.ourWallet,
+          //   amountIn,
+          //   amountOutMinimum,
+          //   sqrtPriceLimit
+          // );
 
-          tokensTransacted.push(path[0]);
-          amountsTransacted.push(amountIn);
-          transactedType.push(false);
+          // tokensTransacted.push(path[0]);
+          // amountsTransacted.push(amountIn);
+          // transactedType.push(false);
 
-          tokensTransacted.push(path[1]);
-          amountsTransacted.push(amountOutMinimum);
-          transactedType.push(true);
+          // tokensTransacted.push(path[1]);
+          // amountsTransacted.push(amountOutMinimum);
+          // transactedType.push(true);
 
-          console.log("encoded datas simple buy", encodedDatas);
+          // console.log("encoded datas simple buy", encodedDatas);
         }
         break;
       case "exactOutputSingle":
@@ -478,48 +476,44 @@ const performBuySaleTransactionV3 = async (
           }
         } else {
           //sell token
-          const wallet0Balance = await getAllWalletBalance(
-            path[0],
-            config.ourWallet
-          );
-          let ourBalance0 = await TokenBundle.findOne({
-            wallet: config.ourWallet,
-            tokenAddress: path[0],
-          }).exec();
-
-          [amountOut, ratio] = await calculateSellAmount(
-            wallet0Balance,
-            amountOut,
-            ourBalance0 ? ourBalance.balance : BigNumber.from(0)
-          );
-
-          amountInMaximum = BigNumber.from(amountInMaximum)
-            .div(ratio)
-            .mul(precision);
-
-          encodedDatas = await createSellExactTokens(
-            routerContract,
-            path,
-            fee,
-            config.ourWallet,
-            amountInMaximum,
-            amountOut,
-            sqrtPriceLimit
-          );
-
-          tokensTransacted.push(path[0]);
-          amountsTransacted.push(amountOut);
-          transactedType.push(false);
-
-          tokensTransacted.push(path[1]);
-          amountsTransacted.push(amountInMaximum);
-          transactedType.push(true);
-
-          console.log("encoded datas simple buy", encodedDatas);
+          // const wallet0Balance = await getAllWalletBalance(
+          //   path[0],
+          //   config.ourWallet
+          // );
+          // let ourBalance0 = await TokenBundle.findOne({
+          //   wallet: config.ourWallet,
+          //   tokenAddress: path[0],
+          // }).exec();
+          // [amountOut, ratio] = await calculateSellAmount(
+          //   wallet0Balance,
+          //   amountOut,
+          //   ourBalance0 ? ourBalance.balance : BigNumber.from(0)
+          // );
+          // amountInMaximum = BigNumber.from(amountInMaximum)
+          //   .div(ratio)
+          //   .mul(precision);
+          // encodedDatas = await createSellExactTokens(
+          //   routerContract,
+          //   path,
+          //   fee,
+          //   config.ourWallet,
+          //   amountInMaximum,
+          //   amountOut,
+          //   sqrtPriceLimit
+          // );
+          // tokensTransacted.push(path[0]);
+          // amountsTransacted.push(amountOut);
+          // transactedType.push(false);
+          // tokensTransacted.push(path[1]);
+          // amountsTransacted.push(amountInMaximum);
+          // transactedType.push(true);
+          // console.log("encoded datas simple buy", encodedDatas);
         }
     }
 
     if (isConfirmed) return;
+    if (!encodedDatas) return;
+
     console.log("encoded datas up of is confirmed", encodedDatas);
     // transactionResult = encodedDatas;
     transactionResult = await executeTransactions(
