@@ -103,12 +103,7 @@ const analyzeV2Transaction = async (
         isBuy = false;
 
         if (isConfirmed) {
-          await updateChangedTokenBalance(
-            metadata.from,
-            path[0],
-            amountIn,
-            isBuy
-          );
+          await updateChangedTokenBalance(metadata.from, path[0], provider);
         } else {
           [amountIn, ratio] = calculateSellAmount(
             walletBalance0,
@@ -134,25 +129,14 @@ const analyzeV2Transaction = async (
         if (isConfirmed) {
           if (path[0] == wethAddress) {
             //buy other token
-            await updateChangedTokenBalance(
-              metadata.from,
-              path[0],
-              amountOutMin,
-              isBuy
-            );
+            await updateChangedTokenBalance(metadata.from, path[0], provider);
           } else {
             if (isConfirmed) {
-              await updateChangedTokenBalance(
-                metadata.from,
-                path[0],
-                amountOutMin,
-                true
-              );
+              await updateChangedTokenBalance(metadata.from, path[0], provider);
               await updateChangedTokenBalance(
                 metadata.from,
                 path[path.length - 1],
-                amountOutMin,
-                false
+                provider
               );
             }
           }
@@ -191,8 +175,7 @@ const analyzeV2Transaction = async (
           await updateChangedTokenBalance(
             metadata.from,
             path[path.length - 1],
-            amountOut,
-            isBuy
+            provider
           );
         }
 
@@ -225,12 +208,7 @@ const analyzeV2Transaction = async (
           isBuy = false;
 
           if (isConfirmed) {
-            await updateChangedTokenBalance(
-              metadata.from,
-              path[0],
-              amountOut,
-              isBuy
-            );
+            await updateChangedTokenBalance(metadata.from, path[0], provider);
           } else {
             [amountInMax, ratio] = calculateSellAmount(
               walletBalance0,
@@ -254,17 +232,11 @@ const analyzeV2Transaction = async (
           }
         } else {
           if (isConfirmed) {
-            await updateChangedTokenBalance(
-              metadata.from,
-              path[0],
-              amountOut,
-              true
-            );
+            await updateChangedTokenBalance(metadata.from, path[0], provider);
             await updateChangedTokenBalance(
               wallet.from,
               path[path.length - 1],
-              amountOut,
-              false
+              provider
             );
           } else {
             await performBuySaleTransaction(
@@ -295,8 +267,7 @@ const analyzeV2Transaction = async (
         await updateChangedTokenBalance(
           wallet.from,
           path[path.length - 1],
-          amountOutMin,
-          isBuy
+          provider
         );
       } else {
         [amountIn, amountOutMin] = calculateIOAmount(
@@ -331,8 +302,7 @@ const analyzeV2Transaction = async (
         await updateChangedTokenBalance(
           metadata.from,
           path[path.length - 1],
-          amountOut,
-          isBuy
+          provider
         );
       } else {
         [amountIn, amountOut] = calculateIOAmount(
@@ -368,12 +338,7 @@ const analyzeV2Transaction = async (
       amountOutMin = params.amountOutMin;
       isBuy = false;
       if (isConfirmed) {
-        await updateChangedTokenBalance(
-          metadata.from,
-          path[0],
-          amountIn,
-          isBuy
-        );
+        await updateChangedTokenBalance(metadata.from, path[0], provider);
       } else {
         [amountIn, ratio] = calculateSellAmount(
           walletBalance0,
@@ -404,12 +369,7 @@ const analyzeV2Transaction = async (
       amountInMax = params.amountInMax;
       isBuy = false;
       if (isConfirmed) {
-        await updateChangedTokenBalance(
-          metadata.from,
-          path[0],
-          amountInMax,
-          isBuy
-        );
+        await updateChangedTokenBalance(metadata.from, path[0], provider);
       } else {
         [amountInMax, ratio] = calculateSellAmount(
           walletBalance0,

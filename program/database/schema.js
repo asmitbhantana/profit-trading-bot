@@ -78,6 +78,8 @@ const TransactionsDoneSchema = new Schema({
   gasLimit: String,
   methodName: String,
   params: String,
+  ourTxn: String,
+  success: Boolean,
   createdAt: { type: Date, default: Date.now },
 });
 

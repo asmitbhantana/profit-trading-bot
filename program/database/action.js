@@ -29,7 +29,7 @@ const {
   TransactionPool,
   Token,
 } = require("./model");
-const { RouterSchema } = require("./schema");
+const { getWalletBalance } = require("../monitor/wallet");
 
 const createUpdateConfig = async function (config) {
   const updatedConfig = await Configuration.findOneAndUpdate({}, config, {
@@ -88,42 +88,27 @@ const updateTokenBalance = async function (wallet, token, new_balance) {
   return tokenToUpdate;
 };
 
-const updateChangedTokenBalance = async function (
-  wallet,
-  token,
-  changedBalance,
-  isBuy
-) {
+const updateChangedTokenBalance = async function (wallet, token, provider) {
   let currentBalanceAmount = await TokenBundle.find({
     wallet: wallet,
     tokenAddress: token,
   }).exec();
 
-  if (currentBalanceAmount.length > 0) {
-    currentBalanceAmount = BigNumber.from(currentBalanceAmount[0].balance);
-    if (isBuy)
-      currentBalanceAmount = currentBalanceAmount.add(
-        BigNumber.from(changedBalance)
-      );
-    else
-      currentBalanceAmount = currentBalanceAmount.sub(
-        BigNumber.from(changedBalance)
-      );
+  let newBalanceAmount = await getWalletBalance(token, wallet, provider);
 
+  if (currentBalanceAmount.length > 0) {
     const newBalance = updateTokenBalance(
       wallet,
       token,
-      currentBalanceAmount.toString()
+      newBalanceAmount.toString()
     );
   } else {
-    if (isBuy) {
-      const newBalance = TokenBundle({
-        wallet: wallet,
-        tokenAddress: token,
-        balance: changedBalance,
-      });
-      newBalance.save();
-    }
+    const newBalance = TokenBundle({
+      wallet: wallet,
+      tokenAddress: token,
+      balance: newBalanceAmount,
+    });
+    newBalance.save();
   }
 };
 

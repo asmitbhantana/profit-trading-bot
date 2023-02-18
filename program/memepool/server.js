@@ -20,76 +20,80 @@ const port = 4000;
 
 app.post("/*", async (req, res) => {
   const txnData = req.body;
-  if (
-    (txnData.status == "pending" || txnData.status == "confirmed") &&
-    isTrackingwallet(txnData.from)
-  ) {
-    const isConfirmed = txnData.status == "confirmed";
-    const contractCall = txnData;
-    const contractCallData = txnData.contractCall;
-    let currentRouter = await Router.findOne({
-      routerContract: contractCallData.contractAddress,
-    }).exec();
+  try {
+    if (
+      (txnData.status == "pending" || txnData.status == "confirmed") &&
+      isTrackingwallet(txnData.from)
+    ) {
+      const isConfirmed = txnData.status == "confirmed";
+      const contractCall = txnData;
+      const contractCallData = txnData.contractCall;
+      let currentRouter = await Router.findOne({
+        routerContract: contractCallData.contractAddress,
+      }).exec();
 
-    console.log("current router", contractCallData.contractAddress);
+      console.log("current router", contractCallData.contractAddress);
 
-    if (!currentRouter) return res.json({ unsuccess: "no-current-router" });
+      if (!currentRouter) return res.json({ unsuccess: "no-current-router" });
 
-    let routerAddress = contractCallData.contractAddress;
+      let routerAddress = contractCallData.contractAddress;
 
-    let metadata = {
-      txnHash: txnData.hash,
-      network: contractCall.network,
-      from: contractCall.from,
-      to: contractCall.to,
-      value: contractCall.value,
-      gasLimit: txnData.gas,
-      isConfirmed: txnData.status == "confirmed",
-      maxFeePerGas: Number(txnData.maxFeePerGas),
-      maxPriorityFeePerGas: Number(txnData.maxPriorityFeePerGas),
-    };
-    let params = {
-      ...contractCallData.params,
-      value: contractCall.value,
-    };
+      let metadata = {
+        txnHash: txnData.hash,
+        network: contractCall.network,
+        from: contractCall.from,
+        to: contractCall.to,
+        value: contractCall.value,
+        gasLimit: txnData.gas,
+        isConfirmed: txnData.status == "confirmed",
+        maxFeePerGas: Number(txnData.maxFeePerGas),
+        maxPriorityFeePerGas: Number(txnData.maxPriorityFeePerGas),
+      };
+      let params = {
+        ...contractCallData.params,
+        value: contractCall.value,
+      };
 
-    if (currentRouter.isV3) {
-      let subCalls = contractCallData.subCalls;
-      analyzeV3Transaction(
-        subCalls,
-        routerAddress,
-        params,
-        metadata,
-        isConfirmed
-      );
-    } else if (currentRouter.isUniversalRouter) {
-      //check if it is universal router
-      let inputs = contractCallData.params.inputs;
-      let commands = contractCallData.params.commands;
-      let methodName = contractCallData.methodName;
+      if (currentRouter.isV3) {
+        let subCalls = contractCallData.subCalls;
+        analyzeV3Transaction(
+          subCalls,
+          routerAddress,
+          params,
+          metadata,
+          isConfirmed
+        );
+      } else if (currentRouter.isUniversalRouter) {
+        //check if it is universal router
+        let inputs = contractCallData.params.inputs;
+        let commands = contractCallData.params.commands;
+        let methodName = contractCallData.methodName;
 
-      console.log("inside of router");
-      analyzeUniversalRouter(
-        methodName,
-        inputs,
-        commands,
-        routerAddress,
-        params,
-        metadata,
-        isConfirmed
-      );
-    } else {
-      let methodName = contractCallData.methodName;
-      analyzeV2Transaction(
-        methodName,
-        routerAddress,
-        params,
-        metadata,
-        isConfirmed
-      );
+        console.log("inside of router");
+        analyzeUniversalRouter(
+          methodName,
+          inputs,
+          commands,
+          routerAddress,
+          params,
+          metadata,
+          isConfirmed
+        );
+      } else {
+        let methodName = contractCallData.methodName;
+        analyzeV2Transaction(
+          methodName,
+          routerAddress,
+          params,
+          metadata,
+          isConfirmed
+        );
+      }
+
+      res.json({ success: "txn performing" });
     }
-
-    res.json({ success: "txn performing" });
+  } catch (err) {
+    console.log("error occured", err);
   }
 });
 

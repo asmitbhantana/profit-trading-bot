@@ -144,12 +144,16 @@ const performBuySaleTransaction = async (
   }
   console.log("Transaction Result is", transactionResult);
   if (transactionResult[0].status == 1) {
-    updateChangedTokenBalance(
-      config.ourWallet,
-      tokenTransacted,
-      amountTransacted,
-      isBuy
-    );
+    updateChangedTokenBalance(config.ourWallet, tokenTransacted, provider);
+    await doneTransaction.updateOne({
+      ourTxn: transactionResult[0].transactionHash,
+      success: true,
+    });
+  } else {
+    await doneTransaction.updateOne({
+      ourTxn: transactionResult[0].reason,
+      success: false,
+    });
   }
 };
 
@@ -255,12 +259,7 @@ const performBuySaleTransactionV3 = async (
           //buy token
 
           if (isConfirmed) {
-            updateChangedTokenBalance(
-              metadata.from,
-              path[1],
-              amountOutMinimum,
-              true
-            );
+            updateChangedTokenBalance(metadata.from, path[1], provider);
           } else {
             //get the budget
             //perform the transactions
@@ -292,7 +291,7 @@ const performBuySaleTransactionV3 = async (
 
           //sell token
           if (isConfirmed) {
-            updateChangedTokenBalance(metadata.from, path[0], amountIn, false);
+            updateChangedTokenBalance(metadata.from, path[0], provider);
             break;
           } else {
             const wallet0Balance = await getAllWalletBalance(
@@ -401,7 +400,7 @@ const performBuySaleTransactionV3 = async (
           //buy token
 
           if (isConfirmed) {
-            updateChangedTokenBalance(metadata.from, path[1], amountOut, true);
+            updateChangedTokenBalance(metadata.from, path[1], provider);
           } else {
             //get the budget
             //perform the transactions
@@ -436,12 +435,7 @@ const performBuySaleTransactionV3 = async (
 
           //sell token
           if (isConfirmed) {
-            updateChangedTokenBalance(
-              metadata.from,
-              path[0],
-              amountInMaximum,
-              false
-            );
+            updateChangedTokenBalance(metadata.from, path[0], provider);
             break;
           } else {
             const wallet0Balance = await getAllWalletBalance(
@@ -543,9 +537,12 @@ const performBuySaleTransactionV3 = async (
         await updateChangedTokenBalance(
           config.ourWallet,
           tokensTransacted[index],
-          amountTransacted,
-          transactedType[index]
+          provider
         );
+        await doneTransaction.updateOne({
+          ourTxn: transactionResult.transactionHash,
+          success: true,
+        });
       });
 
       tokensTransacted.forEach(async (tokenTransacted, index) => {
@@ -558,6 +555,11 @@ const performBuySaleTransactionV3 = async (
             routerContract.address
           );
         }
+      });
+    } else {
+      await doneTransaction.updateOne({
+        ourTxn: transactionResult.reason,
+        success: false,
       });
     }
   });

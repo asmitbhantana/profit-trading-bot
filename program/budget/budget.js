@@ -72,7 +72,7 @@ const calculateSellAmount = (totalBalance, amountTransact, ourBalance) => {
   console.log("amount transact is", amountTransact.toString());
   console.log("our balance is", ourBalance.toString());
 
-  if (ratio.gt(BigNumber.from(10000))) ratio = BigNumber.from(10000);
+  // if (ratio.gt(precision.mul(BigNumber.from(100)))) ratio = precision;
 
   let ourAmountIn = BigNumber.from(ourBalance).div(ratio).mul(precision);
 
