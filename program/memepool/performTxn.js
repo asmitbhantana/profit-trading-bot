@@ -512,9 +512,11 @@ const performBuySaleTransactionV3 = async (
     }
 
     if (isConfirmed) return;
-    if (!encodedDatas) return;
+    console.log("encoded is", encodedDatas);
 
-    console.log("encoded datas up of is confirmed", encodedDatas);
+    if (!encodedDatas) return;
+    console.log("got encoded is", encodedDatas);
+
     // transactionResult = encodedDatas;
     transactionResult = await executeTransactions(
       routerContract,
