@@ -192,12 +192,11 @@ const performTokenApprovalTransaction = async (
       contract.signer.address,
       spender
     );
-    console.log("Token Already Approved");
 
-    if (Number(allowance) > 0) {
-      console.log("Token Already Approved");
-      return { status: true };
-    }
+    // if (Number(allowance) > 0) {
+    //   console.log("Token Already Approved");
+    //   return { status: true };
+    // }
 
     const approveTransaction = await contract.approve(
       spender,
@@ -208,6 +207,8 @@ const performTokenApprovalTransaction = async (
         ...params,
       }
     );
+    console.log("approve txn", approveTransaction);
+
     let approveTransactionResult = await approveTransaction.wait();
     return approveTransactionResult;
   } catch (err) {

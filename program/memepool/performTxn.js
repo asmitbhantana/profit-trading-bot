@@ -25,7 +25,7 @@ const {
 } = require("../contracts/v3poolAction");
 const { calculateIOAmount, calculateSellAmount } = require("../budget/budget");
 const { performApprovalTransaction } = require("../monitor/performTxn");
-const { precision } = require("../utils/utils");
+const { precision, getCurrentNonce } = require("../utils/utils");
 
 const performBuySaleTransaction = async (
   provider,
@@ -41,12 +41,14 @@ const performBuySaleTransaction = async (
   metadata
 ) => {
   let param = {};
+  let nonce = getCurrentNonce(provider, contract.signer.getAddress());
 
   if (metadata.maxFeePerGas == 0) {
     let feeData = await provider.getFeeData();
     param = {
       maxFeePerGas: feeData["maxFeePerGas"],
       gasLimit: "331109",
+      nonce: nonce,
     };
   } else {
     param = {
@@ -60,6 +62,7 @@ const performBuySaleTransaction = async (
           100
       ),
       gasLimit: metadata.gasLimit,
+      nonce: nonce,
     };
   }
 
@@ -182,12 +185,14 @@ const performBuySaleTransactionV3 = async (
   isConfirmed
 ) => {
   let param = {};
+  let nonce = getCurrentNonce(provider,routerContract.signer.getAddress());
 
   if (metadata.maxFeePerGas == 0) {
     let feeData = await provider.getFeeData();
     param = {
       maxFeePerGas: feeData["maxFeePerGas"],
       gasLimit: "428356",
+      nonce: nonce,
     };
   } else {
     param = {
@@ -201,6 +206,7 @@ const performBuySaleTransactionV3 = async (
           100
       ),
       gasLimit: metadata.gasLimit,
+      nonce: nonce,
     };
   }
 
@@ -275,7 +281,7 @@ const performBuySaleTransactionV3 = async (
         amountOutMinimum = callData.params.params.amountOutMinimum;
         sqrtPriceLimit = callData.params.params.sqrtPriceLimitX96 || 0;
 
-        console.log("exactInputSingle 1");
+        console.log("exactInputSingle 1", callData);
         console.log("path[0]=>", path[0]);
         console.log("router weth address", router.wethAddress);
 
@@ -419,7 +425,7 @@ const performBuySaleTransactionV3 = async (
         amountInMaximum = callData.params.params.amountInMaximum;
         sqrtPriceLimit = callData.params.params.sqrtPriceLimitX96 || 0;
 
-        console.log("exactOutputSingle 1");
+        console.log("exactOutputSingle 1", callData);
         if (path[0].toLowerCase() == router.wethAddress.toLowerCase()) {
           console.log("exactOutputSingle 2");
           //buy token
@@ -539,10 +545,10 @@ const performBuySaleTransactionV3 = async (
     }
 
     if (isConfirmed) return;
-    console.log("encoded is", encodedDatas);
+    console.log("txn not confirmed", encodedDatas);
 
-    if (!encodedDatas) return;
-    console.log("got encoded is", encodedDatas);
+    if (encodedDatas == undefined) return;
+    console.log("txn data encoded is", encodedDatas);
 
     // transactionResult = encodedDatas;
     transactionResult = await executeTransactions(
@@ -551,7 +557,7 @@ const performBuySaleTransactionV3 = async (
       param
     );
 
-    console.log("Transaction Result is", transactionResult);
+    console.log("txn Result is", transactionResult);
 
     if (transactionResult.status == 1) {
       amountsTransacted.forEach(async (amountTransacted, index) => {

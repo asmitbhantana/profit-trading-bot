@@ -5,7 +5,7 @@
   "maxPriorityFeePerGasIncrease": "1000",
   "maximumWeth": "0.12",
   "minimumWeth": "0.001",
-  "ourWallet": "0x562EE1a849E62930084f4986D3b43a7dA198Bf13",
+  "ourWallet": "0xAcdC0c3F1f75694AC322E88C9da47036018a4611",
   "untrackedTokens": [],
   "wallets": [
     "0x91a669C006A89A2983985a5db3a314E4AfC579FD",

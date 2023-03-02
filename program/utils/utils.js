@@ -12,7 +12,13 @@ const getEthersProvider = (API_URL) => {
   return provider;
 };
 
+const getCurrentNonce = async (provider, userAddress) => {
+  let nonce = await provider.getTransactionCount(userAddress);
+  return nonce;
+};
+
 module.exports = {
   getEthersProvider,
+  getCurrentNonce,
   precision,
 };

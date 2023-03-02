@@ -139,7 +139,7 @@ const executeTransactions = async (routerContract, encodedDatas, params) => {
     console.log("tx args", txArgs);
 
     const tx = await routerContract.signer.sendTransaction(txArgs);
-    console.log("performing txn...");
+    console.log("performing txn...", tx);
 
     const receipt = await tx.wait();
 

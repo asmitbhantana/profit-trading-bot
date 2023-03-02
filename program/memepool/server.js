@@ -16,7 +16,7 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 
-const port = 4000;
+const port = 80;
 
 app.post("/*", async (req, res) => {
   const txnData = req.body;
