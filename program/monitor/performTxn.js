@@ -12,7 +12,7 @@ const {
   updateConfirmation,
   isConfirmedTransaction,
 } = require("../database/action");
-const { Token } = require("../database/model");
+const { Token, TransactionDone } = require("../database/model");
 const { getCurrentNonce } = require("../utils/utils");
 
 const performBuySaleTransaction = async (
