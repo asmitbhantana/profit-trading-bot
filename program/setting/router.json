@@ -5,7 +5,7 @@
   "factoryAddress": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
   "network": "goerli",
   "chainName": "Goerli Network",
-  "rpc": "https://goerli.infura.io/v3/0e72f6a4443b450d8e76b4cac196c229",
+  "rpc": "https://goerli.infura.io/v3/df8136950ce54c75a633aaf1e9998eb0",
   "isV3": false,
   "isUniversalRouter": true
 }
