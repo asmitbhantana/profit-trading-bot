@@ -1,45 +1,45 @@
-const inquirer = require('inquirer');
+const inquirer = require("inquirer");
 const {
   TransactionDone,
   Configuration,
   TransactionPool,
   Router,
-} = require('../database/model');
-const { createSpinner } = require('nanospinner');
+} = require("../database/model");
+const { createSpinner } = require("nanospinner");
 
-const { Parser } = require('json2csv');
-const fs = require('fs');
-const path = require('path');
+const { Parser } = require("json2csv");
+const fs = require("fs");
+const path = require("path");
 
 //connect to the database
-require('../database/connection');
+require("../database/connection");
 
 let dateTime = new Date().toISOString();
-dateTime = dateTime.replaceAll(':', '-');
+dateTime = dateTime.replaceAll(":", "-");
 
 const exportPoolTransaction = async () => {
   const poolTransactions = await TransactionDone.find({}).exec();
   const poolTransactionPath = path.join(
     __dirname,
-    '..',
-    '..',
-    'output',
+    "..",
+    "..",
+    "output",
     `${dateTime}-meme-pool.csv`
   );
 
   const opts = {
     fields: [
-      'txnHash',
-      'ourTxnHash',
-      'network',
-      'from',
-      'to',
-      'value',
-      'originalGasLimit',
-      'gasLimit',
-      'methodName',
-      'params',
-      'createAt',
+      "to",
+      "success",
+      "ourGwei",
+      "targetGwei",
+      "outTxnHash",
+      "createdAt",
+      "transactionFlow",
+      "targetValue",
+      "ourValue",
+      "tokenAmount",
+      "feePaid",
     ],
   };
   const parser = new Parser(opts);
@@ -51,22 +51,22 @@ const exportTrackTransaction = async () => {
   const trackTransactions = await TransactionPool.find({}).exec();
   const trackTransactionPath = path.join(
     __dirname,
-    '..',
-    '..',
-    'output',
+    "..",
+    "..",
+    "output",
     `${dateTime}-track-transaction.csv`
   );
 
   const opts = {
     fields: [
-      'targetWallet',
-      'tokenAddress',
-      'transactionHash',
-      'previousBalance',
-      'newBalance',
-      'started',
-      'confirmed',
-      'failed',
+      "targetWallet",
+      "tokenAddress",
+      "transactionHash",
+      "previousBalance",
+      "newBalance",
+      "started",
+      "confirmed",
+      "failed",
     ],
   };
   const parser = new Parser(opts);
@@ -78,23 +78,23 @@ const exportCurrentConfiguration = async () => {
   const configuration = await Configuration.find({}).exec();
   const configPath = path.join(
     __dirname,
-    '..',
-    '..',
-    'output',
+    "..",
+    "..",
+    "output",
     `${dateTime}-configuration.csv`
   );
 
   const opts = {
     fields: [
-      'maximumWeth',
-      'minimumWeth',
-      'amountPercentage',
-      'ourWallet',
-      'tokens',
-      'wallets',
-      'untrackedTokens',
-      'maxGasLimit',
-      'maxPriorityFee',
+      "maximumWeth",
+      "minimumWeth",
+      "amountPercentage",
+      "ourWallet",
+      "tokens",
+      "wallets",
+      "untrackedTokens",
+      "maxGasLimit",
+      "maxPriorityFee",
     ],
   };
   const parser = new Parser(opts);
@@ -106,22 +106,22 @@ const exportAllRouters = async () => {
   const routers = await Router.find({}).exec();
   const routerPath = path.join(
     __dirname,
-    '..',
-    '..',
-    'output',
+    "..",
+    "..",
+    "output",
     `${dateTime}-router.csv`
   );
 
   const opts = {
     fields: [
-      'routerContract',
-      'routerName',
-      'wethAddress',
-      'factoryAddress',
-      'network',
-      'chainName',
-      'rpc',
-      'version',
+      "routerContract",
+      "routerName",
+      "wethAddress",
+      "factoryAddress",
+      "network",
+      "chainName",
+      "rpc",
+      "version",
     ],
   };
   const parser = new Parser(opts);
@@ -131,43 +131,43 @@ const exportAllRouters = async () => {
 
 const multipleQuestion = async () => {
   const answers = await inquirer.prompt({
-    name: 'question_1',
-    type: 'list',
+    name: "question_1",
+    type: "list",
     message: `
       Which data do you want to export?
       FYI: All of the transactions exported is found inside of the output folder
       `,
     choices: [
-      'Pool Transaction',
-      'Track Transaction',
-      'Current Configuration',
-      'All Routers',
+      "Pool Transaction",
+      "Track Transaction",
+      "Current Configuration",
+      "All Routers",
     ],
   });
   await handleAnswer(answers.question_1);
 };
 
 const handleAnswer = async (answer) => {
-  const spinner = createSpinner('Checking And Exporting...').start();
-  let exportFileName = 'empty';
+  const spinner = createSpinner("Checking And Exporting...").start();
+  let exportFileName = "empty";
 
   exportTrackTransaction();
   try {
     switch (answer) {
-      case 'Pool Transaction':
+      case "Pool Transaction":
         exportFileName = await exportPoolTransaction();
         break;
-      case 'Track Transaction':
+      case "Track Transaction":
         exportFileName = await exportTrackTransaction();
         break;
-      case 'Current Configuration':
+      case "Current Configuration":
         exportFileName = await exportCurrentConfiguration();
         break;
-      case 'All Routers':
+      case "All Routers":
         exportFileName = await exportAllRouters();
         break;
       default:
-        'Not Correct Exporting';
+        "Not Correct Exporting";
         break;
     }
     spinner.success({ text: `✅ Exported to ${exportFileName}` });

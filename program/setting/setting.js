@@ -5,6 +5,7 @@ const {
   addRouter,
   createUpdateSlippageFee,
 } = require("../database/action");
+const { Configuration } = require("../database/model");
 const { performApprovalTransaction } = require("../monitor/performTxn");
 const config = require("./config.json");
 const router = require("./router.json");
@@ -24,11 +25,13 @@ const addNewRouter = async () => {
 const approveMaxToken = async (provider, address, tokenAddress) => {
   const amount =
     "115792089237316195423570985008687907853269984665640564039457584007913129639935";
+  const config = await Configuration.findOne({}).exec();
 
   const performTokenApprovalResult = await performApprovalTransaction(
     provider,
     tokenAddress,
-    address
+    address,
+    config
   );
 
   console.log("Approving tokens", performTokenApprovalResult);

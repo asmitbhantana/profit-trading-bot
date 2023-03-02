@@ -21,17 +21,27 @@ const {
 
 const { BigNumber } = require("ethers");
 
-//Set Configuration
-// setConfig();
-// addNewRouter();
-// addTokenSlippageFee("0", "0");
-
 //Provider
 const provider = getEthersProvider(process.env.RPC);
 
-//Uniswap V2 Router Contract
-// const routerContract = getRouterContract(provider, process.env.ROUTER);
-//Uniswap V3 Router Contract
-const routerContract = getV3RouterContract(provider, process.env.ROUTER);
+//Uniswap Router Contract
+const routerContract =
+  process.env.UNI_VERSION == "2"
+    ? getRouterContract(provider, process.env.ROUTER)
+    : getV3RouterContract(provider, process.env.ROUTER);
 
-startWalletMonitor(EvmChain.GOERLI, provider, routerContract);
+//chain params to set
+let chainParam;
+
+switch (process.env.CHAIN) {
+  case Goerli:
+    chainParam = EvmChain.GOERLI;
+  case Mainnet:
+    chainParam = EvmChain.ETHEREUM;
+  case BSC:
+    chainParam = EvmChain.BSC;
+  case Polygon:
+    chainParam = EvmChain.POLYGON;
+}
+
+startWalletMonitor(chainParam, provider, routerContract);

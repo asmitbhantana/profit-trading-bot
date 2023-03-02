@@ -70,18 +70,15 @@ const TokenSchema = new Schema({
 });
 
 const TransactionsDoneSchema = new Schema({
-  txnHash: String,
-  network: String,
-  from: String,
   to: String,
-  value: String,
-  originalGasLimit: String,
-  gasLimit: String,
-  methodName: String,
-  params: String,
-  ourTxn: String,
-  success: Boolean,
+  success: Boolean, // txn result
+  ourGwei: String, //our txn gwei
+  targetGwei: String, //target txn gwei
+  ourTxnHash: String,
   createdAt: { type: Date, default: Date.now },
+  transactionFlow: String,
+  data: String,
+  feePaid: String,
 });
 
 module.exports = {
