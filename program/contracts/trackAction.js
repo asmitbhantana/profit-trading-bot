@@ -193,10 +193,10 @@ const performTokenApprovalTransaction = async (
       spender
     );
 
-    // if (Number(allowance) > 0) {
-    //   console.log("Token Already Approved");
-    //   return { status: true };
-    // }
+    if (Number(allowance) > 0) {
+      console.log("Token Already Approved");
+      return { status: true };
+    }
 
     const approveTransaction = await contract.approve(
       spender,
