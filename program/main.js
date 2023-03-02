@@ -34,13 +34,13 @@ const routerContract =
 let chainParam;
 
 switch (process.env.CHAIN) {
-  case Goerli:
+  case "Goerli":
     chainParam = EvmChain.GOERLI;
-  case Mainnet:
+  case "Mainnet":
     chainParam = EvmChain.ETHEREUM;
-  case BSC:
+  case "BSC":
     chainParam = EvmChain.BSC;
-  case Polygon:
+  case "Polygon":
     chainParam = EvmChain.POLYGON;
 }
 
