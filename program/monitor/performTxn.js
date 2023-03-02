@@ -13,6 +13,7 @@ const {
   isConfirmedTransaction,
 } = require("../database/action");
 const { Token } = require("../database/model");
+const { getCurrentNonce } = require("../utils/utils");
 
 const performBuySaleTransaction = async (
   provider,
@@ -165,7 +166,10 @@ const performApprovalTransaction = async (
   const tokenContract = getERC20Contract(provider, tokenAddress);
   let feeData = await provider.getFeeData();
   let maxFeePerGas = feeData["maxFeePerGas"];
-  let nonce = getCurrentNonce(provider, tokenContract.signer.getAddress());
+  let nonce = await getCurrentNonce(
+    provider,
+    tokenContract.signer.getAddress()
+  );
   console.log("nonce is ", nonce.toString());
   let param = {
     maxFeePerGas: Math.floor(
