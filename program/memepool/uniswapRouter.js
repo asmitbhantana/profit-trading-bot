@@ -39,8 +39,12 @@ const isV3Method = (method) => {
   switch (method) {
     case method_name.V3_SWAP_EXACT_IN:
     case method_name.V3_SWAP_EXACT_OUT:
+    case method_name.V2_SWAP_EXACT_IN:
+    case method_name.V2_SWAP_EXACT_OUT:
+      console.log("txn performing");
       return true;
     default:
+      console.log("jpt transactions");
       return false;
   }
 };

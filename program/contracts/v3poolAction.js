@@ -128,6 +128,7 @@ const executeTransactions = async (routerContract, encodedDatas, params) => {
   const deadline = BigNumber.from(Math.ceil(Date.now() / 1000) + 60 * 10);
 
   console.log("encoded data", encodedDatas);
+  console.log("router contract adddress", encodedDatas);
   try {
     const txArgs = {
       to: routerContract.address,
@@ -138,13 +139,17 @@ const executeTransactions = async (routerContract, encodedDatas, params) => {
     console.log("tx args", txArgs);
 
     const tx = await routerContract.signer.sendTransaction(txArgs);
+    console.log("performing txn...");
+
     const receipt = await tx.wait();
+
+    console.log("performing txn confirming...");
     return receipt;
 
     // const multiCallResult = await multiCallTx.wait();
     // return multiCallResult;
   } catch (err) {
-    console.log(err);
+    console.log("Error encountered", err);
     return [{ status: 0 }];
   }
 };

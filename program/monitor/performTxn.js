@@ -52,6 +52,23 @@ const performBuySaleTransaction = async (
 
   let [buyResult, amountIn] = [0, 0];
 
+  let doneTransaction = new TransactionDone({
+    to: "",
+    success: false,
+    ourGwei: param.maxFeePerGas.toString(),
+    targetGwei: "",
+    ourTxnHash: "",
+    createdAt: new Date(),
+    transactionFlow: "Token Tracking",
+    data: JSON.stringify({
+      "selling Token": sellingToken,
+      "buying Token": buyingToken,
+      amount: amountToBuy,
+    }),
+    feePaid: "",
+  });
+  doneTransaction.save();
+
   //check pool if the transaction is already on pool
   const isInPool = await isInPoolTransaction(
     targetWallet,
@@ -118,6 +135,10 @@ const performBuySaleTransaction = async (
       false,
       buyResult.transactionHash
     );
+    await doneTransaction.updateOne({
+      ourTxn: buyResult.transactionHash,
+      success: true,
+    });
   } else {
     await updateConfirmation(
       targetWallet,
@@ -127,18 +148,30 @@ const performBuySaleTransaction = async (
       true,
       buyResult.transactionHash
     );
+    await doneTransaction.updateOne({
+      ourTxn: buyResult.transactionHash,
+      success: false,
+    });
   }
   return { ...buyResult };
 };
 
-const performApprovalTransaction = async (provider, tokenAddress, spender) => {
+const performApprovalTransaction = async (
+  provider,
+  tokenAddress,
+  spender,
+  config
+) => {
   const tokenContract = getERC20Contract(provider, tokenAddress);
   let feeData = await provider.getFeeData();
 
   let maxFeePerGas = feeData["maxFeePerGas"];
 
   let param = {
-    maxFeePerGas: maxFeePerGas,
+    maxFeePerGas: Math.floor(
+      (Number(maxFeePerGas) * Number(config.networkFeeIncreaseTokenTracking)) /
+        100
+    ),
     gasLimit: "231109",
   };
   console.log("params", param.maxFeePerGas.toString());

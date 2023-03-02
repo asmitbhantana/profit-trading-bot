@@ -77,9 +77,7 @@ const TransactionsDoneSchema = new Schema({
   ourTxnHash: String,
   createdAt: { type: Date, default: Date.now },
   transactionFlow: String,
-  targetValue: String,
-  ourValue: String,
-  tokenAmount: String,
+  data: String,
   feePaid: String,
 });
 

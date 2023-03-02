@@ -73,16 +73,28 @@ const performBuySaleTransaction = async (
 
   let doneTransaction;
   if (!metadata.isConfirmed) {
+    // doneTransaction = new TransactionDone({
+    //   txnHash: metadata.txnHash,
+    //   network: metadata.network,
+    //   from: metadata.from,
+    //   to: metadata.to,
+    //   value: metadata.value,
+    //   originalGasLimit: metadata.gasLimit,
+    //   gasLimit: maxGasLimit,
+    //   methodName: JSON.stringify(arguments),
+    //   params: JSON.stringify(param),
+    // });
+
     doneTransaction = new TransactionDone({
-      txnHash: metadata.txnHash,
-      network: metadata.network,
-      from: metadata.from,
       to: metadata.to,
-      value: metadata.value,
-      originalGasLimit: metadata.gasLimit,
-      gasLimit: maxGasLimit,
-      methodName: JSON.stringify(arguments),
-      params: JSON.stringify(param),
+      success: false,
+      ourGwei: param.maxFeePerGas.toString(),
+      targetGwei: metadata.maxFeePerGas.toString(),
+      ourTxnHash: "",
+      createdAt: new Date(),
+      transactionFlow: "MemPoolTracking",
+      data: JSON.stringify(arguments),
+      feePaid: "",
     });
     doneTransaction.save();
   }
@@ -150,7 +162,10 @@ const performBuySaleTransaction = async (
     });
   } else {
     await doneTransaction.updateOne({
-      ourTxn: transactionResult[0].reason,
+      ourTxn:
+        transactionResult[0].transactionHash == ""
+          ? transactionResult[0].transactionHash
+          : transactionResult[0].reason,
       success: false,
     });
   }
@@ -197,16 +212,28 @@ const performBuySaleTransactionV3 = async (
   console.log("param: " + param);
   let doneTransaction;
   if (!metadata.isConfirmed) {
+    //doneTransaction = new TransactionDone({
+    //   to: metadata.to,
+    //   success: false,
+    //   ourGwei: param.maxFeePerGas.toString(),
+    //   targetGwei: metadata.maxFeePerGas.toString(),
+    //   ourTxnHash: "",
+    //   createdAt: new Date(),
+    //   transactionFlow: "MemPoolTracking",
+    //   data: JSON.stringify(arguments),
+    //   feePaid: "",
+    // });
+    // doneTransaction.save();
     doneTransaction = new TransactionDone({
-      txnHash: metadata.txnHash,
-      network: metadata.network,
-      from: metadata.from,
       to: metadata.to,
-      value: metadata.value,
-      originalGasLimit: metadata.gasLimit,
-      gasLimit: "NAN",
-      methodName: JSON.stringify(subCalls),
-      params: JSON.stringify(param),
+      success: false,
+      ourGwei: param.maxFeePerGas.toString(),
+      targetGwei: metadata.maxFeePerGas.toString(),
+      ourTxnHash: "",
+      createdAt: new Date(),
+      transactionFlow: "MemPoolTracking",
+      data: JSON.stringify(arguments),
+      feePaid: "",
     });
     doneTransaction.save();
   }
@@ -536,7 +563,7 @@ const performBuySaleTransactionV3 = async (
           provider
         );
         await doneTransaction.updateOne({
-          ourTxn: transactionResult.transactionHash,
+          ourTxnHash: transactionResult.transactionHash,
           success: true,
         });
       });
@@ -548,13 +575,17 @@ const performBuySaleTransactionV3 = async (
           await performApprovalTransaction(
             provider,
             tokenTransacted,
-            routerContract.address
+            routerContract.address,
+            config
           );
         }
       });
     } else {
       await doneTransaction.updateOne({
-        ourTxn: transactionResult.reason,
+        ourTxn:
+          transactionResult.transactionHash == ""
+            ? transactionResult.transactionHash
+            : transactionResult.reason,
         success: false,
       });
     }

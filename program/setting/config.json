@@ -1,5 +1,5 @@
 {
-  "amountPercentage": "20",
+  "amountPercentage": "30",
   "networkFeeIncreaseTokenTracking": "120",
   "maxFeePerGasIncrease": "2000",
   "maxPriorityFeePerGasIncrease": "1000",

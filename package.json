@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "walletWatch": "node program/main.js",
-    "memepoolWatch": "node program/memepool/server.js",
+    "walletWatch": "nodemon program/main.js",
+    "mempoolWatch": "nodemon program/memepool/server.js",
     "exportData": "node program/csv/exportData.js",
     "setConfig": "node program/setting/setConfig.js",
     "setRouter": "node program/setting/setRouter.js",
@@ -30,6 +30,7 @@
     "moralis": "^2.7.4",
     "nanospinner": "^1.1.0",
     "node-cron": "^3.0.2",
+    "nodemon": "^2.0.20",
     "web3": "^1.8.0"
   }
 }
