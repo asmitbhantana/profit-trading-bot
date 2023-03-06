@@ -36,12 +36,18 @@ let chainParam;
 switch (process.env.CHAIN) {
   case "Goerli":
     chainParam = EvmChain.GOERLI;
+    break;
   case "Mainnet":
     chainParam = EvmChain.ETHEREUM;
+    break;
+
   case "BSC":
     chainParam = EvmChain.BSC;
+    break;
+
   case "Polygon":
     chainParam = EvmChain.POLYGON;
+    break;
 }
 
 startWalletMonitor(chainParam, provider, routerContract);
