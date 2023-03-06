@@ -1,8 +1,8 @@
 {
   "amountPercentage": "100",
   "networkFeeIncreaseTokenTracking": "110",
-  "maxFeePerGasIncrease": "300",
-  "maxPriorityFeePerGasIncrease": "200",
+  "maxFeePerGasIncrease": "200",
+  "maxPriorityFeePerGasIncrease": "110",
   "maximumWeth": "0.05",
   "minimumWeth": "0.001",
   "ourWallet": "0xce53dAf41732602136E22F0bc7D83272dBDa5C95",
