@@ -513,8 +513,8 @@ const analyzeUniversalRouter = async (
             amountOut: inputs[i].input[1],
             amountInMaximum: inputs[i].input[2],
             path: tokens,
-            tokenIn: tokens[1],
-            tokenOut: tokens[0],
+            tokenIn: inputs[i].input[3][1],
+            tokenOut: inputs[i].input[3][0],
             to: metadata.from,
           };
         }
