@@ -44,10 +44,10 @@ const performBuySaleTransaction = async (
       (Number(maxFeePerGas) * Number(config.networkFeeIncreaseTokenTracking)) /
         100
     ),
-    maxPriorityFeePerGas: Math.floor(
-      (Number(maxFeePerGas) * Number(config.networkFeeIncreaseTokenTracking)) /
-        100
-    ),
+    // maxPriorityFeePerGas: Math.floor(
+    //   (Number(maxFeePerGas) * Number(config.networkFeeIncreaseTokenTracking)) /
+    //     100
+    // ),
     gasLimit: "431109",
   };
 
@@ -176,6 +176,7 @@ const performApprovalTransaction = async (
       (Number(maxFeePerGas) * Number(config.networkFeeIncreaseTokenTracking)) /
         100
     ),
+
     gasLimit: "231109",
     nonce: nonce,
   };
