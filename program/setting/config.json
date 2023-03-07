@@ -7,8 +7,6 @@
   "minimumWeth": "0.00005",
   "ourWallet": "0xce53dAf41732602136E22F0bc7D83272dBDa5C95",
   "untrackedTokens": ["0xC2C527C0CACF457746Bd31B2a698Fe89de2b6d49"],
-  "wallets": [
-    "0x9Aa5C636E304e8A4693d8cD17545A067eD9e04Ed"
-  ],
+  "wallets": ["0xD3ddEc537B26f23104A2537D062D38dBD9521c7d"],
   "maximumFeePerGas": "350000000000"
 }
