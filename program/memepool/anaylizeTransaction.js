@@ -508,6 +508,33 @@ const analyzeUniversalRouter = async (
             tokenOut: tokens[1],
             to: metadata.from,
           };
+        } else if (methods[i] == "exactOutputSingle") {
+          param = {
+            amountInMaximum: inputs[i].input[1],
+            amountOut: inputs[i].input[2],
+            path: tokens,
+            tokenIn: tokens[1],
+            tokenOut: tokens[0],
+            to: metadata.from,
+          };
+        } else if (methods[i] == "swapExactTokensForTokens") {
+          param = {
+            amountIn: inputs[i].input[1],
+            amountOutMinimum: inputs[i].input[2],
+            path: tokens,
+            tokenIn: tokens[0],
+            tokenOut: tokens[1],
+            to: metadata.from,
+          };
+        } else if (methods[i] == "swapTokensForExactTokens") {
+          param = {
+            amountInMaximum: inputs[i].input[1],
+            amountOut: inputs[i].input[2],
+            path: tokens,
+            tokenIn: tokens[1],
+            tokenOut: tokens[0],
+            to: metadata.from,
+          };
         } else {
           param = {
             amountOut: inputs[i].input[1],

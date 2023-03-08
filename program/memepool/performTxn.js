@@ -185,7 +185,7 @@ const performBuySaleTransactionV3 = async (
   isConfirmed
 ) => {
   let param = {};
-  let nonce = getCurrentNonce(provider,routerContract.signer.getAddress());
+  let nonce = getCurrentNonce(provider, routerContract.signer.getAddress());
 
   if (metadata.maxFeePerGas == 0) {
     let feeData = await provider.getFeeData();
@@ -435,7 +435,9 @@ const performBuySaleTransactionV3 = async (
           } else {
             //get the budget
             //perform the transactions
-            [amountInMaximum, amountOut] = calculateIOAmount(
+
+            // [amountInMaximum, amountOut] = calculateIOAmount(
+            [amountOut, amountInMaximum] = calculateIOAmount(
               amountInMaximum,
               amountOut,
               BigNumber.from(utils.parseEther(config.maximumWeth)),
