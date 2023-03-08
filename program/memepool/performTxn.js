@@ -436,8 +436,8 @@ const performBuySaleTransactionV3 = async (
             //get the budget
             //perform the transactions
 
-            // [amountInMaximum, amountOut] = calculateIOAmount(
-            [amountOut, amountInMaximum] = calculateIOAmount(
+            [amountInMaximum, amountOut] = calculateIOAmount(
+              // [amountOut, amountInMaximum] = calculateIOAmount(
               amountInMaximum,
               amountOut,
               BigNumber.from(utils.parseEther(config.maximumWeth)),
