@@ -29,17 +29,33 @@ const exportPoolTransaction = async () => {
 
   const opts = {
     fields: [
-      "to",
-      "success",
-      "ourGwei",
-      "targetGwei",
-      "outTxnHash",
-      "createdAt",
-      "transactionFlow",
-      "targetValue",
-      "ourValue",
-      "tokenAmount",
-      "feePaid",
+      "targetTimeStamp",
+      "targetHash",
+      "targetWallet",
+      "targetTransactionResult",
+      "targetEthAmount",
+      "targetFeeAmount",
+      "targetMaxGwei",
+      "targetMaxPriorityGwei",
+      "targetGasLimit",
+      "targetTokenAmount",
+
+      //common
+      "tokenContract",
+      "transactionType",
+      "flowType",
+
+      //Our
+      "ourTimeStamp",
+      "ourHash",
+      "ourTransactionResult",
+      "ourGasUsed",
+      "ourEthAmount",
+      "ourFeeAmount",
+      "ourMaxGwei",
+      "ourMaxPriorityGwei",
+      "ourGasLimit",
+      "ourTokenAmount",
     ],
   };
   const parser = new Parser(opts);

@@ -9,8 +9,6 @@ const {
 } = require("./schema");
 const mongoose = require("mongoose");
 
-const Transaction = mongoose.model("Transaction", TransactionSchema);
-
 const TokenBundle = mongoose.model("TokenBundle", TokenBundleSchema);
 
 const Configuration = mongoose.model("Configuration", ConfigurationSchema);
@@ -30,7 +28,6 @@ const TransactionDone = mongoose.model(
 );
 
 module.exports = {
-  Transaction,
   TokenBundle,
   Configuration,
   Router,
