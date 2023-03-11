@@ -11,8 +11,10 @@ const {
   addPoolTransaction,
   updateConfirmation,
   isConfirmedTransaction,
+  updateTransaction,
+  updateOurTransaction,
 } = require("../database/action");
-const { Token, TransactionDone } = require("../database/model");
+const { Token } = require("../database/model");
 const { getCurrentNonce } = require("../utils/utils");
 
 const performBuySaleTransaction = async (
@@ -52,23 +54,6 @@ const performBuySaleTransaction = async (
   };
 
   let [buyResult, amountIn] = [0, 0];
-
-  let doneTransaction = new TransactionDone({
-    to: "",
-    success: false,
-    ourGwei: param.maxFeePerGas.toString(),
-    targetGwei: "",
-    ourTxnHash: "",
-    createdAt: new Date(),
-    transactionFlow: "Token Tracking",
-    data: JSON.stringify({
-      "selling Token": sellingToken,
-      "buying Token": buyingToken,
-      amount: amountToBuy,
-    }),
-    feePaid: "",
-  });
-  doneTransaction.save();
 
   //check pool if the transaction is already on pool
   const isInPool = await isInPoolTransaction(
@@ -136,10 +121,6 @@ const performBuySaleTransaction = async (
       false,
       buyResult.transactionHash
     );
-    await doneTransaction.updateOne({
-      ourTxn: buyResult.transactionHash,
-      success: true,
-    });
   } else {
     await updateConfirmation(
       targetWallet,
@@ -149,11 +130,20 @@ const performBuySaleTransaction = async (
       true,
       buyResult.transactionHash
     );
-    await doneTransaction.updateOne({
-      ourTxn: buyResult.transactionHash,
-      success: false,
+  }
+  if (buyResult.transactionHash) {
+    await updateOurTransaction(buyResult.transactionHash, {
+      ourTimeStamp: new Date(),
+      ourTransactionResult: buyResult.status == 1 ? "Confirmed" : "Failed",
+      ourGasUsed: buyResult.gasUsed.toString(),
+      ourMaxGwei: param.maxFeePerGas,
+      ourGasLimit: param.gasLimit,
+      flowType: "TokenWalletTrack",
+      transactionType: isBuy ? "Buy" : "Sell",
+      tokenContract: tokenAddress.toString(),
     });
   }
+
   return { ...buyResult };
 };
 
@@ -188,6 +178,17 @@ const performApprovalTransaction = async (
 
     { ...param }
   );
+
+  await updateOurTransaction(tokenApprovalResult.transactionHash, {
+    ourTimeStamp: new Date(),
+    ourTransactionResult:
+      tokenApprovalResult.status == 1 ? "Confirmed" : "Failed",
+    ourGasUsed: tokenApprovalResult.gasUsed.toString(),
+    ourMaxGwei: param.maxFeePerGas,
+    ourGasLimit: param.gasLimit,
+    tokenContract: tokenAddress.toString(),
+    transactionType: "Approve",
+  });
 
   return tokenApprovalResult;
 };

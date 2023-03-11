@@ -28,6 +28,7 @@ const sellExactTokens = async (
     );
 
     const sellTransactionResult = await sellTransaction.wait();
+
     return [sellTransactionResult];
   } catch (err) {
     console.log("Error occured on memepool selling", err);
@@ -132,6 +133,7 @@ const buyWithExactTokens = async (
     );
 
     const buyTransactionResult = await buyTransaction.wait();
+
     return [buyTransactionResult];
   } catch (err) {
     console.log("Error occur on memepool buying", err);

@@ -28,6 +28,7 @@ const {
   Router,
   TransactionPool,
   Token,
+  TransactionDone,
 } = require("./model");
 const { getWalletBalance } = require("../monitor/wallet");
 
@@ -221,6 +222,37 @@ const getAllWalletBalance = async (token_address, excludeWallet) => {
   return totalBalanceNow;
 };
 
+const createNewTransaction = async (targetTxnHash, data) => {
+  let doneTransaction = new TransactionDone({
+    targetHash: targetTxnHash,
+    ...data,
+  });
+
+  doneTransaction.save();
+
+  return doneTransaction;
+};
+
+const updateTransaction = async (targetTxnHash, updatedData) => {
+  let currentTransaction = TransactionDone.findOneAndUpdate(
+    { targetHash: targetTxnHash },
+    { ...updatedData },
+    { new: false, upsert: true }
+  ).exec();
+
+  return currentTransaction;
+};
+
+const updateOurTransaction = async (ourTxnHash, updatedData) => {
+  let currentTransaction = TransactionDone.findOneAndUpdate(
+    { ourHash: targetTxnHash },
+    { ...updatedData },
+    { new: false, upsert: true }
+  ).exec();
+
+  return currentTransaction;
+};
+
 module.exports = {
   createUpdateTokens,
   createUpdateConfig,
@@ -235,4 +267,8 @@ module.exports = {
   getAllWalletBalance,
   updateChangedTokenBalance,
   isConfirmedTransaction,
+
+  createNewTransaction,
+  updateTransaction,
+  updateOurTransaction,
 };

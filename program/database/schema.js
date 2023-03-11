@@ -2,17 +2,48 @@ const { getAddress } = require("ethers/lib/utils");
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const TransactionSchema = new Schema({
-  hash: String,
-  success: Boolean,
-  tokenAddress: { type: String, get: getAddress, set: getAddress },
-  date: { type: Date, default: Date.now },
-  value: String,
-  sender: String,
-  receiver: String,
+// const TransactionSchema = new Schema({
+//   hash: String,
+//   success: Boolean,
+//   tokenAddress: { type: String, get: getAddress, set: getAddress },
+//   date: { type: Date, default: Date.now },
+//   value: String,
+//   sender: String,
+//   receiver: String,
+//   transactionType: String,
+//   transactionHash: String,
+//   trackTransactionHash: String,
+// });
+
+const TransactionsDoneSchema = new Schema({
+  //Target
+  targetTimeStamp: String,
+  targetHash: String,
+  targetWallet: { type: String, get: getAddress, set: getAddress },
+  targetTransactionResult: String,
+  targetEthAmount: String,
+  targetFeeAmount: String,
+  targetMaxGwei: String,
+  targetMaxPriorityGwei: String,
+  targetGasLimit: String,
+  targetTokenAmount: String,
+
+  //common
+  tokenContract: { type: String, get: getAddress, set: getAddress }, //
   transactionType: String,
-  transactionHash: String,
-  trackTransactionHash: String,
+  flowType: String,
+
+  //Our
+  ourTimeStamp: String,
+  ourHash: String,
+  ourTransactionResult: String,
+  ourGasUsed: String,
+  ourEthAmount: String,
+  ourFeeAmount: String,
+  ourMaxGwei: String,
+  ourMaxPriorityGwei: String,
+  ourGasLimit: String,
+  ourTokenAmount: String,
 });
 
 const ConfigurationSchema = new Schema({
@@ -69,20 +100,19 @@ const TokenSchema = new Schema({
   slippagePercentage: String, //101 = 10.1
 });
 
-const TransactionsDoneSchema = new Schema({
-  to: String,
-  success: Boolean, // txn result
-  ourGwei: String, //our txn gwei
-  targetGwei: String, //target txn gwei
-  ourTxnHash: String,
-  createdAt: { type: Date, default: Date.now },
-  transactionFlow: String,
-  data: String,
-  feePaid: String,
-});
+// const TransactionsDoneSchema = new Schema({
+//   to: String,
+//   success: Boolean, // txn result
+//   ourGwei: String, //our txn gwei
+//   targetGwei: String, //target txn gwei
+//   ourTxnHash: String,
+//   createdAt: { type: Date, default: Date.now },
+//   transactionFlow: String,
+//   data: String,
+//   feePaid: String,
+// });
 
 module.exports = {
-  TransactionSchema,
   ConfigurationSchema,
   TokenBundleSchema,
   RouterSchema,

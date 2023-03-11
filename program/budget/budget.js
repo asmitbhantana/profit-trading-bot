@@ -47,12 +47,15 @@ const calculateIOAmount = (amountIn, amountOut, X, W, Y) => {
   let budgetAmount = calculateBudget(amountIn, X, W, Y);
   let calculatedProportions = calculateProportions(budgetAmount, amountIn);
 
-  let calcAmountOut = budgetAmount.lt(amountIn)
-    ? amountOut.div(calculatedProportions).mul(precision)
-    : amountOut.mul(calculatedProportions).div(precision);
-
-  console.log("Calc amount out is", calcAmountOut.toString());
-  return [budgetAmount, calcAmountOut];
+  if (budgetAmount.lt(amountIn) && budgetAmount.eq(W)) {
+    let calcAmountOut = amountOut.div(calculatedProportions).mul(precision);
+    console.log("Calc amount out is", calcAmountOut.toString());
+    return [calcAmountOut, budgetAmount];
+  } else {
+    let calcAmountOut = amountOut.mul(calculatedProportions).div(precision);
+    console.log("Calc amount out is", calcAmountOut.toString());
+    return [budgetAmount, calcAmountOut];
+  }
 };
 
 const calculateSellAmount = (totalBalance, amountTransact, ourBalance) => {

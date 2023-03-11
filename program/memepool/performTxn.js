@@ -14,8 +14,9 @@ const {
   updateTokenBalance,
   updateChangedTokenBalance,
   getAllWalletBalance,
+  updateTransaction,
 } = require("../database/action");
-const { TransactionDone, TokenBundle } = require("../database/model");
+const { TokenBundle } = require("../database/model");
 const {
   createSellExactTokens,
   createBuyWithExactTokens,
@@ -74,33 +75,12 @@ const performBuySaleTransaction = async (
   console.log("Performing BuySale Transactions with Arg", arguments);
   console.log("Performing BuySale Transactions with Metadata", metadata);
 
-  let doneTransaction;
-  if (!metadata.isConfirmed) {
-    // doneTransaction = new TransactionDone({
-    //   txnHash: metadata.txnHash,
-    //   network: metadata.network,
-    //   from: metadata.from,
-    //   to: metadata.to,
-    //   value: metadata.value,
-    //   originalGasLimit: metadata.gasLimit,
-    //   gasLimit: maxGasLimit,
-    //   methodName: JSON.stringify(arguments),
-    //   params: JSON.stringify(param),
-    // });
-
-    doneTransaction = new TransactionDone({
-      to: metadata.to,
-      success: false,
-      ourGwei: param.maxFeePerGas.toString(),
-      targetGwei: metadata.maxFeePerGas.toString(),
-      ourTxnHash: "",
-      createdAt: new Date(),
-      transactionFlow: "MemPoolTracking",
-      data: JSON.stringify(arguments),
-      feePaid: "",
-    });
-    doneTransaction.save();
-  }
+  await updateTransaction(metadata.txnHash, {
+    ourTimeStamp: new Date(),
+    ourMaxGwei: param.maxFeePerGas,
+    ourMaxPriorityGwei: param.maxPriorityFeePerGas,
+    ourGasLimit: metadata.gasLimit,
+  });
 
   let transactionResult;
   let amountTransacted;
@@ -120,6 +100,12 @@ const performBuySaleTransaction = async (
         config.ourWallet,
         param
       );
+
+      await updateTransaction(metadata.txnHash, {
+        ourTokenAmount: buyingAmount.toString(),
+        tokenContract: buyingToken,
+        transactionType: "Buy",
+      });
     } else {
       transactionResult = await buyExactTokens(
         contract,
@@ -130,10 +116,17 @@ const performBuySaleTransaction = async (
         config.ourWallet,
         param
       );
+
+      await updateTransaction(metadata.txnHash, {
+        ourTokenAmount: buyingAmount.toString(),
+        tokenContract: buyingToken,
+        transactionType: "Buy",
+      });
     }
   } else {
     amountTransacted = sellingAmount;
     tokenTransacted = sellingToken;
+
     if (isExact) {
       transactionResult = await sellForExactTokens(
         contract,
@@ -144,6 +137,12 @@ const performBuySaleTransaction = async (
         config.ourWallet,
         param
       );
+
+      await updateTransaction(metadata.txnHash, {
+        ourTokenAmount: buyingAmount.toString(),
+        tokenContract: buyingToken,
+        transactionType: "Sell",
+      });
     } else {
       transactionResult = await sellExactTokens(
         contract,
@@ -154,22 +153,25 @@ const performBuySaleTransaction = async (
         config.ourWallet,
         param
       );
+      await updateTransaction(metadata.txnHash, {
+        ourTokenAmount: sellingAmount.toString(),
+        tokenContract: sellingToken,
+        transactionType: "Sell",
+      });
     }
   }
   console.log("Transaction Result is", transactionResult);
   if (transactionResult[0].status == 1) {
     updateChangedTokenBalance(config.ourWallet, tokenTransacted, provider);
-    await doneTransaction.updateOne({
-      ourTxn: transactionResult[0].transactionHash,
-      success: true,
+    await updateTransaction(metadata.txnHash, {
+      ourHash: transactionResult[0].transactionHash,
+      ourTransactionResult: "Confirmed",
+      ourGasUsed: transactionResult[0].gasUsed.toString(),
     });
   } else {
-    await doneTransaction.updateOne({
-      ourTxn:
-        transactionResult[0].transactionHash == ""
-          ? transactionResult[0].transactionHash
-          : transactionResult[0].reason,
-      success: false,
+    await updateTransaction(metadata.txnHash, {
+      ourHash: transactionResult[0].transactionHash,
+      ourTransactionResult: `Failed ${transactionResult.reason}`,
     });
   }
 };
@@ -216,33 +218,13 @@ const performBuySaleTransactionV3 = async (
   }
 
   console.log("param: " + param);
-  let doneTransaction;
-  if (!metadata.isConfirmed) {
-    //doneTransaction = new TransactionDone({
-    //   to: metadata.to,
-    //   success: false,
-    //   ourGwei: param.maxFeePerGas.toString(),
-    //   targetGwei: metadata.maxFeePerGas.toString(),
-    //   ourTxnHash: "",
-    //   createdAt: new Date(),
-    //   transactionFlow: "MemPoolTracking",
-    //   data: JSON.stringify(arguments),
-    //   feePaid: "",
-    // });
-    // doneTransaction.save();
-    doneTransaction = new TransactionDone({
-      to: metadata.to,
-      success: false,
-      ourGwei: param.maxFeePerGas.toString(),
-      targetGwei: metadata.maxFeePerGas.toString(),
-      ourTxnHash: "",
-      createdAt: new Date(),
-      transactionFlow: "MemPoolTracking",
-      data: JSON.stringify(arguments),
-      feePaid: "",
-    });
-    doneTransaction.save();
-  }
+
+  await updateTransaction(metadata.txnHash, {
+    ourTimeStamp: new Date(),
+    ourMaxGwei: param.maxFeePerGas,
+    ourMaxPriorityGwei: param.maxPriorityFeePerGas,
+    ourGasLimit: metadata.gasLimit,
+  });
 
   let transactionResult;
   let ratio;
@@ -570,9 +552,10 @@ const performBuySaleTransactionV3 = async (
           tokensTransacted[index],
           provider
         );
-        await doneTransaction.updateOne({
-          ourTxnHash: transactionResult.transactionHash,
-          success: true,
+        await updateTransaction(metadata.txnHash, {
+          ourHash: transactionResult.transactionHash,
+          ourTransactionResult: "Confirmed",
+          ourGasUsed: transactionResult.gasUsed.toString(),
         });
       });
 
@@ -589,12 +572,9 @@ const performBuySaleTransactionV3 = async (
         }
       });
     } else {
-      await doneTransaction.updateOne({
-        ourTxn:
-          transactionResult.transactionHash == ""
-            ? transactionResult.transactionHash
-            : transactionResult.reason,
-        success: false,
+      await updateTransaction(metadata.txnHash, {
+        ourHash: transactionResult.transactionHash,
+        ourTransactionResult: `Failed ${transactionResult.reason}`,
       });
     }
   });
