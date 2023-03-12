@@ -11,6 +11,8 @@ const {
   analyzeUniversalRouter,
 } = require("./anaylizeTransaction");
 
+const path = require("path");
+
 //connect to the database
 require("../database/connection");
 
@@ -115,6 +117,8 @@ app.post("/*", async (req, res) => {
     console.log("error occured", err);
   }
 });
+
+app.use("/output", express.static(path.join(__dirname, "../../output/")));
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);
