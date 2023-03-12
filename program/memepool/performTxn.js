@@ -430,8 +430,8 @@ const performBuySaleTransactionV3 = async (
 
             [amountInMaximum, amountOut] = calculateIOAmount(
               // [amountOut, amountInMaximum] = calculateIOAmount(
-              amountInMaximum,
               amountOut,
+              amountInMaximum,
               BigNumber.from(utils.parseEther(config.maximumWeth)),
               BigNumber.from(utils.parseEther(config.minimumWeth)),
               BigNumber.from(config.amountPercentage)

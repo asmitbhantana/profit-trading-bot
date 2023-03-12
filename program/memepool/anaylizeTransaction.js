@@ -522,8 +522,8 @@ const analyzeUniversalRouter = async (
             amountIn: inputs[i].input[1],
             amountOutMinimum: inputs[i].input[2],
             path: tokens,
-            tokenIn: tokens[0],
-            tokenOut: tokens[1],
+            tokenIn: inputs[i].input[3][0],
+            tokenOut: inputs[i].input[3][1],
             to: metadata.from,
           };
         } else if (methods[i] == "swapTokensForExactTokens") {
@@ -531,8 +531,8 @@ const analyzeUniversalRouter = async (
             amountInMaximum: inputs[i].input[1],
             amountOut: inputs[i].input[2],
             path: tokens,
-            tokenIn: tokens[1],
-            tokenOut: tokens[0],
+            tokenIn: inputs[i].input[3][1],
+            tokenOut: inputs[i].input[3][0],
             to: metadata.from,
           };
         } else {
