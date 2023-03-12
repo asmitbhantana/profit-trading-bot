@@ -1,10 +1,10 @@
 {
   "botConfig": {
     "amountPercentage": "100",
-    "networkFeeIncreaseTokenTracking": "110",
-    "maxFeePerGasIncrease": "300",
-    "maxPriorityFeePerGasIncrease": "200",
-    "maximumWeth": "0.05",
+    "networkFeeIncreaseTokenTracking": "125",
+    "maxFeePerGasIncrease": "150",
+    "maxPriorityFeePerGasIncrease": "400",
+    "maximumWeth": "0.1",
     "minimumWeth": "0.001",
     "ourWallet": "0xce53dAf41732602136E22F0bc7D83272dBDa5C95",
     "untrackedTokens": ["0xC2C527C0CACF457746Bd31B2a698Fe89de2b6d49"],
@@ -18,12 +18,17 @@
   "approvals": [
     {
       "tokenAddress": "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-      "spender": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+      "spender": "0x4648a43B2C14Da09FdF82B161150d3F634f40491",
       "rpc": "https://goerli.infura.io/v3/df8136950ce54c75a633aaf1e9998eb0"
     },
     {
       "tokenAddress": "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
       "spender": "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45",
+      "rpc": "https://goerli.infura.io/v3/df8136950ce54c75a633aaf1e9998eb0"
+    },
+    {
+      "tokenAddress": "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
+      "spender": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
       "rpc": "https://goerli.infura.io/v3/df8136950ce54c75a633aaf1e9998eb0"
     }
   ],
@@ -44,17 +49,28 @@
       "routerContract": "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45",
       "routerName": "SwapRouter02",
       "wethAddress": "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
+      "factoryAddress": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+      "network": "goerli",
+      "chainName": "Goerli Network",
+      "rpc": "https://goerli.infura.io/v3/df8136950ce54c75a633aaf1e9998eb0",
+      "isV3": true,
+      "isUniversalRouter": false
+    },
+    {
+      "routerContract": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+      "routerName": "UniswapRouterV2",
+      "wethAddress": "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
       "factoryAddress": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
       "network": "goerli",
       "chainName": "Goerli Network",
       "rpc": "https://goerli.infura.io/v3/df8136950ce54c75a633aaf1e9998eb0",
       "isV3": false,
-      "isUniversalRouter": true
+      "isUniversalRouter": false
     }
   ],
 
-  "slippage": {
-    "feePercentage": "0",
-    "slippagePercentage": "101"
+  "slippage": { 
+    "feePercentage": "500", 
+    "slippagePercentage": "500" 
   }
 }
