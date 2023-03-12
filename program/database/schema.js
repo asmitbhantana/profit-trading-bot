@@ -19,7 +19,7 @@ const TransactionsDoneSchema = new Schema({
   //Target
   targetTimeStamp: String,
   targetHash: String,
-  targetWallet: { type: String, get: getAddress, set: getAddress },
+  targetWallet: String,
   targetTransactionResult: String,
   targetEthAmount: String,
   targetFeeAmount: String,
@@ -29,7 +29,7 @@ const TransactionsDoneSchema = new Schema({
   targetTokenAmount: String,
 
   //common
-  tokenContract: { type: String, get: getAddress, set: getAddress }, //
+  tokenContract: String, //
   transactionType: String,
   flowType: String,
 
