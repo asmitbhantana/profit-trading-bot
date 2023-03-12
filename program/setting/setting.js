@@ -14,7 +14,6 @@ const config = require("./config.json");
 require("../database/connection");
 
 const setConfig = async () => {
-  pro;
   await createUpdateConfig(config["botConfig"]);
   console.log("Configuration Added");
 };
