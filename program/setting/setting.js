@@ -7,19 +7,24 @@ const {
 } = require("../database/action");
 const { Configuration } = require("../database/model");
 const { performApprovalTransaction } = require("../monitor/performTxn");
+
 const config = require("./config.json");
-const router = require("./router.json");
-const slippage = require("./slippage.json");
 
 //connect to the database
 require("../database/connection");
 
 const setConfig = async () => {
-  await createUpdateConfig(config);
+  pro;
+  await createUpdateConfig(config["botConfig"]);
+  console.log("Configuration Added");
 };
 
 const addNewRouter = async () => {
-  await addRouter(router);
+  const routers = config["routers"];
+  routers.forEach(async (router, index) => {
+    await addRouter(router);
+    console.log("Added  ", index, " routers");
+  });
 };
 
 const approveMaxToken = async (provider, address, tokenAddress) => {
@@ -38,10 +43,12 @@ const approveMaxToken = async (provider, address, tokenAddress) => {
 };
 
 const setSlippage = async () => {
+  const slippage = config["slippage"];
   const updatedTokenFee = await createUpdateSlippageFee(
     slippage.slippagePercentage,
     slippage.feePercentage
   );
+  console.log("Done Slippage Set");
 };
 
 module.exports = {
