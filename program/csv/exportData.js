@@ -39,12 +39,10 @@ const exportPoolTransaction = async () => {
       "targetMaxPriorityGwei",
       "targetGasLimit",
       "targetTokenAmount",
-
       //common
       "tokenContract",
       "transactionType",
       "flowType",
-
       //Our
       "ourTimeStamp",
       "ourHash",
@@ -70,7 +68,7 @@ const exportTrackTransaction = async () => {
     "..",
     "..",
     "output",
-    `${dateTime}-track-transaction.csv`
+    `${dateTime}-pool-transaction.csv`
   );
 
   const opts = {
@@ -167,7 +165,6 @@ const handleAnswer = async (answer) => {
   const spinner = createSpinner("Checking And Exporting...").start();
   let exportFileName = "empty";
 
-  exportTrackTransaction();
   try {
     switch (answer) {
       case "Pool Transaction":
@@ -189,6 +186,7 @@ const handleAnswer = async (answer) => {
     spinner.success({ text: `✅ Exported to ${exportFileName}` });
     process.exit(0);
   } catch (err) {
+    console.log(err);
     spinner.error({ text: `❌ Could not export to ${exportFileName}` });
     process.exit(0);
   }
