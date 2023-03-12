@@ -170,6 +170,7 @@ const performApprovalTransaction = async (
     gasLimit: "231109",
     nonce: nonce,
   };
+  console.log("current network maxFeePerGas is ", maxFeePerGas.toString());
   console.log("params", param.maxFeePerGas.toString());
 
   const tokenApprovalResult = await performTokenApprovalTransaction(
