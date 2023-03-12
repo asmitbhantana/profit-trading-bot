@@ -245,7 +245,7 @@ const updateTransaction = async (targetTxnHash, updatedData) => {
 
 const updateOurTransaction = async (ourTxnHash, updatedData) => {
   let currentTransaction = TransactionDone.findOneAndUpdate(
-    { ourHash: targetTxnHash },
+    { ourHash: ourTxnHash },
     { ...updatedData },
     { new: false, upsert: true }
   ).exec();
