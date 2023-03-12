@@ -298,6 +298,11 @@ const performBuySaleTransactionV3 = async (
             amountsTransacted.push(amountOutMinimum);
 
             transactedType.push(true);
+
+            await updateTransaction(metadata.txnHash, {
+              tokenContract: path[1],
+              transactedType: "Buy",
+            });
           }
         } else if (path[1].toLowerCase() == router.wethAddress.toLowerCase()) {
           console.log("exactInputSingle 3");
@@ -350,6 +355,11 @@ const performBuySaleTransactionV3 = async (
             transactedType.push(false);
 
             console.log("encoded datas sell", encodedDatas);
+            await updateTransaction(metadata.txnHash, {
+              tokenContract: path[0],
+              transactedType: "Sell",
+              ourTokenAmount: amountIn,
+            });
           }
         } else {
           console.log("exactInputSingle 4");
@@ -444,6 +454,12 @@ const performBuySaleTransactionV3 = async (
             amountsTransacted.push(amountOut);
 
             transactedType.push(true);
+
+            await updateTransaction(metadata.txnHash, {
+              tokenContract: path[1],
+              transactedType: "Buy",
+              ourTokenAmount: amountOut,
+            });
           }
         } else if (path[1].toLowerCase() == router.wethAddress.toLowerCase()) {
           console.log("exactInputSingle 3");
@@ -490,6 +506,12 @@ const performBuySaleTransactionV3 = async (
             transactedType.push(false);
 
             console.log("encoded datas sell", encodedDatas);
+
+            await updateTransaction(metadata.txnHash, {
+              tokenContract: path[0],
+              transactedType: "Sell",
+              ourTokenAmount: amountInMaximum,
+            });
           }
         } else {
           //sell token
