@@ -181,7 +181,7 @@ const performApprovalTransaction = async (
     tokenContract,
     spender,
 
-    { ...param }
+    param
   );
 
   await updateOurTransaction(tokenApprovalResult.transactionHash, {
