@@ -183,7 +183,7 @@ const performApprovalTransaction = async (
     ourTimeStamp: new Date(),
     ourTransactionResult:
       tokenApprovalResult.status == 1 ? "Confirmed" : "Failed",
-    ourGasUsed: tokenApprovalResult.gasUsed.toString(),
+    // ourGasUsed: tokenApprovalResult.gasUsed.toString(),
     ourMaxGwei: param.maxFeePerGas,
     ourGasLimit: param.gasLimit,
     tokenContract: tokenAddress.toString(),
