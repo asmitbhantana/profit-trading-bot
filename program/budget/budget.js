@@ -49,17 +49,15 @@ const calculateIOAmount = (amountIn, amountOut, X, W, Y) => {
 
   if (budgetAmount.lt(amountIn) && budgetAmount.eq(W)) {
     let calcAmountOut = amountOut.div(calculatedProportions).mul(precision);
-    console.log("Calc amount out is", calcAmountOut.toString());
+    console.log("1. Calc amount out is", calcAmountOut.toString());
     return [calcAmountOut, budgetAmount];
-  }
-  // else if (budgetAmount.lt(amountIn) && budgetAmount.eq(X)) {
-  //   let calcAmountOut = amountOut.mul(calculatedProportions).mul(precision);
-  //   console.log("Calc amount out is", calcAmountOut.toString());
-  //   return [budgetAmount, calcAmountOut];
-  // }
-  else {
-    let calcAmountOut = amountOut.mul(calculatedProportions).div(precision);
+  } else if (budgetAmount.lt(amountIn) && budgetAmount.eq(X)) {
+    let calcAmountOut = amountOut.div(calculatedProportions).mul(precision);
     console.log("Calc amount out is", calcAmountOut.toString());
+    return [budgetAmount, calcAmountOut];
+  } else {
+    let calcAmountOut = amountOut.mul(calculatedProportions).div(precision);
+    console.log("2. Calc amount out is", calcAmountOut.toString());
     return [budgetAmount, calcAmountOut];
   }
 };
