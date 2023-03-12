@@ -104,11 +104,12 @@ const exportCurrentConfiguration = async () => {
       "minimumWeth",
       "amountPercentage",
       "ourWallet",
-      "tokens",
       "wallets",
       "untrackedTokens",
-      "maxGasLimit",
-      "maxPriorityFee",
+      "maxFeePerGasIncrease",
+      "maxPriorityFeePerGasIncrease",
+      "maximumFeePerGas",
+      "networkFeeIncreaseTokenTracking",
     ],
   };
   const parser = new Parser(opts);
