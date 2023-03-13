@@ -27,11 +27,15 @@
     },
     {
       "tokenAddress": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "spender": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+      "rpc": "https://mainnet.infura.io/v3/df8136950ce54c75a633aaf1e9998eb0"
+    },
+    {
+      "tokenAddress": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
       "spender": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
       "rpc": "https://mainnet.infura.io/v3/df8136950ce54c75a633aaf1e9998eb0"
     }
   ],
-
   "routers": [
     {
       "routerContract": "0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B",
@@ -46,6 +50,17 @@
     },
     {
       "routerContract": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+      "routerName": "SwapRouter",
+      "wethAddress": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "factoryAddress": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+      "network": "main",
+      "chainName": "Mainnet Network",
+      "rpc": "https://mainnet.infura.io/v3/df8136950ce54c75a633aaf1e9998eb0",
+      "isV3": true,
+      "isUniversalRouter": false
+    },
+    {
+      "routerContract": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
       "routerName": "SwapRouter02",
       "wethAddress": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
       "factoryAddress": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
