@@ -4,7 +4,7 @@
     "networkFeeIncreaseTokenTracking": "105",
     "maxFeePerGasIncrease": "110",
     "maxPriorityFeePerGasIncrease": "400",
-    "maximumWeth": "0.0001",
+    "maximumWeth": "0.1",
     "minimumWeth": "0.00005",
     "ourWallet": "0xa9528fE878A01629e0e957ae0221A8508bE52D22",
     "untrackedTokens": ["0xdAC17F958D2ee523a2206206994597C13D831ec7"],
