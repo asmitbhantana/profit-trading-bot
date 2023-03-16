@@ -1,7 +1,7 @@
 {
   "botConfig": {
     "amountPercentage": "100",
-    "networkFeeIncreaseTokenTracking": "150",
+    "networkFeeIncreaseTokenTracking": "105",
     "maxFeePerGasIncrease": "110",
     "maxPriorityFeePerGasIncrease": "400",
     "maximumWeth": "0.0001",
