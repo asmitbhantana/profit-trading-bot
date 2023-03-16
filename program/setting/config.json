@@ -1,9 +1,9 @@
 {
   "botConfig": {
-    "amountPercentage": "100",
+    "amountPercentage": "50",
     "networkFeeIncreaseTokenTracking": "105",
-    "maxFeePerGasIncrease": "200",
-    "maxPriorityFeePerGasIncrease": "400",
+    "maxFeePerGasIncrease": "110",
+    "maxPriorityFeePerGasIncrease": "2000",
     "maximumWeth": "0.1",
     "minimumWeth": "0.00005",
     "ourWallet": "0xa9528fE878A01629e0e957ae0221A8508bE52D22",
@@ -12,7 +12,7 @@
       "0x6f16b3207699e9A49870B77556e7f6D4038F74Dc", 
       "0xec840bc65FF74A24746E1cA19A3155e61711791e"
     ],
-    "maximumFeePerGas": "35000000000"
+    "maximumFeePerGas": "95000000000"
   },
 
   "approvals": [
