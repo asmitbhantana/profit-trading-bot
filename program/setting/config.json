@@ -11,7 +11,7 @@
     "wallets": [
       "0x6f16b3207699e9A49870B77556e7f6D4038F74Dc"
     ],
-    "maximumFeePerGas": "60000000000"
+    "maximumFeePerGas": "35000000000"
   },
 
   "approvals": [
