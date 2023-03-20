@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { BigNumber } = require("ethers");
+const { BigNumber, utils } = require("ethers");
 const { calculateIOAmount, calculateSellAmount } = require("../budget/budget");
 const { uniswapV2Router, uniswapV3Router } = require("../contracts/const");
 const contract = require("../contracts/contract");
@@ -234,7 +234,7 @@ const analyzeV2Transaction = async (
           if (isConfirmed) {
             await updateChangedTokenBalance(metadata.from, path[0], provider);
             await updateChangedTokenBalance(
-              wallet.from,
+              metadata.from,
               path[path.length - 1],
               provider
             );
@@ -265,7 +265,7 @@ const analyzeV2Transaction = async (
       amountOutMin = params.amountOutMin;
       if (isConfirmed) {
         await updateChangedTokenBalance(
-          wallet.from,
+          metadata.from,
           path[path.length - 1],
           provider
         );
@@ -345,6 +345,14 @@ const analyzeV2Transaction = async (
           amountIn,
           ourBalance0
         );
+
+        console.log("calculated", "amount In", amountIn.toString());
+        console.log("our balance 0", ourBalance0.toString());
+        console.log(
+          "our amountout ",
+          BigNumber.from(amountOutMin).div(ratio).mul(precision).toString()
+        );
+
         performBuySaleTransaction(
           provider,
           currentRouter,

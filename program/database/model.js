@@ -6,6 +6,7 @@ const {
   TransactionPoolSchema,
   TokenSchema,
   TransactionsDoneSchema,
+  NonceSchema,
 } = require("./schema");
 const mongoose = require("mongoose");
 
@@ -27,6 +28,8 @@ const TransactionDone = mongoose.model(
   TransactionsDoneSchema
 );
 
+const Nonce = mongoose.model("Nonce", NonceSchema);
+
 module.exports = {
   TokenBundle,
   Configuration,
@@ -34,4 +37,5 @@ module.exports = {
   TransactionPool,
   Token,
   TransactionDone,
+  Nonce,
 };

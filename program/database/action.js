@@ -29,8 +29,10 @@ const {
   TransactionPool,
   Token,
   TransactionDone,
+  Nonce,
 } = require("./model");
 const { getWalletBalance } = require("../monitor/wallet");
+const { getCurrentNonce } = require("../utils/utils");
 
 const createUpdateConfig = async function (config) {
   const updatedConfig = await Configuration.findOneAndUpdate({}, config, {

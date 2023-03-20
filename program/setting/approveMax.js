@@ -14,8 +14,16 @@ const approve = async () => {
     const tokenAddress = approveDetail.tokenAddress;
 
     const provider = getEthersProvider(rpc);
+    console.log("Sleeping...");
+
+    await sleep(3000);
+    console.log("Awake");
     await approveMaxToken(provider, spender, tokenAddress);
   });
 };
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 approve();

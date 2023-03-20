@@ -75,6 +75,8 @@ const performBuySaleTransaction = async (
   console.log("Performing BuySale Transactions with Arg", arguments);
   console.log("Performing BuySale Transactions with Metadata", metadata);
 
+  let isBuyingToken = false;
+
   await updateTransaction(metadata.txnHash, {
     ourTimeStamp: new Date(),
     ourMaxGwei: param.maxFeePerGas,
@@ -106,6 +108,8 @@ const performBuySaleTransaction = async (
         tokenContract: buyingToken,
         transactionType: "Buy",
       });
+
+      isBuyingToken = true;
     } else {
       transactionResult = await buyExactTokens(
         contract,
@@ -122,6 +126,7 @@ const performBuySaleTransaction = async (
         tokenContract: buyingToken,
         transactionType: "Buy",
       });
+      isBuyingToken = true;
     }
   } else {
     amountTransacted = sellingAmount;
@@ -168,6 +173,8 @@ const performBuySaleTransaction = async (
       ourTransactionResult: "Confirmed",
       ourGasUsed: transactionResult[0].gasUsed.toString(),
     });
+
+    await performApprovalTransaction(provider, tokenTransacted, metadata.to);
   } else {
     await updateTransaction(metadata.txnHash, {
       ourHash: transactionResult[0].transactionHash,

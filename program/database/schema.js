@@ -100,6 +100,10 @@ const TokenSchema = new Schema({
   slippagePercentage: String, //101 = 10.1
 });
 
+const NonceSchema = new Schema({
+  lastUsedNonce: Number,
+});
+
 // const TransactionsDoneSchema = new Schema({
 //   to: String,
 //   success: Boolean, // txn result
@@ -119,4 +123,5 @@ module.exports = {
   TransactionPoolSchema,
   TokenSchema,
   TransactionsDoneSchema,
+  NonceSchema,
 };
