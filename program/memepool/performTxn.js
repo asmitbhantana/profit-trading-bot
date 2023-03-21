@@ -174,7 +174,12 @@ const performBuySaleTransaction = async (
       ourGasUsed: transactionResult[0].gasUsed.toString(),
     });
 
-    await performApprovalTransaction(provider, tokenTransacted, metadata.to);
+    await performApprovalTransaction(
+      provider,
+      tokenTransacted,
+      metadata.to,
+      config
+    );
   } else {
     await updateTransaction(metadata.txnHash, {
       ourHash: transactionResult[0].transactionHash,
