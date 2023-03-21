@@ -2,8 +2,8 @@
   "botConfig": {
     "amountPercentage": "100",
     "networkFeeIncreaseTokenTracking": "120",
-    "maxFeePerGasIncrease": "110",
-    "maxPriorityFeePerGasIncrease": "200",
+    "maxFeePerGasIncrease": "100",
+    "maxPriorityFeePerGasIncrease": "700",
     "maximumWeth": "0.015",
     "minimumWeth": "0.000005",
     "ourWallet": "0xa9528fE878A01629e0e957ae0221A8508bE52D22",
