@@ -43,6 +43,13 @@ const performBuySaleTransaction = async (
 ) => {
   let param = {};
   let nonce = getCurrentNonce(provider, contract.signer.getAddress());
+  let untrackedTokens = config.untrackedTokens;
+
+  if (
+    untrackedTokens.includes(buyingToken) ||
+    untrackedTokens.includes(sellingToken)
+  )
+    return;
 
   if (metadata.maxFeePerGas == 0) {
     let feeData = await provider.getFeeData();

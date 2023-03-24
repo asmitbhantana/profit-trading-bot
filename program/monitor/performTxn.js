@@ -11,7 +11,6 @@ const {
   addPoolTransaction,
   updateConfirmation,
   isConfirmedTransaction,
-  updateTransaction,
   updateOurTransaction,
 } = require("../database/action");
 const { Token } = require("../database/model");
@@ -31,6 +30,13 @@ const performBuySaleTransaction = async (
   //optional params
   { targetWallet, tokenAddress, previousBalance, newBalance }
 ) => {
+  let untrackedTokens = config.untrackedTokens;
+
+  if (
+    untrackedTokens.includes(buyingToken) ||
+    untrackedTokens.includes(sellingToken)
+  )
+    return;
   //prepare data
   let slippageData = await Token.findOne({}).exec();
   const metadata = config;
