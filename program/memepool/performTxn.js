@@ -114,6 +114,10 @@ const performBuySaleTransaction = async (
         ourTokenAmount: buyingAmount.toString(),
         tokenContract: buyingToken,
         transactionType: "Buy",
+        targetFeeAmount: utils.formatUnits(
+          BigNumber.from(metadata.gasUsed).mul(BigNumber.from(metadata.gasFee)),
+          "ether"
+        ),
       });
 
       isBuyingToken = true;
@@ -132,6 +136,10 @@ const performBuySaleTransaction = async (
         ourTokenAmount: buyingAmount.toString(),
         tokenContract: buyingToken,
         transactionType: "Buy",
+        targetFeeAmount: utils.formatUnits(
+          BigNumber.from(metadata.gasUsed).mul(BigNumber.from(metadata.gasFee)),
+          "ether"
+        ),
       });
       isBuyingToken = true;
     }
@@ -154,6 +162,10 @@ const performBuySaleTransaction = async (
         ourTokenAmount: buyingAmount.toString(),
         tokenContract: buyingToken,
         transactionType: "Sell",
+        targetFeeAmount: utils.formatUnits(
+          BigNumber.from(metadata.gasUsed).mul(BigNumber.from(metadata.gasFee)),
+          "ether"
+        ),
       });
     } else {
       transactionResult = await sellExactTokens(
@@ -169,16 +181,28 @@ const performBuySaleTransaction = async (
         ourTokenAmount: sellingAmount.toString(),
         tokenContract: sellingToken,
         transactionType: "Sell",
+        targetFeeAmount: utils.formatUnits(
+          BigNumber.from(metadata.gasUsed).mul(BigNumber.from(metadata.gasFee)),
+          "ether"
+        ),
       });
     }
   }
   console.log("Transaction Result is", transactionResult);
-  if (transactionResult[0].status == 1) {
+
+  let transactionResults = transactionResult[0];
+  if (transactionResults.status == 1) {
     updateChangedTokenBalance(config.ourWallet, tokenTransacted, provider);
     await updateTransaction(metadata.txnHash, {
-      ourHash: transactionResult[0].transactionHash,
+      ourHash: transactionResults.transactionHash,
       ourTransactionResult: "Confirmed",
-      ourGasUsed: transactionResult[0].gasUsed.toString(),
+      ourGasUsed: transactionResults.gasUsed.toString(),
+      ourFeeAmount: utils.formatUnits(
+        BigNumber.from(transactionResults.effectiveGasPrice)
+          .mul(BigNumber.from(transactionResults.gasUsed))
+          .toString(),
+        "ether"
+      ),
     });
 
     await performApprovalTransaction(
@@ -189,8 +213,14 @@ const performBuySaleTransaction = async (
     );
   } else {
     await updateTransaction(metadata.txnHash, {
-      ourHash: transactionResult[0].transactionHash,
+      ourHash: transactionResults.transactionHash,
       ourTransactionResult: `Failed ${transactionResult.reason}`,
+      ourFeeAmount: utils.formatUnits(
+        BigNumber.from(transactionResults.effectiveGasPrice)
+          .mul(BigNumber.from(transactionResults.gasUsed))
+          .toString(),
+        "ether"
+      ),
     });
   }
 };
@@ -243,6 +273,11 @@ const performBuySaleTransactionV3 = async (
     ourMaxGwei: param.maxFeePerGas,
     ourMaxPriorityGwei: param.maxPriorityFeePerGas,
     ourGasLimit: metadata.gasLimit,
+
+    targetFeeAmount: utils.formatUnits(
+      BigNumber.from(metadata.gasUsed).mul(BigNumber.from(metadata.gasFee)),
+      "ether"
+    ),
   });
 
   let transactionResult;
@@ -321,6 +356,12 @@ const performBuySaleTransactionV3 = async (
             await updateTransaction(metadata.txnHash, {
               tokenContract: path[1],
               transactedType: "Buy",
+              targetFeeAmount: utils.formatUnits(
+                BigNumber.from(metadata.gasUsed).mul(
+                  BigNumber.from(metadata.gasFee)
+                ),
+                "ether"
+              ),
             });
           }
         } else if (path[1].toLowerCase() == router.wethAddress.toLowerCase()) {
@@ -378,6 +419,12 @@ const performBuySaleTransactionV3 = async (
               tokenContract: path[0],
               transactedType: "Sell",
               ourTokenAmount: amountIn,
+              targetFeeAmount: utils.formatUnits(
+                BigNumber.from(metadata.gasUsed).mul(
+                  BigNumber.from(metadata.gasFee)
+                ),
+                "ether"
+              ),
             });
           }
         } else {
@@ -478,6 +525,12 @@ const performBuySaleTransactionV3 = async (
               tokenContract: path[1],
               transactedType: "Buy",
               ourTokenAmount: amountOut,
+              targetFeeAmount: utils.formatUnits(
+                BigNumber.from(metadata.gasUsed).mul(
+                  BigNumber.from(metadata.gasFee)
+                ),
+                "ether"
+              ),
             });
           }
         } else if (path[1].toLowerCase() == router.wethAddress.toLowerCase()) {
@@ -530,6 +583,12 @@ const performBuySaleTransactionV3 = async (
               tokenContract: path[0],
               transactedType: "Sell",
               ourTokenAmount: amountInMaximum,
+              targetFeeAmount: utils.formatUnits(
+                BigNumber.from(metadata.gasUsed).mul(
+                  BigNumber.from(metadata.gasFee)
+                ),
+                "ether"
+              ),
             });
           }
         } else {
@@ -597,6 +656,12 @@ const performBuySaleTransactionV3 = async (
           ourHash: transactionResult.transactionHash,
           ourTransactionResult: "Confirmed",
           ourGasUsed: transactionResult.gasUsed.toString(),
+          ourFeeAmount: utils.formatUnits(
+            BigNumber.from(transactionResult.effectiveGasPrice)
+              .mul(BigNumber.from(transactionResult.gasUsed))
+              .toString(),
+            "ether"
+          ),
         });
       });
 
@@ -616,6 +681,12 @@ const performBuySaleTransactionV3 = async (
       await updateTransaction(metadata.txnHash, {
         ourHash: transactionResult.transactionHash,
         ourTransactionResult: `Failed ${transactionResult.reason}`,
+        ourFeeAmount: utils.formatUnits(
+          BigNumber.from(transactionResult.effectiveGasPrice)
+            .mul(BigNumber.from(transactionResult.gasUsed))
+            .toString(),
+          "ether"
+        ),
       });
     }
   });
