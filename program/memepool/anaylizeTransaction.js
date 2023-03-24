@@ -129,39 +129,47 @@ const analyzeV2Transaction = async (
         if (isConfirmed) {
           if (path[0] == wethAddress) {
             //buy other token
-            await updateChangedTokenBalance(metadata.from, path[0], provider);
+            await updateChangedTokenBalance(
+              metadata.from,
+              path[path.length - 1],
+              provider
+            );
           } else {
-            if (isConfirmed) {
-              await updateChangedTokenBalance(metadata.from, path[0], provider);
-              await updateChangedTokenBalance(
-                metadata.from,
-                path[path.length - 1],
-                provider
-              );
-            }
+            await updateChangedTokenBalance(metadata.from, path[0], provider);
+            await updateChangedTokenBalance(
+              metadata.from,
+              path[path.length - 1],
+              provider
+            );
           }
         } else {
-          [amountIn, amountOutMin] = calculateIOAmount(
-            amountIn,
-            amountOutMin,
-            BigNumber.from(utils.parseEther(currentConfiguration.maximumWeth)),
-            BigNumber.from(utils.parseEther(currentConfiguration.minimumWeth)),
-            BigNumber.from(currentConfiguration.amountPercentage)
-          );
+          if (path[0] == wethAddress) {
+            [amountIn, amountOutMin] = calculateIOAmount(
+              amountIn,
+              amountOutMin,
+              BigNumber.from(
+                utils.parseEther(currentConfiguration.maximumWeth)
+              ),
+              BigNumber.from(
+                utils.parseEther(currentConfiguration.minimumWeth)
+              ),
+              BigNumber.from(currentConfiguration.amountPercentage)
+            );
 
-          await performBuySaleTransaction(
-            provider,
-            currentRouter,
-            path[0],
-            path[path.length - 1],
-            amountIn,
-            amountOutMin,
-            isBuy,
-            true,
-            currentConfiguration,
-            params,
-            metadata
-          );
+            await performBuySaleTransaction(
+              provider,
+              currentRouter,
+              path[0],
+              path[path.length - 1],
+              amountIn,
+              amountOutMin,
+              isBuy,
+              true,
+              currentConfiguration,
+              params,
+              metadata
+            );
+          }
         }
       }
 
@@ -340,16 +348,18 @@ const analyzeV2Transaction = async (
       if (isConfirmed) {
         await updateChangedTokenBalance(metadata.from, path[0], provider);
       } else {
+        console.log("calculated", "amount In", amountIn.toString());
+        console.log("our balance 0", ourBalance0.toString());
         [amountIn, ratio] = calculateSellAmount(
           walletBalance0,
           amountIn,
           ourBalance0
         );
 
-        console.log("calculated", "amount In", amountIn.toString());
-        console.log("our balance 0", ourBalance0.toString());
+        if (amountIn.toString() == "0") return;
+
         console.log(
-          "our amountout ",
+          "our amount out ",
           BigNumber.from(amountOutMin).div(ratio).mul(precision).toString()
         );
 

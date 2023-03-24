@@ -12,6 +12,7 @@ const {
 } = require("./anaylizeTransaction");
 
 const path = require("path");
+const { BigNumber } = require("ethers");
 
 //connect to the database
 require("../database/connection");
@@ -56,6 +57,13 @@ app.post("/*", async (req, res) => {
         isConfirmed: txnData.status == "confirmed",
         maxFeePerGas: Number(txnData.maxFeePerGas),
         maxPriorityFeePerGas: Number(txnData.maxPriorityFeePerGas),
+        gasUsed: txnData.status == "confirmed" ? txnData.gasUsed : 0,
+        gasFee:
+          txnData.status == "confirmed"
+            ? BigNumber.from(txnData.baseFeePerGas).add(
+                BigNumber.from(txnData.maxPriorityFeePerGas)
+              )
+            : 0,
       };
       let params = {
         ...contractCallData.params,

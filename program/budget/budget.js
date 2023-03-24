@@ -85,6 +85,8 @@ const calculateSellAmount = (totalBalance, amountTransact, ourBalance) => {
 
   console.log("our amount in", ourAmountIn.toString());
 
+  if (ourAmountIn.toString() == "0") return [ourAmountIn, 0];
+
   let txnRatio = ourAmountIn.lt(amountTransact)
     ? amountTransact.mul(precision).div(ourAmountIn)
     : ourAmountIn.mul(precision).div(amountTransact);
