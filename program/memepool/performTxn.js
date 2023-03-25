@@ -3,30 +3,30 @@
 //add in the database
 //update database with the amount of token bought sold
 
-const { BigNumber, ethers, utils } = require("ethers");
+const { BigNumber, ethers, utils } = require('ethers');
 const {
   sellExactTokens,
   buyExactTokens,
   buyWithExactTokens,
   sellForExactTokens,
-} = require("../contracts/poolAction");
+} = require('../contracts/poolAction');
 const {
   updateTokenBalance,
   updateChangedTokenBalance,
   getAllWalletBalance,
   updateTransaction,
-} = require("../database/action");
-const { TokenBundle } = require("../database/model");
+} = require('../database/action');
+const { TokenBundle } = require('../database/model');
 const {
   createSellExactTokens,
   createBuyWithExactTokens,
   createBuyExactTokens,
   executeTransactions,
   createSellForExactTokens,
-} = require("../contracts/v3poolAction");
-const { calculateIOAmount, calculateSellAmount } = require("../budget/budget");
-const { performApprovalTransaction } = require("../monitor/performTxn");
-const { precision, getCurrentNonce } = require("../utils/utils");
+} = require('../contracts/v3poolAction');
+const { calculateIOAmount, calculateSellAmount } = require('../budget/budget');
+const { performApprovalTransaction } = require('../monitor/performTxn');
+const { precision, getCurrentNonce } = require('../utils/utils');
 
 const performBuySaleTransaction = async (
   provider,
@@ -54,8 +54,8 @@ const performBuySaleTransaction = async (
   if (metadata.maxFeePerGas == 0) {
     let feeData = await provider.getFeeData();
     param = {
-      maxFeePerGas: feeData["maxFeePerGas"],
-      gasLimit: "331109",
+      maxFeePerGas: feeData['maxFeePerGas'],
+      gasLimit: '331109',
       nonce: nonce,
     };
   } else {
@@ -78,9 +78,9 @@ const performBuySaleTransaction = async (
     param.maxFeePerGas = config.maximumFeePerGas;
     param.maxPriorityFeePerGas = config.maximumFeePerGas;
   }
-  console.log("Fee Param", param);
-  console.log("Performing BuySale Transactions with Arg", arguments);
-  console.log("Performing BuySale Transactions with Metadata", metadata);
+  console.log('Fee Param', param);
+  console.log('Performing BuySale Transactions with Arg', arguments);
+  console.log('Performing BuySale Transactions with Metadata', metadata);
 
   let isBuyingToken = false;
 
@@ -113,10 +113,10 @@ const performBuySaleTransaction = async (
       await updateTransaction(metadata.txnHash, {
         ourTokenAmount: buyingAmount.toString(),
         tokenContract: buyingToken,
-        transactionType: "Buy",
+        transactionType: 'Buy',
         targetFeeAmount: utils.formatUnits(
           BigNumber.from(metadata.gasUsed).mul(BigNumber.from(metadata.gasFee)),
-          "ether"
+          'ether'
         ),
       });
 
@@ -135,10 +135,10 @@ const performBuySaleTransaction = async (
       await updateTransaction(metadata.txnHash, {
         ourTokenAmount: buyingAmount.toString(),
         tokenContract: buyingToken,
-        transactionType: "Buy",
+        transactionType: 'Buy',
         targetFeeAmount: utils.formatUnits(
           BigNumber.from(metadata.gasUsed).mul(BigNumber.from(metadata.gasFee)),
-          "ether"
+          'ether'
         ),
       });
       isBuyingToken = true;
@@ -161,10 +161,10 @@ const performBuySaleTransaction = async (
       await updateTransaction(metadata.txnHash, {
         ourTokenAmount: buyingAmount.toString(),
         tokenContract: buyingToken,
-        transactionType: "Sell",
+        transactionType: 'Sell',
         targetFeeAmount: utils.formatUnits(
           BigNumber.from(metadata.gasUsed).mul(BigNumber.from(metadata.gasFee)),
-          "ether"
+          'ether'
         ),
       });
     } else {
@@ -180,28 +180,36 @@ const performBuySaleTransaction = async (
       await updateTransaction(metadata.txnHash, {
         ourTokenAmount: sellingAmount.toString(),
         tokenContract: sellingToken,
-        transactionType: "Sell",
+        transactionType: 'Sell',
         targetFeeAmount: utils.formatUnits(
           BigNumber.from(metadata.gasUsed).mul(BigNumber.from(metadata.gasFee)),
-          "ether"
+          'ether'
         ),
       });
     }
   }
-  console.log("Transaction Result is", transactionResult);
+  console.log('Transaction Result is', transactionResult);
 
   let transactionResults = transactionResult[0];
   if (transactionResults.status == 1) {
     updateChangedTokenBalance(config.ourWallet, tokenTransacted, provider);
     await updateTransaction(metadata.txnHash, {
       ourHash: transactionResults.transactionHash,
-      ourTransactionResult: "Confirmed",
+      ourTransactionResult: 'Confirmed',
       ourGasUsed: transactionResults.gasUsed.toString(),
       ourFeeAmount: utils.formatUnits(
-        BigNumber.from(transactionResults.effectiveGasPrice)
-          .mul(BigNumber.from(transactionResults.gasUsed))
+        BigNumber.from(
+          transactionResults.effectiveGasPrice
+            ? transactionResults.effectiveGasPrice
+            : 0
+        )
+          .mul(
+            BigNumber.from(
+              transactionResults.gasUsed ? transactionResults.gasUsed : 0
+            )
+          )
           .toString(),
-        "ether"
+        'ether'
       ),
     });
 
@@ -216,10 +224,18 @@ const performBuySaleTransaction = async (
       ourHash: transactionResults.transactionHash,
       ourTransactionResult: `Failed ${transactionResult.reason}`,
       ourFeeAmount: utils.formatUnits(
-        BigNumber.from(transactionResults.effectiveGasPrice)
-          .mul(BigNumber.from(transactionResults.gasUsed))
+        BigNumber.from(
+          transactionResults.effectiveGasPrice
+            ? transactionResults.effectiveGasPrice
+            : 0
+        )
+          .mul(
+            BigNumber.from(
+              transactionResults.gasUsed ? transactionResults.gasUsed : 0
+            )
+          )
           .toString(),
-        "ether"
+        'ether'
       ),
     });
   }
@@ -241,8 +257,8 @@ const performBuySaleTransactionV3 = async (
   if (metadata.maxFeePerGas == 0) {
     let feeData = await provider.getFeeData();
     param = {
-      maxFeePerGas: feeData["maxFeePerGas"],
-      gasLimit: "428356",
+      maxFeePerGas: feeData['maxFeePerGas'],
+      gasLimit: '428356',
       nonce: nonce,
     };
   } else {
@@ -266,7 +282,7 @@ const performBuySaleTransactionV3 = async (
     param.maxPriorityFeePerGas = config.maximumFeePerGas;
   }
 
-  console.log("param: " + param);
+  console.log('param: ' + param);
 
   await updateTransaction(metadata.txnHash, {
     ourTimeStamp: new Date(),
@@ -276,7 +292,7 @@ const performBuySaleTransactionV3 = async (
 
     targetFeeAmount: utils.formatUnits(
       BigNumber.from(metadata.gasUsed).mul(BigNumber.from(metadata.gasFee)),
-      "ether"
+      'ether'
     ),
   });
 
@@ -287,12 +303,12 @@ const performBuySaleTransactionV3 = async (
   let tokensTransacted = [];
   let transactedType = [];
 
-  console.log("in perform transaction subcalls ->", subCalls);
-  console.log("in perform transaction confirmed ->", isConfirmed);
+  console.log('in perform transaction subcalls ->', subCalls);
+  console.log('in perform transaction confirmed ->', isConfirmed);
   await subCalls.forEach(async (call) => {
-    console.log("in perform transaction ->", call);
+    console.log('in perform transaction ->', call);
     const callData = call.data;
-    console.log("call data ->", callData);
+    console.log('call data ->', callData);
     let amountOutMin;
     let amountIn;
     let amountOut;
@@ -302,14 +318,14 @@ const performBuySaleTransactionV3 = async (
     let fee;
     let sqrtPriceLimit;
 
-    console.log("method", callData.methodName);
-    console.log("router", router);
-    console.log("router weth", router.wethAddress);
-    console.log("isConfirmed ?", isConfirmed);
+    console.log('method', callData.methodName);
+    console.log('router', router);
+    console.log('router weth', router.wethAddress);
+    console.log('isConfirmed ?', isConfirmed);
     let encodedDatas;
 
     switch (callData.methodName) {
-      case "exactInputSingle":
+      case 'exactInputSingle':
         path[0] = callData.params.params.tokenIn;
         path[1] = callData.params.params.tokenOut;
         fee = callData.params.params.fee || 3000;
@@ -317,12 +333,12 @@ const performBuySaleTransactionV3 = async (
         amountOutMinimum = callData.params.params.amountOutMinimum;
         sqrtPriceLimit = callData.params.params.sqrtPriceLimitX96 || 0;
 
-        console.log("exactInputSingle 1", callData);
-        console.log("path[0]=>", path[0]);
-        console.log("router weth address", router.wethAddress);
+        console.log('exactInputSingle 1', callData);
+        console.log('path[0]=>', path[0]);
+        console.log('router weth address', router.wethAddress);
 
         if (path[0].toLowerCase() == router.wethAddress.toLowerCase()) {
-          console.log("exactInputSingle 2");
+          console.log('exactInputSingle 2');
           //buy token
 
           if (isConfirmed) {
@@ -347,7 +363,7 @@ const performBuySaleTransactionV3 = async (
               sqrtPriceLimit
             );
 
-            console.log("received encoded datas is", encodedDatas);
+            console.log('received encoded datas is', encodedDatas);
             tokensTransacted.push(path[1]);
             amountsTransacted.push(amountOutMinimum);
 
@@ -355,17 +371,17 @@ const performBuySaleTransactionV3 = async (
 
             await updateTransaction(metadata.txnHash, {
               tokenContract: path[1],
-              transactedType: "Buy",
+              transactedType: 'Buy',
               targetFeeAmount: utils.formatUnits(
                 BigNumber.from(metadata.gasUsed).mul(
                   BigNumber.from(metadata.gasFee)
                 ),
-                "ether"
+                'ether'
               ),
             });
           }
         } else if (path[1].toLowerCase() == router.wethAddress.toLowerCase()) {
-          console.log("exactInputSingle 3");
+          console.log('exactInputSingle 3');
 
           //sell token
           if (isConfirmed) {
@@ -382,7 +398,7 @@ const performBuySaleTransactionV3 = async (
             }).exec();
 
             console.log(
-              "hello calculate sell",
+              'hello calculate sell',
               wallet0Balance.toString(),
               amountIn.toString(),
               ourBalance0 ? ourBalance0.balance : BigNumber.from(0)
@@ -414,21 +430,21 @@ const performBuySaleTransactionV3 = async (
             amountsTransacted.push(amountIn);
             transactedType.push(false);
 
-            console.log("encoded datas sell", encodedDatas);
+            console.log('encoded datas sell', encodedDatas);
             await updateTransaction(metadata.txnHash, {
               tokenContract: path[0],
-              transactedType: "Sell",
+              transactedType: 'Sell',
               ourTokenAmount: amountIn,
               targetFeeAmount: utils.formatUnits(
                 BigNumber.from(metadata.gasUsed).mul(
                   BigNumber.from(metadata.gasFee)
                 ),
-                "ether"
+                'ether'
               ),
             });
           }
         } else {
-          console.log("exactInputSingle 4");
+          console.log('exactInputSingle 4');
 
           //sell token
           // const wallet0Balance = await getAllWalletBalance(
@@ -475,7 +491,7 @@ const performBuySaleTransactionV3 = async (
           // console.log("encoded datas simple buy", encodedDatas);
         }
         break;
-      case "exactOutputSingle":
+      case 'exactOutputSingle':
         path[0] = callData.params.params.tokenIn;
         path[1] = callData.params.params.tokenOut;
         fee = callData.params.params.fee || 3000;
@@ -483,9 +499,9 @@ const performBuySaleTransactionV3 = async (
         amountInMaximum = callData.params.params.amountInMaximum;
         sqrtPriceLimit = callData.params.params.sqrtPriceLimitX96 || 0;
 
-        console.log("exactOutputSingle 1", callData);
+        console.log('exactOutputSingle 1', callData);
         if (path[0].toLowerCase() == router.wethAddress.toLowerCase()) {
-          console.log("exactOutputSingle 2");
+          console.log('exactOutputSingle 2');
           //buy token
 
           if (isConfirmed) {
@@ -513,7 +529,7 @@ const performBuySaleTransactionV3 = async (
             );
 
             console.log(
-              "received exactOutputSingle encoded datas is",
+              'received exactOutputSingle encoded datas is',
               encodedDatas
             );
             tokensTransacted.push(path[1]);
@@ -523,18 +539,18 @@ const performBuySaleTransactionV3 = async (
 
             await updateTransaction(metadata.txnHash, {
               tokenContract: path[1],
-              transactedType: "Buy",
+              transactedType: 'Buy',
               ourTokenAmount: amountOut,
               targetFeeAmount: utils.formatUnits(
                 BigNumber.from(metadata.gasUsed).mul(
                   BigNumber.from(metadata.gasFee)
                 ),
-                "ether"
+                'ether'
               ),
             });
           }
         } else if (path[1].toLowerCase() == router.wethAddress.toLowerCase()) {
-          console.log("exactInputSingle 3");
+          console.log('exactInputSingle 3');
 
           //sell token
           if (isConfirmed) {
@@ -560,8 +576,8 @@ const performBuySaleTransactionV3 = async (
               .div(ratio)
               .mul(precision);
 
-            console.log("amountInMaximum: " + amountInMaximum.toString());
-            console.log("amountOut: " + amountOut.toString());
+            console.log('amountInMaximum: ' + amountInMaximum.toString());
+            console.log('amountOut: ' + amountOut.toString());
 
             encodedDatas = await createSellExactTokens(
               routerContract,
@@ -577,17 +593,17 @@ const performBuySaleTransactionV3 = async (
             amountsTransacted.push(amountOut);
             transactedType.push(false);
 
-            console.log("encoded datas sell", encodedDatas);
+            console.log('encoded datas sell', encodedDatas);
 
             await updateTransaction(metadata.txnHash, {
               tokenContract: path[0],
-              transactedType: "Sell",
+              transactedType: 'Sell',
               ourTokenAmount: amountInMaximum,
               targetFeeAmount: utils.formatUnits(
                 BigNumber.from(metadata.gasUsed).mul(
                   BigNumber.from(metadata.gasFee)
                 ),
-                "ether"
+                'ether'
               ),
             });
           }
@@ -629,10 +645,10 @@ const performBuySaleTransactionV3 = async (
     }
 
     if (isConfirmed) return;
-    console.log("txn not confirmed", encodedDatas);
+    console.log('txn not confirmed', encodedDatas);
 
     if (encodedDatas == undefined) return;
-    console.log("txn data encoded is", encodedDatas);
+    console.log('txn data encoded is', encodedDatas);
 
     // transactionResult = encodedDatas;
     transactionResult = await executeTransactions(
@@ -641,7 +657,7 @@ const performBuySaleTransactionV3 = async (
       param
     );
 
-    console.log("txn Result is", transactionResult);
+    console.log('txn Result is', transactionResult);
 
     if (transactionResult.status == 1) {
       amountsTransacted.forEach(async (amountTransacted, index) => {
@@ -654,13 +670,13 @@ const performBuySaleTransactionV3 = async (
         );
         await updateTransaction(metadata.txnHash, {
           ourHash: transactionResult.transactionHash,
-          ourTransactionResult: "Confirmed",
+          ourTransactionResult: 'Confirmed',
           ourGasUsed: transactionResult.gasUsed.toString(),
           ourFeeAmount: utils.formatUnits(
             BigNumber.from(transactionResult.effectiveGasPrice)
               .mul(BigNumber.from(transactionResult.gasUsed))
               .toString(),
-            "ether"
+            'ether'
           ),
         });
       });
@@ -685,7 +701,7 @@ const performBuySaleTransactionV3 = async (
           BigNumber.from(transactionResult.effectiveGasPrice)
             .mul(BigNumber.from(transactionResult.gasUsed))
             .toString(),
-          "ether"
+          'ether'
         ),
       });
     }
