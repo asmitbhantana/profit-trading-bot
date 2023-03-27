@@ -98,7 +98,7 @@ const createBuyWithExactTokens = async (
   amountOutMinimum,
   sqrtPriceLimitX96
 ) => {
-  const deadline = Math.ceil(Date.now() / 1000) + 100000;
+  const deadline = Math.ceil(Date.now() / 1000) + 120;
   const params1 = {
     tokenIn: path[0],
     tokenOut: path[1],
@@ -125,7 +125,7 @@ const createBuyWithExactTokens = async (
 
 //execute transaction
 const executeTransactions = async (routerContract, encodedDatas, params) => {
-  const deadline = BigNumber.from(Math.ceil(Date.now() / 1000) + 60 * 10);
+  const deadline = BigNumber.from(Math.ceil(Date.now() / 1000) + 120);
 
   console.log("encoded data", encodedDatas);
   console.log("router contract adddress", encodedDatas);
