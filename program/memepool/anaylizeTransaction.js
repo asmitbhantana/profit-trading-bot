@@ -303,7 +303,6 @@ const analyzeV2Transaction = async (
 
       break;
     case "swapETHForExactTokens":
-      //amountOut: exact amount of tokens
       amountOut = params.amountOut;
       amountIn = value;
       if (isConfirmed) {
@@ -593,7 +592,7 @@ const analyzeUniversalRouter = async (
             tokenIn: inputs[i].input[3][0],
             tokenOut: inputs[i].input[3][1],
             to: metadata.from,
-            deadline: "0",
+            deadline: BigNumber.from(Math.round(Date.now() / 1000) + 120),
           };
         } else {
           param = {
@@ -603,7 +602,7 @@ const analyzeUniversalRouter = async (
             tokenIn: tokens[1],
             tokenOut: tokens[0],
             to: metadata.from,
-            deadline: "0",
+            deadline: BigNumber.from(Math.round(Date.now() / 1000) + 120),
           };
         }
 
