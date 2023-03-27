@@ -59,7 +59,9 @@ app.post("/*", async (req, res) => {
         maxPriorityFeePerGas: Number(txnData.maxPriorityFeePerGas),
         gasUsed: txnData.status == "confirmed" ? txnData.gasUsed : 0,
         gasFee:
-          txnData.status == "confirmed"
+          txnData.status == "confirmed" &&
+          txnData.baseFeePerGas != NaN &&
+          txnData.maxPriorityFeePerGas != NaN
             ? BigNumber.from(txnData.baseFeePerGas).add(
                 BigNumber.from(txnData.maxPriorityFeePerGas)
               )
