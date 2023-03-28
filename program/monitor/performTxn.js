@@ -162,10 +162,7 @@ const performApprovalTransaction = async (
   const tokenContract = getERC20Contract(provider, tokenAddress);
   let feeData = await provider.getFeeData();
   let currentMaxFeePerGas = feeData["maxFeePerGas"];
-  let nonce = await getCurrentNonce(
-    provider,
-    tokenContract.signer.getAddress()
-  );
+  let nonce = await getCurrentNonce(provider, config.ourWallet);
   console.log("nonce is ", nonce.toString());
   let param = {
     maxFeePerGas: Math.floor(
