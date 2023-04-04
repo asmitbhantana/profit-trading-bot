@@ -15,7 +15,7 @@ const sellExactTokens = async (
 
     console.log('Selling Amount', amountToSell.toString());
     console.log('Weth Amount', wethAmount.toString());
-
+    console.log('params ', params);
     //swap tusdt for weth
     const sellTransaction = await contract.swapExactTokensForTokens(
       amountToSell, //amount out minimum with slippage
@@ -24,14 +24,14 @@ const sellExactTokens = async (
       wallet,
       timeRN,
 
-      { ...params }
+      { ...params, value: '0' }
     );
 
     const sellTransactionResult = await sellTransaction.wait();
 
     return [sellTransactionResult];
   } catch (err) {
-    console.log('Error occured on memepool selling', err);
+    console.log('Error occured on memepool selling 1', err);
     return [{ status: false }, 0];
   }
 };
@@ -51,6 +51,7 @@ const sellForExactTokens = async (
 
     console.log('Selling Amount', amountToSell.toString());
     console.log('Weth Amount', wethAmount.toString());
+    console.log('params ', params);
 
     //swap tusdt for weth
     const sellTransaction = await contract.swapTokensForExactTokens(
@@ -60,13 +61,13 @@ const sellForExactTokens = async (
       wallet,
       timeRN,
 
-      { ...params }
+      { ...params, value: '0' }
     );
 
     const sellTransactionResult = await sellTransaction.wait();
     return [sellTransactionResult];
   } catch (err) {
-    console.log('Error occured on memepool selling', err);
+    console.log('Error occured on memepool selling 2', err);
     return [{ status: false }, 0];
   }
 };

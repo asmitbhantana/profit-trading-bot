@@ -58,7 +58,9 @@ const performBuySaleTransaction = async (
   ) {
     let feeData = await provider.getFeeData();
     param = {
-      maxFeePerGas: await feeData['maxFeePerGas'],
+      maxFeePerGas: Math.floor(
+        (Number(feeData['maxFeePerGas']) * Number(feeData['maxFeePerGas'])) /
+          100),
       gasLimit: '615369',
       nonce: nonce,
     };
