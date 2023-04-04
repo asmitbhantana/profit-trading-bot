@@ -15,11 +15,9 @@ const performSellTransaction = async (
   params,
   slippageData
 ) => {
-<<<<<<< Updated upstream
-  const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 120);
-=======
+
   const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 60 * 3);
->>>>>>> Stashed changes
+
 
   try {
     //Perform Swap Exact Tokens for Tokens
@@ -96,11 +94,9 @@ const performBuyTransaction = async (
   //we need to swap token for exact number of other tokens
   //amount out is fix
 
-<<<<<<< Updated upstream
-  const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 120);
-=======
+
   const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 60 * 3);
->>>>>>> Stashed changes
+
   let amountOut = amountIn;
 
   try {
