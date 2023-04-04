@@ -1,4 +1,4 @@
-const { BigNumber } = require("ethers");
+const { BigNumber } = require('ethers');
 
 //normal or for selling tokens
 const sellExactTokens = async (
@@ -11,10 +11,10 @@ const sellExactTokens = async (
   params
 ) => {
   try {
-    const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 100000000);
+    const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 60 * 3);
 
-    console.log("Selling Amount", amountToSell.toString());
-    console.log("Weth Amount", wethAmount.toString());
+    console.log('Selling Amount', amountToSell.toString());
+    console.log('Weth Amount', wethAmount.toString());
 
     //swap tusdt for weth
     const sellTransaction = await contract.swapExactTokensForTokens(
@@ -31,7 +31,7 @@ const sellExactTokens = async (
 
     return [sellTransactionResult];
   } catch (err) {
-    console.log("Error occured on memepool selling", err);
+    console.log('Error occured on memepool selling', err);
     return [{ status: false }, 0];
   }
 };
@@ -47,10 +47,10 @@ const sellForExactTokens = async (
   params
 ) => {
   try {
-    const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 100000000);
+    const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 60 * 3);
 
-    console.log("Selling Amount", amountToSell.toString());
-    console.log("Weth Amount", wethAmount.toString());
+    console.log('Selling Amount', amountToSell.toString());
+    console.log('Weth Amount', wethAmount.toString());
 
     //swap tusdt for weth
     const sellTransaction = await contract.swapTokensForExactTokens(
@@ -66,7 +66,7 @@ const sellForExactTokens = async (
     const sellTransactionResult = await sellTransaction.wait();
     return [sellTransactionResult];
   } catch (err) {
-    console.log("Error occured on memepool selling", err);
+    console.log('Error occured on memepool selling', err);
     return [{ status: false }, 0];
   }
 };
@@ -82,10 +82,10 @@ const buyExactTokens = async (
   params
 ) => {
   try {
-    const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 100000000);
+    const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 60 * 3);
 
-    console.log("Buying Amount", amountToBuy.toString());
-    console.log("Weth Amount", wethAmount.toString());
+    console.log('Buying Amount', amountToBuy.toString());
+    console.log('Weth Amount', wethAmount.toString());
     const buyTransaction = await contract.swapTokensForExactTokens(
       amountToBuy, // amount you want to buy
       wethAmount, //max weth you can spend
@@ -99,7 +99,7 @@ const buyExactTokens = async (
     const buyTransactionResult = await buyTransaction.wait();
     return [buyTransactionResult];
   } catch (err) {
-    console.log("Error occur on memepool buying", err);
+    console.log('Error occur on memepool buying', err);
 
     return [{ status: 0 }];
   }
@@ -116,12 +116,12 @@ const buyWithExactTokens = async (
   params
 ) => {
   try {
-    const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 100000000);
+    const timeRN = BigNumber.from(Math.round(Date.now() / 1000) + 60 * 3);
 
-    console.log("Buying Amount", amountToBuy.toString());
-    console.log("Weth Amount", wethAmount.toString());
-    console.log("selling token", sellingToken);
-    console.log("buying token", buyingToken);
+    console.log('Buying Amount', amountToBuy.toString());
+    console.log('Weth Amount', wethAmount.toString());
+    console.log('selling token', sellingToken);
+    console.log('buying token', buyingToken);
     const buyTransaction = await contract.swapExactTokensForTokens(
       amountToBuy, // amount you want to buy
       wethAmount, //max weth you can spend
@@ -136,7 +136,7 @@ const buyWithExactTokens = async (
 
     return [buyTransactionResult];
   } catch (err) {
-    console.log("Error occur on memepool buying", err);
+    console.log('Error occur on memepool buying', err);
 
     return [{ status: 0 }];
   }
