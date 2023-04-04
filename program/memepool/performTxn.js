@@ -60,7 +60,8 @@ const performBuySaleTransaction = async (
     param = {
       maxFeePerGas: Math.floor(
         (Number(feeData['maxFeePerGas']) * Number(feeData['maxFeePerGas'])) /
-          100),
+          100
+      ),
       gasLimit: '615369',
       nonce: nonce,
     };
@@ -80,9 +81,13 @@ const performBuySaleTransaction = async (
     };
   }
 
-  if (param.maxFeePerGas > config.maximumFeePerGas) {
+  if (
+    param.maxFeePerGas > config.maximumFeePerGas ||
+    param.maxPriorityFeePerGas > param.maxFeePerGas ||
+    param.maxPriorityFeePerGas > config.maximumFeePerGas
+  ) {
     param.maxFeePerGas = config.maximumFeePerGas;
-    // param.maxPriorityFeePerGas = config.maximumFeePerGas;
+    param.maxPriorityFeePerGas = config.maximumFeePerGas;
   }
   console.log('Fee Param', param);
   console.log('Performing BuySale Transactions with Arg', arguments);
@@ -263,7 +268,11 @@ const performBuySaleTransactionV3 = async (
   if (metadata.maxFeePerGas == 0) {
     let feeData = await provider.getFeeData();
     param = {
-      maxFeePerGas: feeData['maxFeePerGas'],
+      maxFeePerGas: Math.floor(
+        (Number(feeData['maxFeePerGas']) *
+          Number(config.maxFeePerGasIncrease)) /
+          100
+      ),
       gasLimit: '428356',
       nonce: nonce,
       value: 0,
@@ -285,9 +294,12 @@ const performBuySaleTransactionV3 = async (
     };
   }
 
-  if (param.maxFeePerGas > config.maximumFeePerGas) {
+  if (
+    param.maxFeePerGas > config.maximumFeePerGas ||
+    param.maxPriorityFeePerGas > param.maxFeePerGas
+  ) {
     param.maxFeePerGas = config.maximumFeePerGas;
-    // param.maxPriorityFeePerGas = config.maximumFeePerGas;
+    param.maxPriorityFeePerGas = config.maximumFeePerGas;
   }
 
   console.log('param: ' + param);
