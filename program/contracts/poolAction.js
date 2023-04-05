@@ -24,7 +24,7 @@ const sellExactTokens = async (
       wallet,
       timeRN,
 
-      { ...params, value: '0' }
+      { ...params}
     );
 
     const sellTransactionResult = await sellTransaction.wait();

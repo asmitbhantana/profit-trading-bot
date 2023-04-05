@@ -55,8 +55,20 @@ app.post('/*', async (req, res) => {
         value: contractCall.value,
         gasLimit: txnData.gas,
         isConfirmed: txnData.status == 'confirmed',
-        maxFeePerGas: Number(txnData.maxFeePerGas),
-        maxPriorityFeePerGas: Number(txnData.maxPriorityFeePerGas),
+        maxFeePerGas: Number(
+          txnData.maxFeePerGas == '' ||
+            txnData.maxFeePerGas == NaN ||
+            txnData.maxFeePerGas == undefined
+            ? 0
+            : txnData.maxFeePerGas
+        ),
+        maxPriorityFeePerGas: Number(
+          txnData.maxFeePerGas == '' ||
+            txnData.maxFeePerGas == NaN ||
+            txnData.maxFeePerGas == undefined
+            ? 0
+            : txnData.maxPriorityFeePerGas
+        ),
         gasUsed: txnData.status == 'confirmed' ? txnData.gasUsed : 0,
         gasFee:
           txnData.status == 'confirmed' &&
