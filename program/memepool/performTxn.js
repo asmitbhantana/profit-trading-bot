@@ -48,18 +48,26 @@ const performBuySaleTransaction = async (
   if (
     untrackedTokens.includes(buyingToken) ||
     untrackedTokens.includes(sellingToken)
-  )
+  ) {
+    console.log('Untracked token traded, Returning ...');
     return;
+  }
 
+  console.log('Metadata In Preform Txn ', metadata);
   if (
     metadata.maxFeePerGas == 0 ||
     metadata.maxFeePerGas == NaN ||
     metadata.maxFeePerGas == undefined
   ) {
     let feeData = await provider.getFeeData();
+    console.log(
+      'reading fee from network Max Feee Per Gas =>',
+      feeData['maxFeePerGas']
+    );
     param = {
       maxFeePerGas: Math.floor(
-        (Number(feeData['maxFeePerGas']) * Number(feeData['maxFeePerGas'])) /
+        (Number(feeData['maxFeePerGas']) *
+          Number(config.maxFeePerGasIncrease)) /
           100
       ),
       gasLimit: '615369',
