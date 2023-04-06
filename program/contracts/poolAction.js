@@ -17,15 +17,16 @@ const sellExactTokens = async (
     console.log('Weth Amount', wethAmount.toString());
     console.log('params ', params);
     //swap tusdt for weth
-    const sellTransaction = await contract.swapExactTokensForTokens(
-      amountToSell, //amount out minimum with slippage
-      wethAmount, //amount of weth you want
-      [sellingToken, buyingToken],
-      wallet,
-      timeRN,
+    const sellTransaction =
+      await contract.swapExactTokensForETHSupportingFeeOnTransferTokens(
+        amountToSell, //amount out minimum with slippage
+        wethAmount, //amount of weth you want
+        [sellingToken, buyingToken],
+        wallet,
+        timeRN,
 
-      { ...params}
-    );
+        { ...params, value: BigNumber.from('0') }
+      );
 
     const sellTransactionResult = await sellTransaction.wait();
 
