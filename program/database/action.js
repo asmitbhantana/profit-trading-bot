@@ -234,6 +234,10 @@ const createNewTransaction = async (targetTxnHash, data) => {
   return doneTransaction;
 };
 
+const checkForPrevTransaction = async (targetTxnHash) => {
+  let tcn = new TransactionDone({});
+};
+
 const updateTransaction = async (targetTxnHash, updatedData) => {
   let currentTransaction = TransactionDone.findOneAndUpdate(
     { targetHash: targetTxnHash },
