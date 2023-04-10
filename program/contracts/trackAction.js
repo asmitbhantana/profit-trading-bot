@@ -1,7 +1,7 @@
-const { BigNumber, utils } = require('ethers');
-const { calculateBudget, calculateProportions } = require('../budget/budget');
-const { Configuration } = require('../database/model');
-const { precision } = require('../utils/utils');
+const { BigNumber, utils } = require("ethers");
+const { calculateBudget, calculateProportions } = require("../budget/budget");
+const { Configuration } = require("../database/model");
+const { precision } = require("../utils/utils");
 
 //it performs the selling of our tokens
 const performSellTransaction = async (
@@ -27,7 +27,7 @@ const performSellTransaction = async (
         uint deadline
      */
 
-    let roundingAmount = BigNumber.from('1000');
+    let roundingAmount = BigNumber.from("1000");
     let slippagePercentage = BigNumber.from(slippageData.slippagePercentage);
     let feePercentage = BigNumber.from(slippageData.feePercentage);
 
@@ -53,26 +53,27 @@ const performSellTransaction = async (
         [sellingToken, buyingToken],
         to,
         {
-          value: BigNumber.from('0'),
+          value: BigNumber.from("0"),
           ...params,
         }
       );
     else
-      sellTransaction = await contract.swapExactTokensForTokens(
-        amountIn,
-        amountAfterSlippage,
-        [sellingToken, buyingToken],
-        to,
-        timeRN,
-        {
-          ...params,
-        }
-      );
+      sellTransaction =
+        await contract.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+          amountIn,
+          amountAfterSlippage,
+          [sellingToken, buyingToken],
+          to,
+          timeRN,
+          {
+            ...params,
+          }
+        );
 
     const sellTransactionData = await sellTransaction.wait();
     return sellTransactionData;
   } catch (err) {
-    console.log('Error occurred on selling', err);
+    console.log("Error occurred on selling", err);
     return { status: false };
   }
 };
@@ -97,7 +98,7 @@ const performBuyTransaction = async (
   let amountOut = amountIn;
 
   try {
-    let roundingAmount = BigNumber.from('1000');
+    let roundingAmount = BigNumber.from("1000");
 
     let slippagePercentage = BigNumber.from(slippageData.slippagePercentage);
     let feePercentage = BigNumber.from(slippageData.feePercentage);
@@ -105,7 +106,7 @@ const performBuyTransaction = async (
     //Get max weth from database
     const config = await Configuration.findOne({}).exec();
     let amountInWithSlippage = BigNumber.from(
-      utils.parseUnits(config.maximumWeth, 'ether')
+      utils.parseUnits(config.maximumWeth, "ether")
     );
 
     //calculate if v3
@@ -116,14 +117,14 @@ const performBuyTransaction = async (
       ]);
 
       wethAmount = wethAmountData[0];
-      console.log('weth amount', wethAmount.toString());
+      console.log("weth amount", wethAmount.toString());
       let budgetAmount = calculateBudget(
         wethAmount,
         BigNumber.from(utils.parseEther(config.maximumWeth)),
         BigNumber.from(utils.parseEther(config.minimumWeth)),
         BigNumber.from(utils.parseEther(config.amountPercentage))
       );
-      console.log('budget amount', budgetAmount.toString());
+      console.log("budget amount", budgetAmount.toString());
       let calculatedProportions = calculateProportions(
         budgetAmount,
         wethAmount
@@ -138,8 +139,8 @@ const performBuyTransaction = async (
         .add(budgetAmount.mul(slippagePercentage).div(roundingAmount))
         .add(budgetAmount.mul(feePercentage).div(roundingAmount));
 
-      console.log('amount out', amountOut.toString());
-      console.log('proportional amount out ', amountOut.toString());
+      console.log("amount out", amountOut.toString());
+      console.log("proportional amount out ", amountOut.toString());
     }
 
     let buyTransaction;
@@ -151,7 +152,7 @@ const performBuyTransaction = async (
         [sellingToken, buyingToken],
         to,
         {
-          value: BigNumber.from('0'),
+          value: BigNumber.from("0"),
           ...params,
         }
       );
@@ -173,7 +174,7 @@ const performBuyTransaction = async (
     const buyTransactionData = await buyTransaction.wait();
     return { ...buyTransactionData, amountOut };
   } catch (err) {
-    console.log('Error occurred on buying!', err);
+    console.log("Error occurred on buying!", err);
     return { status: false, amountOut };
   }
 };
@@ -195,25 +196,25 @@ const performTokenApprovalTransaction = async (
     );
 
     if (Number(allowance) > 0) {
-      console.log('Token Already Approved');
+      console.log("Token Already Approved");
       return { status: true };
     }
 
     const approveTransaction = await contract.approve(
       spender,
       BigNumber.from(
-        '115792089237316195423570985008687907853269984665640564039457584007913129639935'
+        "115792089237316195423570985008687907853269984665640564039457584007913129639935"
       ),
       {
         ...params,
       }
     );
-    console.log('approve txn', approveTransaction);
+    console.log("approve txn", approveTransaction);
 
     let approveTransactionResult = await approveTransaction.wait();
     return approveTransactionResult;
   } catch (err) {
-    console.log('Error', err);
+    console.log("Error", err);
     return { status: false };
   }
 };
