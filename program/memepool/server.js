@@ -3,6 +3,7 @@ const {
   isTrackingwallet,
   createNewTransaction,
   updateTransaction,
+  havePrevTransaction,
 } = require("../database/action");
 const { Router } = require("../database/model");
 const {
@@ -36,7 +37,10 @@ app.post("/*", async (req, res) => {
     ) {
       const isConfirmed = txnData.status == "confirmed";
 
-      //if there is no previous txn and only confirmed is got then
+      //if there is no previous txn and only confirmed
+      const doesnotHasPrevPendingTxn = await havePrevTransaction(txnData.hash);
+      if (doesnotHasPrevPendingTxn && txnData.status == "confirmed")
+        txnData.status = "pending";
 
       const contractCall = txnData;
       const contractCallData = txnData.contractCall;
