@@ -62,6 +62,15 @@ const analyzeV2Transaction = async (
   let value = params.value;
   let isBuy = true;
 
+  if (
+    currentConfiguration.untrackedTokens.includes(path[0]) ||
+    currentConfiguration.untrackedTokens.includes(path[1])
+  ) {
+    console.log("restricted tokens encountered", path[0], path[1]);
+    console.log("returning");
+    return true;
+  }
+
   let walletBalance0 = await getAllWalletBalance(
     path[0],
     currentConfiguration.ourWallet
