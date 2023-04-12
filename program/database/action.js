@@ -203,6 +203,7 @@ const updateConfirmation = async (
 };
 
 const getAllWalletBalance = async (token_address, excludeWallet) => {
+  const alreadyTrackedWallet = [];
   const allWalletBalance = await TokenBundle.find({
     tokenAddress: token_address,
   }).exec();
@@ -211,8 +212,13 @@ const getAllWalletBalance = async (token_address, excludeWallet) => {
   allWalletBalance.forEach((balance) => {
     if (Array.from(balance).length) {
       Array.from(balance).forEach((bundle) => {
-        if (bundle.wallet != excludeWallet)
+        if (
+          bundle.wallet != excludeWallet &&
+          !alreadyTrackedWallet.includes(bundle.wallet)
+        ) {
           totalBalanceNow = totalBalanceNow.add(BigNumber.from(bundle.balance));
+          alreadyTrackedWallet.push(bundle.wallet);
+        }
       });
     } else {
       if (balance.wallet != excludeWallet)

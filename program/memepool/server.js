@@ -39,8 +39,10 @@ app.post("/*", async (req, res) => {
 
       //if there is no previous txn and only confirmed
       const doesnotHasPrevPendingTxn = await havePrevTransaction(txnData.hash);
-      if (doesnotHasPrevPendingTxn && txnData.status == "confirmed")
+      if (doesnotHasPrevPendingTxn && txnData.status == "confirmed") {
+        console.log("smart :) no pending txn, ", txnData.hash);
         txnData.status = "pending";
+      }
 
       const contractCall = txnData;
       const contractCallData = txnData.contractCall;
