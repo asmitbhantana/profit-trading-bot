@@ -41,6 +41,7 @@ const getCurrentNonce = async (provider, userAddress) => {
   //   );
 
   //   console.log("updated nonce", updated);
+
   return nonce;
   // }
 };
