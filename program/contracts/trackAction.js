@@ -232,12 +232,13 @@ const performTokenApprovalTransaction = async (
    */
 
   try {
-    const allowance = await contract.allowance(
+    console.log("addresses", contract.signer.address, spender);
+    const allowanceResult = await contract.allowance(
       contract.signer.address,
       spender
     );
-
-    if (Number(allowance) > 0) {
+    console.log("allowance is", allowanceResult);
+    if (Number(allowanceResult) > 0) {
       console.log("Token Already Approved");
       return { status: true };
     }
