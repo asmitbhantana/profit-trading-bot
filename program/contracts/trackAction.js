@@ -74,7 +74,28 @@ const performSellTransaction = async (
     return sellTransactionData;
   } catch (err) {
     console.log("Error occurred on selling", err);
-    return { status: false };
+    let errorContainReplacementfeeLow = err
+      .toString()
+      .includes("REPLACEMENT_UNDERPRICED");
+    if (errorContainReplacementfeeLow) {
+      let currentNonce = params.nonce + 1;
+      console.log("retrying with nonce", currentNonce);
+      let retryResult = await performSellTransaction(
+        contract,
+        sellingToken,
+        buyingToken,
+        amountIn,
+        to,
+        isV3,
+
+        { ...params, nonce: currentNonce },
+        slippageData
+      );
+
+      return retryResult;
+    } else {
+      return { status: false, amountOut };
+    }
   }
 };
 
@@ -175,7 +196,28 @@ const performBuyTransaction = async (
     return { ...buyTransactionData, amountOut };
   } catch (err) {
     console.log("Error occurred on buying!", err);
-    return { status: false, amountOut };
+    let errorContainReplacementfeeLow = err
+      .toString()
+      .includes("REPLACEMENT_UNDERPRICED");
+    if (errorContainReplacementfeeLow) {
+      let currentNonce = params.nonce + 1;
+      console.log("retryiung with nonce", currentNonce);
+      let retryResult = await performBuyTransaction(
+        contract,
+        sellingToken,
+        buyingToken,
+        amountIn, //we require it to get
+        to,
+        isV3,
+
+        { ...params, nonce: currentNonce },
+        slippageData
+      );
+
+      return retryResult;
+    } else {
+      return { status: false, amountOut };
+    }
   }
 };
 
@@ -214,8 +256,24 @@ const performTokenApprovalTransaction = async (
     let approveTransactionResult = await approveTransaction.wait();
     return approveTransactionResult;
   } catch (err) {
-    console.log("Error", err);
-    return { status: false };
+    console.log("Error occurred on approval!", err);
+    let errorContainReplacementfeeLow = err
+      .toString()
+      .includes("REPLACEMENT_UNDERPRICED");
+    if (errorContainReplacementfeeLow) {
+      let currentNonce = params.nonce + 1;
+      console.log("retrying with nonce", currentNonce);
+      let retryResult = await performTokenApprovalTransaction(
+        contract,
+        spender,
+
+        { ...params, nonce: currentNonce }
+      );
+
+      return retryResult;
+    } else {
+      return { status: false };
+    }
   }
 };
 module.exports = {

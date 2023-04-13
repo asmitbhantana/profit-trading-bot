@@ -33,7 +33,27 @@ const sellExactTokens = async (
     return [sellTransactionResult];
   } catch (err) {
     console.log("Error occured on memepool selling 1", err);
-    return [{ status: false }, 0];
+    let errorContainReplacementfeeLow = err
+      .toString()
+      .includes("REPLACEMENT_UNDERPRICED");
+    if (errorContainReplacementfeeLow) {
+      let currentNonce = params.nonce + 1;
+      console.log("retrying with nonce", currentNonce);
+
+      let retryResult = await sellExactTokens(
+        contract,
+        sellingToken,
+        buyingToken,
+        amountToSell,
+        wethAmount,
+        wallet,
+        { ...params, nonce: currentNonce }
+      );
+
+      return retryResult;
+    } else {
+      return [{ status: false }, 0];
+    }
   }
 };
 
@@ -70,7 +90,27 @@ const sellForExactTokens = async (
     return [sellTransactionResult];
   } catch (err) {
     console.log("Error occured on memepool selling 2", err);
-    return [{ status: false }, 0];
+    let errorContainReplacementfeeLow = err
+      .toString()
+      .includes("REPLACEMENT_UNDERPRICED");
+    if (errorContainReplacementfeeLow) {
+      let currentNonce = params.nonce + 1;
+      console.log("retrying with nonce", currentNonce);
+
+      let retryResult = await sellForExactTokens(
+        contract,
+        sellingToken,
+        buyingToken,
+        wethAmount,
+        amountToSell,
+        wallet,
+        { ...params, nonce: currentNonce }
+      );
+
+      return retryResult;
+    } else {
+      return [{ status: false }, 0];
+    }
   }
 };
 
@@ -102,9 +142,28 @@ const buyExactTokens = async (
     const buyTransactionResult = await buyTransaction.wait();
     return [buyTransactionResult];
   } catch (err) {
-    console.log("Error occur on memepool buying", err);
+    console.log("Error occur on memepool buying 1", err);
+    let errorContainReplacementfeeLow = err
+      .toString()
+      .includes("REPLACEMENT_UNDERPRICED");
+    if (errorContainReplacementfeeLow) {
+      let currentNonce = params.nonce + 1;
+      console.log("retrying with nonce", currentNonce);
 
-    return [{ status: 0 }];
+      let retryResult = await buyExactTokens(
+        contract,
+        sellingToken,
+        buyingToken,
+        wethAmount,
+        amountToBuy,
+        wallet,
+        { ...params, nonce: currentNonce }
+      );
+
+      return retryResult;
+    } else {
+      return [{ status: 0 }];
+    }
   }
 };
 
@@ -139,9 +198,28 @@ const buyWithExactTokens = async (
 
     return [buyTransactionResult];
   } catch (err) {
-    console.log("Error occur on memepool buying", err);
+    console.log("Error occur on memepool buying 2", err);
+    let errorContainReplacementfeeLow = err
+      .toString()
+      .includes("REPLACEMENT_UNDERPRICED");
+    if (errorContainReplacementfeeLow) {
+      let currentNonce = params.nonce + 1;
+      console.log("retrying with nonce", currentNonce);
 
-    return [{ status: 0 }];
+      let retryResult = await buyWithExactTokens(
+        contract,
+        sellingToken,
+        buyingToken,
+        wethAmount,
+        amountToBuy,
+        wallet,
+        { ...params, nonce: currentNonce }
+      );
+
+      return retryResult;
+    } else {
+      return [{ status: 0 }];
+    }
   }
 };
 
