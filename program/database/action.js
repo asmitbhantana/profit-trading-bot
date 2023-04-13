@@ -243,7 +243,7 @@ const createNewTransaction = async (targetTxnHash, data) => {
 const havePrevTransaction = async (targetTxnHash) => {
   let txn = await TransactionDone.find({ targetHash: targetTxnHash });
   console.log("txn", txn);
-  if (txn != undefined || txn.length > 0) return false;
+  if (txn.length > 0) return false;
   else return true;
 };
 
