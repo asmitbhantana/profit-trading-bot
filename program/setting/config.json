@@ -12,7 +12,6 @@
     "wallets": [
       "0xe2bfbf288e741b7320b71d3d413e1b16e25df702",
       "0x4EcD2F3Cc4ce4Ea3286D1D4B4C1133e444F3F53E",
-      "0x68a77547527dc796f7ce2c0860aef08046f5a8cb",
       "0x3681eb7b6d6948f904be0632238a83b9ddeb4d57"
     ],
     "maximumFeePerGas": "200000000000000"
