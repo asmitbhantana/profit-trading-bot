@@ -3,7 +3,7 @@
     "amountPercentage": "100",
     "networkFeeIncreaseTokenTracking": "120",
 
-    "maxFeePerGasIncrease": "130",
+    "maxFeePerGasIncrease": "160",
     "maxPriorityFeePerGasIncrease": "120",
     "maximumWeth": "0.08",
     "minimumWeth": "0.000000005",
