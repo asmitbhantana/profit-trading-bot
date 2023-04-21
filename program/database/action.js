@@ -21,7 +21,7 @@ Configurations:
   update all the config
  */
 
-const { BigNumber } = require("ethers");
+const { BigNumber } = require('ethers');
 const {
   Configuration,
   TokenBundle,
@@ -30,8 +30,8 @@ const {
   Token,
   TransactionDone,
   Nonce,
-} = require("./model");
-const { getWalletBalance } = require("../monitor/wallet");
+} = require('./model');
+const { getWalletBalance } = require('../monitor/wallet');
 
 const createUpdateConfig = async function (config) {
   const updatedConfig = await Configuration.findOneAndUpdate({}, config, {
@@ -86,7 +86,7 @@ const updateTokenBalance = async function (wallet, token, new_balance) {
     },
     { balance: new_balance }
   ).exec();
-  console.log("token updated", tokenToUpdate);
+  console.log('token updated', tokenToUpdate);
   return tokenToUpdate;
 };
 
@@ -207,17 +207,19 @@ const getAllWalletBalance = async (token_address, excludeWallet) => {
   const allWalletBalance = await TokenBundle.find({
     tokenAddress: token_address,
   }).exec();
-  let totalBalanceNow = BigNumber.from("0");
+  let totalBalanceNow = BigNumber.from('0');
 
   allWalletBalance.forEach((balance) => {
     if (Array.from(balance).length) {
       Array.from(balance).forEach((bundle) => {
         if (
           bundle.wallet != excludeWallet &&
-          !alreadyTrackedWallet.includes(bundle.wallet)
+          (!alreadyTrackedWallet.includes(bundle.wallet) ||
+            !alreadyTrackedWallet.includes(bundle.wallet.toLowerCase()))
         ) {
           totalBalanceNow = totalBalanceNow.add(BigNumber.from(bundle.balance));
           alreadyTrackedWallet.push(bundle.wallet);
+          alreadyTrackedWallet.push(bundle.wallet.toLowerCase());
         }
       });
     } else {
@@ -242,7 +244,7 @@ const createNewTransaction = async (targetTxnHash, data) => {
 
 const havePrevTransaction = async (targetTxnHash) => {
   let txn = await TransactionDone.find({ targetHash: targetTxnHash });
-  console.log("txn", txn);
+  console.log('txn', txn);
   if (txn.length > 0) return false;
   else return true;
 };
