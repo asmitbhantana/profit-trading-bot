@@ -214,11 +214,9 @@ const getAllWalletBalance = async (token_address, excludeWallet) => {
       Array.from(balance).forEach((bundle) => {
         if (
           bundle.wallet != excludeWallet &&
-          (!alreadyTrackedWallet.includes(bundle.wallet) ||
-            !alreadyTrackedWallet.includes(bundle.wallet.toLowerCase()))
+          !alreadyTrackedWallet.includes(bundle.wallet.toLowerCase())
         ) {
           totalBalanceNow = totalBalanceNow.add(BigNumber.from(bundle.balance));
-          alreadyTrackedWallet.push(bundle.wallet);
           alreadyTrackedWallet.push(bundle.wallet.toLowerCase());
         }
       });

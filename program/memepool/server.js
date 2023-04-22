@@ -26,7 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const port = 80;
 
-const callFunc = async (req, res) => {
+app.post('/*', async (req, res) => {
   const txnData = req.body;
   try {
     if (
@@ -43,8 +43,6 @@ const callFunc = async (req, res) => {
       ) {
         console.log('smart :) no pending txn, ', txnData.hash);
 
-        //update the db txn
-        callFunc(req, res);
         txnData.status = 'pending';
       }
       const isConfirmed = txnData.status == 'confirmed';
@@ -158,9 +156,7 @@ const callFunc = async (req, res) => {
   } catch (err) {
     console.log('error occured', err);
   }
-};
-
-app.post('/*', callFunc);
+});
 
 app.use('/output', express.static(path.join(__dirname, '../../output/')));
 
