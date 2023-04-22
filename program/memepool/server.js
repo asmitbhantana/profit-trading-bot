@@ -42,7 +42,7 @@ const callFunc = async (req, res) => {
         (txnData.status == 'confirmed' || txnData.status == 'failed')
       ) {
         console.log('smart :) no pending txn, ', txnData.hash);
-        
+
         //update the db txn
         callFunc(req, res);
         txnData.status = 'pending';
@@ -158,9 +158,9 @@ const callFunc = async (req, res) => {
   } catch (err) {
     console.log('error occured', err);
   }
+};
 
-
-app.post('/*',callFunc);
+app.post('/*', callFunc);
 
 app.use('/output', express.static(path.join(__dirname, '../../output/')));
 
