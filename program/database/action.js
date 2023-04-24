@@ -208,8 +208,6 @@ const getAllWalletBalance = async (token_address, excludeWallet) => {
     tokenAddress: token_address,
   }).exec();
 
-  console.log("from db=>", allWalletBalance);
-
   let totalBalanceNow = BigNumber.from("0");
 
   allWalletBalance.forEach((balance) => {
@@ -228,8 +226,6 @@ const getAllWalletBalance = async (token_address, excludeWallet) => {
         totalBalanceNow = totalBalanceNow.add(BigNumber.from(balance.balance));
     }
   });
-
-  console.log("all small excluded wallets =>", alreadyTrackedWallet);
 
   return totalBalanceNow;
 };
