@@ -72,7 +72,7 @@ const RouterSchema = new Schema({
 });
 
 const TokenBundleSchema = new Schema({
-  wallet: String,
+  wallet: { type: String, get: getAddress, set: getAddress },
   tokenAddress: { type: String, get: getAddress, set: getAddress },
   name: String,
   decimal: Number,
