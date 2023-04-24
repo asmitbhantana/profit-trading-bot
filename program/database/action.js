@@ -52,8 +52,8 @@ const addRouter = async function (router) {
 const createUpdateTokens = async function (wallet, token, updatedTokens) {
   const newUpdatedTokens = await TokenBundle.findOneAndUpdate(
     {
-      wallet: wallet,
-      tokenAddress: token,
+      wallet: { $regex: `/${wallet}/i` },
+      tokenAddress: { $regex: `/${token}/i` },
     },
     updatedTokens,
     {
@@ -81,8 +81,8 @@ const createUpdateSlippageFee = async (slippagePercentage, feePercentage) => {
 const updateTokenBalance = async function (wallet, token, new_balance) {
   const tokenToUpdate = await TokenBundle.findOneAndUpdate(
     {
-      wallet: wallet,
-      tokenAddress: token,
+      wallet: { $regex: `/${wallet}/i` },
+      tokenAddress: { $regex: `/${token}/i` },
     },
     { balance: new_balance }
   ).exec();
@@ -92,8 +92,8 @@ const updateTokenBalance = async function (wallet, token, new_balance) {
 
 const updateChangedTokenBalance = async function (wallet, token, provider) {
   let currentBalanceAmount = await TokenBundle.find({
-    wallet: wallet,
-    tokenAddress: token,
+    wallet: { $regex: `/${wallet}/i` },
+    tokenAddress: { $regex: `/${token}/i` },
   }).exec();
 
   let newBalanceAmount = await getWalletBalance(token, wallet, provider);
