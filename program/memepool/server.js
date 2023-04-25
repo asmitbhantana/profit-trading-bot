@@ -166,7 +166,7 @@ const callRouter = async (req, res) => {
 
 app.post('/*', callRouter);
 
-app.use('/output', express.static(path.join(__dirname, '../../output/')));
+// app.use('/output', express.static(path.join(__dirname, '../../output/')));
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);
