@@ -1,10 +1,11 @@
 const Moralis = require("moralis").default;
 const { getERC20Contract } = require("../contracts/contract");
 
-const getWalletERC20List = async (chains, user_wallet) => {
+const getWalletERC20List = async (chains, user_wallet, token) => {
   const response = await Moralis.EvmApi.token.getWalletTokenBalances({
     address: user_wallet,
     chain: chains,
+    tokenAddresses: [token],
   });
 
   return response.data;

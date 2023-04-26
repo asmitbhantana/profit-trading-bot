@@ -85,20 +85,19 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
         }
       }
       if (exclude) {
-        console.log(wallet);
-        console.log(token.tokenAddress);
-        console.log("--------------------------------");
-        const balanceOfWallet = await getWalletBalance(
-          token.tokenAddress,
+        const balanceOfWallet = await performWalletScan(
+          chains,
           wallet,
-          provider
+          token.tokenAddress
         );
 
-        additionalTokenBundle.push({
-          ...token._doc,
-          token_address: token.tokenAddress,
-          balance: balanceOfWallet,
-        });
+        if (balanceOfWallet.length > 0) {
+          additionalTokenBundle.push({
+            ...token._doc,
+            token_address: token.tokenAddress,
+            balance: balanceOfWallet[0].balance,
+          });
+        }
       }
     });
     currentWalletData = currentWalletData.concat(additionalTokenBundle);
