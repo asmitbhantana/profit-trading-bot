@@ -16,6 +16,7 @@ const {
   performBuySaleTransaction,
   performApprovalTransaction,
 } = require("./performTxn");
+const { getWalletBalance } = require("./wallet");
 
 const monitorAndPerformAction = async (chains, provider, contract) => {
   //retives all tokens and wallets
@@ -67,12 +68,13 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
   //get all tokens to track for different wallets
   currenConfiguration.wallets.map(async (wallet) => {
     //retive data from moralis api
-    let currentWalletData = await performWalletScan(chains, wallet);
+    // let currentWalletData = await performWalletScan(chains, wallet);
+    let currentWalletData = [];
 
     const totalTokenBundle = await TokenBundle.find({ wallet: wallet }).exec();
     //adding the total token bundle which is all sold
     let additionalTokenBundle = [];
-    totalTokenBundle.map((token) => {
+    totalTokenBundle.map(async (token) => {
       let exclude = true;
       for (let i = 0; i < currentWalletData.length && exclude; i++) {
         if (
@@ -83,10 +85,19 @@ const monitorAndPerformAction = async (chains, provider, contract) => {
         }
       }
       if (exclude) {
+        console.log(wallet);
+        console.log(token.tokenAddress);
+        console.log("--------------------------------");
+        const balanceOfWallet = await getWalletBalance(
+          token.tokenAddress,
+          wallet,
+          provider
+        );
+
         additionalTokenBundle.push({
           ...token._doc,
           token_address: token.tokenAddress,
-          balance: "0",
+          balance: balanceOfWallet,
         });
       }
     });
